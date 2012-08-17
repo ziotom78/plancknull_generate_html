@@ -1,0 +1,64 @@
+body {
+    font-family: Verdana, Arial, sans-serif;
+    background: #ccc;
+}
+
+h1 {
+    padding: 25px;
+    background: #113;
+    width: 912px;
+    color: #fff;
+}
+
+h2 {
+    text-align: center;
+}
+
+p, table {
+    font-size: 14px;
+}
+
+table {
+    border-spacing: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#selector tr {
+    color: white;
+}
+
+#selector a {
+    color: #aaa;
+    text-decoration: none;
+}
+
+#selector a:hover {
+    color: #ffa;
+    text-decoration: underline;
+}
+
+#main {
+    width: 960px;
+}
+
+#selector {
+    width: 7em;
+    position: absolute;
+    margin-right: auto;
+    background: #333;
+    padding: 25px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+#result {
+    margin-left: 11em;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+}
+
+td {
+    text-align: center;
+}
