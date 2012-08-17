@@ -24,6 +24,7 @@
 ;;
 ;; * [`shell`]((http://wiki.call-cc.org/eggref/4/shell) (run shell commands)
 ;; * [`filepath`]((http://wiki.call-cc.org/eggref/4/filepath) (operations on strings representing file paths)
+;; * [`directory-utils`](http://wiki.call-cc.org/eggref/4/directory-utils) (operations on directories)
 ;; * [`json`](http://wiki.call-cc.org/eggref/4/json) (read/write JSON data)
 ;; * [`html-tags`](http://wiki.call-cc.org/eggref/4/html-tags) (generate HTML directly from Scheme code)
 ;; * [`html-utils`](http://wiki.call-cc.org/eggref/4/html-utils) (nice shorthands to produce complex HTML patterns)
@@ -72,13 +73,17 @@
 ;; `html-utils` eggs are very useful to generate HTML from code, much
 ;; in the same way as described in Paul Graham's 16th chapter of [ANSI
 ;; Common LISP](http://www.paulgraham.com/acl.html). The `shell` egg
-;; is used to call `map2gif`, and `filepath` is useful to manipulate
-;; file paths.
+;; is used to call `map2gif`. The eggs `filepath` and
+;; `directory-utils` are used respectively to manipulate file paths
+;; and to create/modify the directory structure of a file system (we
+;; are going to use it to create the tree of directories that will
+;; contain the HTML report).
 (require-extension json)
 (require-extension html-tags)
 (require-extension html-utils)
 (require-extension shell)
 (require-extension filepath)
+(require-extension directory-utils)
 
 ;; Since JSON entries are going to be handled as _a-lists_
 ;; ([association
@@ -156,10 +161,28 @@
 	 (if overwrite?
 	     (delete-file output-gif-file-name)
 	     (return '())))
+     ;; Create the directory that will contain the output file,
+     ;; if it does not exist
+     (create-pathname-directory output-gif-file-name)
+     ;; Run the program. Note the elegance of "run" (from the "shell" egg):
+     ;; we include the command-line switches as if they were Scheme symbols!
      (run (map2gif -inp ,input-fits-file-name
 		   -out ,output-gif-file-name
 		   -bar .T.
+		   -xsz 512
 		   -ttl ,(string-concatenate (list "\"" title "\"")))))))
+
+;; This function converts the name of a FITS file containing a map
+;; into the name of the `.gif` file that will contain the
+;; representation of the map shown in the report. It strips the
+;; directory and extension parts and substitutes them using functions
+;; from the `filepath` eggs. Note that we want the GIF file to be in a
+;; subdirectory of the current directory instead of being in the same
+;; directory as the input FITS file: in this was the user can run
+;; `tar` or `zip` on it to obtain a self-contained report.
+(define (fits-name->gif-name fits-name)
+  (filepath:replace-directory (filepath:replace-extension fits-name ".gif")
+			      "./images"))
 
 ;; HTML generation
 ;; ===============
@@ -185,7 +208,7 @@
     (assq-ref label html-file-names)))
 
 ;; The page contains a drop-down menu. Its look is specified in the
-;; CSS file `dropdown_menu.css`, and its style is plagyarized from [a
+;; CSS file `dropdown_menu.css`, and its style is plagiarized from [a
 ;; nice tutorial available on the
 ;; WWW](http://dhirajkumarsingh.wordpress.com/2012/05/20/css3-animated-dropdown-menu/).
 ;; Note how nice is to use the `html-tag` package: we are producing
@@ -272,15 +295,18 @@
       ;; Create the .gif files
       (for-each (lambda (test-result)
 		  (let ((fits-file-name (assq-ref 'file_path test-result)))
-		    (format #t "running map2gif, output is ~a\n"
-			    (filepath:replace-extension fits-file-name ".gif"))
+		    (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
 		    (map2gif fits-file-name
-			     (filepath:replace-extension fits-file-name ".gif")
+			     (fits-name->gif-name fits-file-name)
 			     (assq-ref 'title test-result))))
 		dictionary)
       
-      ;; Write the HTML
+      ;; Write links to each image
       (display (wrap-html (make-title "coupled horn, survey differences")
-			  (itemize fits-file-paths))
+			  (itemize (map (lambda (fits-name)
+					  (let ((gif-name (fits-name->gif-name fits-name)))
+					    (<img> src: gif-name
+						   alt: gif-name)))
+					fits-file-paths)))
 	       file)
       (newline file))))
