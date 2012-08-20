@@ -232,8 +232,12 @@
      ;; Create the directory that will contain the output file,
      ;; if it does not exist
      (create-pathname-directory output-gif-file-name)
-     ;; Run the program. Note the elegance of "run" (from the "shell" egg):
-     ;; we include the command-line switches as if they were Scheme symbols!
+     ;; Run the program. Note the elegance of "run" (from the "shell"
+     ;; egg): we include the command-line switches as if they were
+     ;; Scheme symbols! (We put a comma in front of `(html:++ ...)`
+     ;; because we want it to be interpreted as a Scheme expression:
+     ;; otherwise it would be put as it is in the arguments to the
+     ;; process call.)
      (run (map2gif -inp ,input-fits-file-name
 		   -out ,output-gif-file-name
 		   -bar .T.

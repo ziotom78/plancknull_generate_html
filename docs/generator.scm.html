@@ -333,8 +333,12 @@ if it does not exist</p>
 </pre></td></tr>
 <tr id="section-18">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run" (from the "shell" egg):
-we include the command-line switches as if they were Scheme symbols!</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run" (from the "shell"
+egg): we include the command-line switches as if they were
+Scheme symbols! (We put a comma in front of <code>(html:++ ...)</code>
+because we want it to be interpreted as a Scheme expression:
+otherwise it would be put as it is in the arguments to the
+process call.)</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">run <span class="paren2">(<span class="default">map2gif -inp ,input-fits-file-name
