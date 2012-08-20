@@ -355,7 +355,7 @@ into the name of the <code>.gif</code> file that will contain the
 representation of the map shown in the report. It strips the
 directory and extension parts and substitutes them using functions
 from the <code>filepath</code> eggs. Note that we want the GIF file to be in a
-subdirectory of the current directory instead of being in the same
+subdirectory of the output directory instead of being in the same
 directory as the input FITS file: in this was the user can run
 <code>tar</code> or <code>zip</code> on it to obtain a self-contained report.</p>
 </td>
@@ -363,8 +363,7 @@ directory as the input FITS file: in this was the user can run
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span>
   <span class="paren2">(<span class="default">filepath:replace-directory
    <span class="paren3">(<span class="default">filepath:replace-extension fits-name <span class="string">&quot;.gif&quot;</span></span>)</span>
-   <span class="paren3">(<span class="default">filepath:join-path <span class="paren4">(<span class="default">list <span class="paren5">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
-			     <span class="string">&quot;images&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+   <span class="string">&quot;images&quot;</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-20">
@@ -441,7 +440,8 @@ files might be needed in the future).</p>
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><h2>General-purpose functions</h2>
 
-<p>avoiding repetitions in the code (they must be used when creating
+<p>We keep the names of the HTML files to be created in a alist for
+avoiding repetitions in the code (they must be used when creating
 the files and when producing the <code>&lt;a&gt;</code> links in the dropdown menu).
 The function <code>get-html-file-name</code> is the only access function we
 need for this alist, so we make <code>html-file-name</code> a local
@@ -460,8 +460,7 @@ definition.</p>
 	   <span class="paren6">(<span class="default">full-frequency . <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
 	   <span class="paren6">(<span class="default">full-cross-freq . <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
 	   <span class="paren6">(<span class="default">table-of-contents . <span class="string">&quot;toc.html&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
-    <span class="paren3">(<span class="default">filepath:join-path <span class="paren4">(<span class="default">list <span class="paren5">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
-			      <span class="paren5">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-27">
@@ -563,7 +562,9 @@ parameter the output stream to be used to write into the file.</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-html file-tag write-function</span>)</span>
-  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-file-name <span class="paren5">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-file-name <span class="paren5">(<span class="default">filepath:join-path
+			   <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+				 <span class="paren1">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
     <span class="paren3">(<span class="default">create-pathname-directory output-file-name</span>)</span>
     <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> output-file-name</span>)</span>
     <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>
@@ -629,7 +630,9 @@ exactly the same as in Python.</p>
 		 <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">assq-ref &#x27;file_path test-result</span>)</span></span>)</span></span>)</span>
 		   <span class="paren4">(<span class="default">format #t <span class="string">&quot;Writing to ~a</span><span class="string">\n</span><span class="string">&quot;</span> <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span>
 		   <span class="paren4">(<span class="default">map2gif fits-file-name
-			    <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span>
+			    <span class="paren5">(<span class="default">filepath:join-path
+			     <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+				   <span class="paren1">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span></span>)</span>
 			    <span class="paren5">(<span class="default">assq-ref &#x27;title test-result</span>)</span></span>)</span></span>)</span></span>)</span>
 	       cur-dict</span>)</span>
      
