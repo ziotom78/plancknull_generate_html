@@ -215,9 +215,7 @@
 ;; nicer to have a shorthand for the Scheme function
 ;; `string-concatenate`. Note that Scheme identifiers can include
 ;; symbols as well, not only letters and numbers.
-;; ((Haskell)[http://en.wikipedia.org/wiki/Haskell_(programming_language)]
-;; uses `++` to represent list/string concatenation.)
-(define ++ string-concatenate)
+(define html:++ string-concatenate)
 
 ;; Since JSON entries are going to be handled as _a-lists_
 ;; ([association
@@ -304,7 +302,7 @@
 		   -out ,output-gif-file-name
 		   -bar .T.
 		   -xsz 512
-		   -ttl ,(++ (list "\"" title "\"")))))))
+		   -ttl ,(html:++ (list "\"" title "\"")))))))
 
 ;; This function converts the name of a FITS file containing a map
 ;; into the name of the `.gif` file that will contain the
@@ -385,10 +383,10 @@
 ;; and encloses it in a self-contained HTML structure which comprises
 ;; the dropdown menu. It returns a string.
 (define (wrap-html title body)
-  (html-page (++ (list
-		  (<h1> title)
-		  dropdown-menu
-		  body))
+  (html-page (html:++ (list
+		       (<h1> title)
+		       dropdown-menu
+		       body))
 	     title: title
 	     css: '("css/main.css" "css/dropdown_menu.css")))
 
