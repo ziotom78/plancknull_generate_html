@@ -51,7 +51,7 @@
 ;; (e.g. this is the case if you installed Chicken using Ubuntu's
 ;; `apt-get`).
 ;; * `documentation` runs Schematic on the source code to produce this
-;; documentation.
+;; documentation (in the `docs` directory).
 ;;
 ;; To run the program, you must have
 ;; [`map2gif`](http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm)
