@@ -10,7 +10,7 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 .phony: all deploy install_eggs help documentation
 
-all: generator
+all: generator documentation
 
 generator: generator.scm
 	$(CHICKEN_CSC) $< -o $@
