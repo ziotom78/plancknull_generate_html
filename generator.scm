@@ -303,7 +303,7 @@
 ;; General-purpose functions
 ;; -------------------------
 ;
-;;; We keep the names of the HTML files to be created in a alist for
+;; We keep the names of the HTML files to be created in a alist for
 ;; avoiding repetitions in the code (they must be used when creating
 ;; the files and when producing the `<a>` links in the dropdown menu).
 ;; The function `get-html-file-name` is the only access function we
