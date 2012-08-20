@@ -37,12 +37,18 @@ Debian/Ubuntu), you can install any egg you need using the command</p>
 <p>To compile this program, you need the following eggs:</p>
 
 <ul>
-<li><a href="(http://wiki.call-cc.org/eggref/4/shell"><code>shell</code></a> (run shell commands)</li>
-<li><a href="(http://wiki.call-cc.org/eggref/4/filepath"><code>filepath</code></a> (operations on strings representing file paths)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/directory-utils"><code>directory-utils</code></a> (operations on directories)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/json"><code>json</code></a> (read/write JSON data)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/html-tags"><code>html-tags</code></a> (generate HTML directly from Scheme code)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/html-utils"><code>html-utils</code></a> (nice shorthands to produce complex HTML patterns)</li>
+<li><a href="(http://wiki.call-cc.org/eggref/4/shell"><code>shell</code></a> (run shell
+commands)</li>
+<li><a href="(http://wiki.call-cc.org/eggref/4/filepath"><code>filepath</code></a>
+(operations on strings representing file paths)</li>
+<li><a href="http://wiki.call-cc.org/eggref/4/directory-utils"><code>directory-utils</code></a>
+(operations on directories)</li>
+<li><a href="http://wiki.call-cc.org/eggref/4/json"><code>json</code></a> (read/write JSON
+data)</li>
+<li><a href="http://wiki.call-cc.org/eggref/4/html-tags"><code>html-tags</code></a>
+(generate HTML directly from Scheme code)</li>
+<li><a href="http://wiki.call-cc.org/eggref/4/html-utils"><code>html-utils</code></a> (nice
+shorthands to produce complex HTML patterns)</li>
 </ul>
 
 <p>Use this command to build the executable:</p>
@@ -74,6 +80,8 @@ eggs required to compile the program. You might have to use <code>sudo</code>
 documentation (in the <code>docs</code> directory).</li>
 </ul>
 
+<h1>How to run the program</h1>
+
 <p>To run the program, you must have
 <a href="http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm"><code>map2gif</code></a>
 in your path. It is one of the programs provided by
@@ -81,13 +89,33 @@ in your path. It is one of the programs provided by
 Planck/LFI, you surely have it. (Note that it is already installed
 on the LFI DPC.)</p>
 
+<p>The program needs as input one or more JSON files containing
+information about the products of the null tests. Typically, these
+are produced by the
+<a href="https://github.com/zonca/plancknull"><code>plancknull</code></a> program. You
+can specify them from the command line:</p>
+
+<pre><code>$ generator FILE1.json FILE2.json ...
+</code></pre>
+
+<p>(If you are using the standalone executable, run
+<code>standalone_generator</code> instead of <code>generator</code>). This will create
+the report in the current directory, which is usually not what you
+want. You can specify a output directory using the <code>-o</code> flag
+<em>before</em> the JSON files:</p>
+
+<pre><code>$ generator -o OUTPUT_DIR FILE1.json FILE2.json ...
+</code></pre>
+
+<p>Il the directory OUTPUT_DIR does not exist, it will be created.</p>
+
 <h1>How to read the source code of this program</h1>
 
-<p>The program source code was formatted with the aim of making it
-look nice using
-<a href="http://wiki.call-cc.org/eggref/4/schematic"><code>schematic</code></a>, a
-documenting tool for Chicken Scheme. Install it using
-<code>chicken-install</code> as usual, then run</p>
+<p>This page was created automatically from the program source code
+using <a href="http://wiki.call-cc.org/eggref/4/schematic"><code>schematic</code></a>, a
+documenting tool for Chicken Scheme. Install it from the command
+line with the command <code>sudo chicken-install schematic</code>, then
+run</p>
 
 <pre><code>schematic -f markdown generator.scm
 </code></pre>
@@ -96,8 +124,7 @@ documenting tool for Chicken Scheme. Install it using
 <a href="http://en.wikipedia.org/wiki/Markdown"><code>markdown</code></a>, which can be
 easily installed using <code>apt-get</code> under Debian/Ubuntu). This will
 create a sub-directory <code>html</code> where you'll find the source code of
-the program nicely formatted in a HTML file &mdash; it's much
-easier to read!</p>
+this very webpage.</p>
 </td>
 <td class="code">
 <pre class="highlight">
@@ -200,50 +227,76 @@ command-line and merge them into one big list of dictionaries
 </pre></td></tr>
 <tr id="section-10">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>The names of the files to be read are taken from the command line
-(<code>cdr</code> returns all the elements of the list but the first, since
-this is the name of the executable file). Note that <code>argv</code>
-(function, not variable!) is not part of R5RS: it is a Chicken
-extension.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>If <code>args</code> is the list of command-line arguments provided to the
+program, function <code>parse-command-line</code> analyzes them and returns an
+associative list containing the following fields: <code>'output-dir</code> is
+a string specifying the directory where to save the report,
+<code>'input-files</code> is a list of the JSON files containing metadata for
+the null test products to be included in the report.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> input-files <span class="paren2">(<span class="default">cdr <span class="paren3">(<span class="default">argv</span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">parse-command-line args</span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">and <span class="paren4">(<span class="default">or <span class="paren5">(<span class="default">equal? <span class="paren6">(<span class="default">car args</span>)</span> <span class="string">&quot;-o&quot;</span></span>)</span>
+	       <span class="paren5">(<span class="default">equal? <span class="paren6">(<span class="default">car args</span>)</span> <span class="string">&quot;--output&quot;</span></span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">&gt;= <span class="paren5">(<span class="default">length args</span>)</span> 2</span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">list <span class="paren4">(<span class="default">cons &#x27;output-dir <span class="paren5">(<span class="default">cadr args</span>)</span></span>)</span>
+	    <span class="paren4">(<span class="default">cons &#x27;input-files <span class="paren5">(<span class="default">cddr args</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">list <span class="paren4">(<span class="default">cons &#x27;output-dir <span class="string">&quot;.&quot;</span></span>)</span>
+	    <span class="paren4">(<span class="default">cons &#x27;input-files args</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-11">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>Parse a file and return a list of associative lists suitable for
-being used with functions like <code>assq</code> and <code>assv</code>.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>The variable <code>user-args</code> holds all the information the user
+specified from the command line. Note that <code>argv</code> (function, not
+variable!) is not part of R5RS: it is a Chicken extension.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">extract-alists-from-json-file file-name</span>)</span>
-  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">entries <span class="paren5">(<span class="default">call-with-input-file file-name json-read</span>)</span></span>)</span></span>)</span>
-    <span class="paren3">(<span class="default">map json-&gt;alist entries</span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> user-args <span class="paren2">(<span class="default">parse-command-line <span class="paren3">(<span class="default">cdr <span class="paren4">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span>
+
+<span class="paren1">(<span class="default">format #t <span class="string">&quot;Report will be created under the following path: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
+	<span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
+<span class="paren1">(<span class="default">format #t <span class="string">&quot;JSON files to be read: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
+	<span class="paren2">(<span class="default">string-intersperse <span class="paren3">(<span class="default">assq-ref &#x27;input-files user-args</span>)</span>
+			    <span class="string">&quot;, &quot;</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-12">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Read all the files specified from the command line and join the
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Parse a file and return a list of associative lists suitable for
+being used with functions like <code>assq</code> and <code>assv</code>.</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">extract-alists-from-json-file file-name</span>)</span>
+  <span class="paren2">(<span class="default">format #t <span class="string">&quot;Reading file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> file-name</span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">entries <span class="paren5">(<span class="default">call-with-input-file file-name json-read</span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default">map json-&gt;alist entries</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-13">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>Read all the files specified from the command line and join the
 a-lists returned by <code>extract-alists-from-json-file</code>. Note that
 <code>append</code> is not a R5RS built-in (it is part of
 <a href="http://srfi.schemers.org/srfi-1/srfi-1.html">SRFI-1</a>), but Chicken
 incorporates it.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> dictionary
-  <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file input-files</span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> json-dictionary
+  <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
+		     <span class="paren4">(<span class="default">assq-ref &#x27;input-files user-args</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-13">
+<tr id="section-14">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><h1>GIF generation</h1>
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><h1>GIF generation</h1>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-14">
+<tr id="section-15">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>We need to implement the code that will convert the maps in FITS
+<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><p>We need to implement the code that will convert the maps in FITS
 format into GIF images that can be included in the HTML report. We
 assume the availability of the <code>map2gif</code> program bundled with
 <a href="http://healpix.jpl.nasa.gov/">Healpix</a>.</p>
@@ -251,9 +304,9 @@ assume the availability of the <code>map2gif</code> program bundled with
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-15">
+<tr id="section-16">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><p>Note that, since <code>map2gif</code> does not overwrite existing GIF files,
+<div class="pilwrap"><a class="pilcrow" href="#section-16">&para;</a></div><p>Note that, since <code>map2gif</code> does not overwrite existing GIF files,
 if the file already exists and the flag <code>overwrite?</code> is true we
 first need to delete the file.</p>
 </td>
@@ -270,18 +323,22 @@ first need to delete the file.</p>
 	     <span class="paren6">(<span class="default">delete-file output-gif-file-name</span>)</span>
 	     <span class="paren6">(<span class="default">return &#x27;<span class="paren1">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
-<tr id="section-16">
+<tr id="section-17">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-16">&para;</a></div><p>Create the directory that will contain the output file,
+<div class="pilwrap"><a class="pilcrow" href="#section-17">&para;</a></div><p>Create the directory that will contain the output file,
 if it does not exist</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">create-pathname-directory output-gif-file-name</span>)</span>
 </pre></td></tr>
-<tr id="section-17">
+<tr id="section-18">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-17">&para;</a></div><p>Run the program. Note the elegance of "run" (from the "shell" egg):
-we include the command-line switches as if they were Scheme symbols!</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run" (from the "shell"
+egg): we include the command-line switches as if they were
+Scheme symbols! (We put a comma in front of <code>(html:++ ...)</code>
+because we want it to be interpreted as a Scheme expression:
+otherwise it would be put as it is in the arguments to the
+process call.)</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">run <span class="paren2">(<span class="default">map2gif -inp ,input-fits-file-name
@@ -291,9 +348,9 @@ we include the command-line switches as if they were Scheme symbols!</p>
 		   -ttl ,<span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>)))
 
 </pre></td></tr>
-<tr id="section-18">
+<tr id="section-19">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>This function converts the name of a FITS file containing a map
+<div class="pilwrap"><a class="pilcrow" href="#section-19">&para;</a></div><p>This function converts the name of a FITS file containing a map
 into the name of the <code>.gif</code> file that will contain the
 representation of the map shown in the report. It strips the
 directory and extension parts and substitutes them using functions
@@ -304,20 +361,22 @@ directory as the input FITS file: in this was the user can run
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span>
-  <span class="paren2">(<span class="default">filepath:replace-directory <span class="paren3">(<span class="default">filepath:replace-extension fits-name <span class="string">&quot;.gif&quot;</span></span>)</span>
-			      <span class="string">&quot;./images&quot;</span></span>)</span></span>)</span>
+  <span class="paren2">(<span class="default">filepath:replace-directory
+   <span class="paren3">(<span class="default">filepath:replace-extension fits-name <span class="string">&quot;.gif&quot;</span></span>)</span>
+   <span class="paren3">(<span class="default">filepath:join-path <span class="paren4">(<span class="default">list <span class="paren5">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+			     <span class="string">&quot;images&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-19">
+<tr id="section-20">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-19">&para;</a></div><h1>HTML generation</h1>
+<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><h1>HTML generation</h1>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-20">
+<tr id="section-21">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><p>We keep the names of the HTML files to be created in a alist for
+<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><p>We keep the names of the HTML files to be created in a alist for
 avoiding repetitions in the code (they must be used when creating
 the files and when producing the <code>&lt;a&gt;</code> links in the dropdown menu).
 The function <code>get-html-file-name</code> is the only access function we
@@ -337,12 +396,13 @@ definition.</p>
 	   <span class="paren6">(<span class="default">full-frequency . <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
 	   <span class="paren6">(<span class="default">full-cross-freq . <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
 	   <span class="paren6">(<span class="default">table-of-contents . <span class="string">&quot;toc.html&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
-    <span class="paren3">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default">filepath:join-path <span class="paren4">(<span class="default">list <span class="paren5">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+			      <span class="paren5">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-21">
+<tr id="section-22">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><p>The page contains a drop-down menu. Its look is specified in the
+<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p>The page contains a drop-down menu. Its look is specified in the
 CSS file <code>dropdown_menu.css</code>, and its style is plagiarized from <a href="http://dhirajkumarsingh.wordpress.com/2012/05/20/css3-animated-dropdown-menu/">a
 nice tutorial available on the
 WWW</a>.
@@ -385,9 +445,9 @@ ad-hoc language (e.g. the Python library
 			  <span class="string">&quot;Table of contents&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-22">
+<tr id="section-23">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
+<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
 and encloses it in a self-contained HTML structure which comprises
 the dropdown menu. It returns a string.</p>
 </td>
@@ -401,9 +461,9 @@ the dropdown menu. It returns a string.</p>
 	     <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/dropdown_menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-23">
+<tr id="section-24">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p>This is the name of the data release. The function <code>make-title</code>
+<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p>This is the name of the data release. The function <code>make-title</code>
 makes up the title for a page. It does so by prepending the name of
 the data release to the title itself (in the parameter <code>string</code>).
 We want to put the name of the release (e.g. <code>DX9</code>) at the
@@ -419,88 +479,116 @@ line/configuration file</p>
     <span class="paren3">(<span class="default">format #f <span class="string">&quot;~a null tests: ~a&quot;</span> test-release-name string</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-24">
-<td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><h2>The "information" page</h2>
-</td>
-<td class="code">
-<pre class="highlight">
-</pre></td></tr>
 <tr id="section-25">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
-<code>lambda</code> function passing as parameter a stream (the <code>file</code>
-parameter) that can be used for writing. At the end of the
-execution of the <code>lambda</code> function, the file will be automatically
-closed (much like Python's <code>with</code> statement).</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p>We are going to create a number of HTML files, and the creation of
+each of them follows the same rules:</p>
+
+<ol>
+<li>Determine the name of the file using <code>get-html-file-name</code></li>
+<li>Ensure that the directory where this file will be written exists</li>
+<li>Inform the user about the pathname of the file we are going to
+write</li>
+<li>Write the file.</li>
+</ol>
+
+<p>Function <code>write-html</code> wraps all of this into one function. The
+parameter <code>file-tag</code> is passed to <code>get-html-file-name</code> as it is,
+while <code>write-function</code> is a function accepting as its unique
+parameter the output stream to be used to write into the file.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default">call-with-output-file <span class="paren2">(<span class="default">get-html-file-name &#x27;information</span>)</span>
-  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
-    <span class="paren3">(<span class="default">display <span class="paren4">(<span class="default">wrap-html <span class="paren5">(<span class="default">make-title <span class="string">&quot;results&quot;</span></span>)</span>
-			<span class="paren5">(<span class="default">&lt;p&gt; <span class="string">&quot;General information about the release&quot;</span></span>)</span></span>)</span>
-	     file</span>)</span>
-    <span class="paren3">(<span class="default">newline file</span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-html file-tag write-function</span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-file-name <span class="paren5">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default">create-pathname-directory output-file-name</span>)</span>
+    <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> output-file-name</span>)</span>
+    <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-26">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><h2>The "information" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
 <tr id="section-27">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
-all the JSON entries stored in <code>dictionary</code> (loaded from the JSON
-files specified from the command line). The use of <code>filter</code> is
-exactly the same as in Python.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
+<code>lambda</code> function passing as parameter a stream (the <code>file</code>
+parameter) that can be used for writing. At the end of the
+execution of the <code>lambda</code> function, the file will be automatically
+closed (much like Python's <code>with</code> statement).</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default">call-with-output-file <span class="paren2">(<span class="default">get-html-file-name &#x27;surv-pair</span>)</span>
-  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
-    <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">cur-dict <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
-			       <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;file_type x</span>)</span>
-				       <span class="string">&quot;single_survey_coupled_horn_map&quot;</span></span>)</span></span>)</span>
-			     dictionary</span>)</span></span>)</span>
-	   <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
-				   <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
-				 cur-dict</span>)</span></span>)</span></span>)</span>
-</span></span></span></span></span></span></pre></td></tr>
+<pre class="highlight"><span class="paren1">(<span class="default">write-html
+ &#x27;information
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
+   <span class="paren3">(<span class="default">display <span class="paren4">(<span class="default">wrap-html <span class="paren5">(<span class="default">make-title <span class="string">&quot;results&quot;</span></span>)</span>
+		       <span class="paren5">(<span class="default">&lt;p&gt; <span class="string">&quot;General information about the release&quot;</span></span>)</span></span>)</span>
+	    file</span>)</span>
+   <span class="paren3">(<span class="default">newline file</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
 <tr id="section-28">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>Create the .gif files</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
 </td>
 <td class="code">
-<pre class="highlight">      <span class="paren1">(<span class="default">for-each <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">test-result</span>)</span>
-		  <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">assq-ref &#x27;file_path test-result</span>)</span></span>)</span></span>)</span>
-		    <span class="paren4">(<span class="default">format #t <span class="string">&quot;Writing to ~a</span><span class="string">\n</span><span class="string">&quot;</span> <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span>
-		    <span class="paren4">(<span class="default">map2gif fits-file-name
-			     <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span>
-			     <span class="paren5">(<span class="default">assq-ref &#x27;title test-result</span>)</span></span>)</span></span>)</span></span>)</span>
-		cur-dict</span>)</span>
-      
+<pre class="highlight">
 </pre></td></tr>
 <tr id="section-29">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>Write links to each image</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
+all the JSON entries stored in <code>json-dictionary</code> (loaded from the
+JSON files specified from the command line). The use of <code>filter</code> is
+exactly the same as in Python.</p>
 </td>
 <td class="code">
-<pre class="highlight">      <span class="paren1">(<span class="default">display <span class="paren2">(<span class="default">wrap-html <span class="paren3">(<span class="default">make-title <span class="string">&quot;coupled horn, survey differences&quot;</span></span>)</span>
-			  <span class="paren3">(<span class="default">itemize <span class="paren4">(<span class="default">map <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">fits-name</span>)</span>
-					  <span class="paren6">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">gif-name <span class="paren3">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span></span>)</span></span>)</span>
-					    <span class="paren1">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-name
-						   <span class="keyword">alt:</span> gif-name</span>)</span></span>)</span></span>)</span>
-					fits-file-paths</span>)</span></span>)</span></span>)</span>
-	       file</span>)</span>
-      <span class="paren1">(<span class="default">newline file</span>)</span>)))
+<pre class="highlight"><span class="paren1">(<span class="default">write-html
+ &#x27;surv-pair
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
+   <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">cur-dict <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
+			      <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;file_type x</span>)</span>
+				      <span class="string">&quot;single_survey_coupled_horn_map&quot;</span></span>)</span></span>)</span>
+			    json-dictionary</span>)</span></span>)</span>
+	  <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
+				  <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
+				cur-dict</span>)</span></span>)</span></span>)</span>
+</span></span></span></span></span></span></pre></td></tr>
+<tr id="section-30">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>Create the .gif files</p>
+</td>
+<td class="code">
+<pre class="highlight">     <span class="paren1">(<span class="default">for-each <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">test-result</span>)</span>
+		 <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">assq-ref &#x27;file_path test-result</span>)</span></span>)</span></span>)</span>
+		   <span class="paren4">(<span class="default">format #t <span class="string">&quot;Writing to ~a</span><span class="string">\n</span><span class="string">&quot;</span> <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span>
+		   <span class="paren4">(<span class="default">map2gif fits-file-name
+			    <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span>
+			    <span class="paren5">(<span class="default">assq-ref &#x27;title test-result</span>)</span></span>)</span></span>)</span></span>)</span>
+	       cur-dict</span>)</span>
+     
+</pre></td></tr>
+<tr id="section-31">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-31">&para;</a></div><p>Write links to each image</p>
+</td>
+<td class="code">
+<pre class="highlight">     <span class="paren1">(<span class="default">display <span class="paren2">(<span class="default">wrap-html <span class="paren3">(<span class="default">make-title <span class="string">&quot;coupled horn, survey differences&quot;</span></span>)</span>
+			 <span class="paren3">(<span class="default">itemize <span class="paren4">(<span class="default">map <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">fits-name</span>)</span>
+					 <span class="paren6">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">gif-name <span class="paren3">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span></span>)</span></span>)</span>
+					   <span class="paren1">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-name
+						  <span class="keyword">alt:</span> gif-name</span>)</span></span>)</span></span>)</span>
+				       fits-file-paths</span>)</span></span>)</span></span>)</span>
+	      file</span>)</span>
+     <span class="paren1">(<span class="default">newline file</span>)</span>)))
 
 
 </pre></td></tr>
-<tr id="section-30">
+<tr id="section-32">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
+<div class="pilwrap"><a class="pilcrow" href="#section-32">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
 
 <p>To help the reader who has never read Scheme code, I am summarizing
 here the main characteristics of the language. This is not a Scheme
