@@ -35,7 +35,8 @@
 ;;
 ;; This will silently convert `generator.scm` into a C program, which
 ;; will then be compiled to a standalone executable. The `Makefile`
-;; provided with the source code allows the following targets:
+;; provided with the source code allows for many targets, run `make
+;; TARGET` where `TARGET` is one of the following:
 ;;
 ;; * `generator` produces the executable. Be careful that this program
 ;; needs the Chicken runtime libraries to be accessible at runtime
@@ -45,7 +46,8 @@
 ;; of the directory (containing the executable `standalone_generator`
 ;; plus many dynamic libraries) _can_ be distributed to others, as all
 ;; the Chicken libraries needed by the program are included in the
-;; directory. (You can think of it like Mac OS X `.app` directories.)
+;; directory. (You can think of it as Chicken's analogous to Mac OS X
+;; `.app` directories.)
 ;; * `install_eggs` repeatedly calls `chicken-install` to install the
 ;; eggs required to compile the program. You might have to use `sudo`
 ;; (e.g. this is the case if you installed Chicken using Ubuntu's
