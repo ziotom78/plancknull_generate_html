@@ -22,12 +22,18 @@
 ;;
 ;; To compile this program, you need the following eggs:
 ;;
-;; * [`shell`]((http://wiki.call-cc.org/eggref/4/shell) (run shell commands)
-;; * [`filepath`]((http://wiki.call-cc.org/eggref/4/filepath) (operations on strings representing file paths)
-;; * [`directory-utils`](http://wiki.call-cc.org/eggref/4/directory-utils) (operations on directories)
-;; * [`json`](http://wiki.call-cc.org/eggref/4/json) (read/write JSON data)
-;; * [`html-tags`](http://wiki.call-cc.org/eggref/4/html-tags) (generate HTML directly from Scheme code)
-;; * [`html-utils`](http://wiki.call-cc.org/eggref/4/html-utils) (nice shorthands to produce complex HTML patterns)
+;; * [`shell`]((http://wiki.call-cc.org/eggref/4/shell) (run shell
+;; commands)
+;; * [`filepath`]((http://wiki.call-cc.org/eggref/4/filepath)
+;; (operations on strings representing file paths)
+;; * [`directory-utils`](http://wiki.call-cc.org/eggref/4/directory-utils)
+;; (operations on directories)
+;; * [`json`](http://wiki.call-cc.org/eggref/4/json) (read/write JSON
+;; data)
+;; * [`html-tags`](http://wiki.call-cc.org/eggref/4/html-tags)
+;; (generate HTML directly from Scheme code)
+;; * [`html-utils`](http://wiki.call-cc.org/eggref/4/html-utils) (nice
+;; shorthands to produce complex HTML patterns)
 ;;
 ;; Use this command to build the executable:
 ;;
