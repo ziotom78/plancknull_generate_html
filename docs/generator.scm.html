@@ -282,7 +282,7 @@ a-lists returned by <code>extract-alists-from-json-file</code>. Note that
 incorporates it.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> dictionary
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> json-dictionary
   <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
 		     <span class="paren4">(<span class="default">assq-ref &#x27;input-files user-args</span>)</span></span>)</span></span>)</span></span>)</span>
 
@@ -536,8 +536,8 @@ closed (much like Python's <code>with</code> statement).</p>
 <tr id="section-29">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
-all the JSON entries stored in <code>dictionary</code> (loaded from the JSON
-files specified from the command line). The use of <code>filter</code> is
+all the JSON entries stored in <code>json-dictionary</code> (loaded from the
+JSON files specified from the command line). The use of <code>filter</code> is
 exactly the same as in Python.</p>
 </td>
 <td class="code">
@@ -547,7 +547,7 @@ exactly the same as in Python.</p>
    <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">cur-dict <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
 			      <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;file_type x</span>)</span>
 				      <span class="string">&quot;single_survey_coupled_horn_map&quot;</span></span>)</span></span>)</span>
-			    dictionary</span>)</span></span>)</span>
+			    json-dictionary</span>)</span></span>)</span>
 	  <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
 				  <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
 				cur-dict</span>)</span></span>)</span></span>)</span>

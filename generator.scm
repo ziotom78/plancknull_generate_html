@@ -203,7 +203,7 @@
 ;; `append` is not a R5RS built-in (it is part of
 ;; [SRFI-1](http://srfi.schemers.org/srfi-1/srfi-1.html)), but Chicken
 ;; incorporates it.
-(define dictionary
+(define json-dictionary
   (apply append (map extract-alists-from-json-file
 		     (assq-ref 'input-files user-args))))
 
@@ -381,8 +381,8 @@
 ;; -------------------------------------
 
 ;; Write the HTML file. The variable `cur-dict` contains a subset of
-;; all the JSON entries stored in `dictionary` (loaded from the JSON
-;; files specified from the command line). The use of `filter` is
+;; all the JSON entries stored in `json-dictionary` (loaded from the
+;; JSON files specified from the command line). The use of `filter` is
 ;; exactly the same as in Python.
 (write-html
  'surv-pair
@@ -390,7 +390,7 @@
    (let* ((cur-dict (filter (lambda (x)
 			      (equal? (assq-ref 'file_type x)
 				      "single_survey_coupled_horn_map"))
-			    dictionary))
+			    json-dictionary))
 	  (fits-file-paths (map (lambda (x)
 				  (assq-ref 'file_path x))
 				cur-dict)))
