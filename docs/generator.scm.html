@@ -369,15 +369,79 @@ directory as the input FITS file: in this was the user can run
 </pre></td></tr>
 <tr id="section-20">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><h1>HTML generation</h1>
+<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><h1>Report generation</h1>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
 <tr id="section-21">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><p>We keep the names of the HTML files to be created in a alist for
-avoiding repetitions in the code (they must be used when creating
+<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><h2>Copying common files</h2>
+
+<p>A small set of files (CSS styles, JavaScript files) need to be
+copied to the output directory, in order to make the report
+self-contained. These files should be taken from the directory
+where the executable has been launched.</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-22">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p>Chicken Scheme does not provide a function to copy whole
+directories. So we implement one using a nice function implemented
+in <code>directory-utils</code>: <code>directory-fold</code>. It takes a function to be
+applied to each file, a user-defined value that is passed to this
+function (we do not use it, so we call it <code>unused</code> and set it to
+<code>#f</code>) and the name of the directory.</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">dir-copy source dest</span>)</span>
+  <span class="paren2">(<span class="default">directory-fold
+   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">filename unused</span>)</span>
+     <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">output-file <span class="paren1">(<span class="default">filepath:join-path <span class="paren2">(<span class="default">list dest filename</span>)</span></span>)</span></span>)</span></span>)</span>
+       <span class="paren5">(<span class="default">format #t <span class="string">&quot;Copying file ~a to ~a...</span><span class="string">\n</span><span class="string">&quot;</span> filename dest</span>)</span>
+</span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-23">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p>Create the destination directory if it does not exist</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default">create-pathname-directory output-file</span>)</span>
+</pre></td></tr>
+<tr id="section-24">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p>Copy the file. <code>file_copy</code> is part of Chicken Scheme</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default">file-copy <span class="paren2">(<span class="default">filepath:join-path <span class="paren3">(<span class="default">list source filename</span>)</span></span>)</span>
+		  output-file
+		  &#x27;overwrite</span>)</span>))
+   #f <span class="comment">; This is our value for `unused`
+</span>   source))
+
+</pre></td></tr>
+<tr id="section-25">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p>Now we can iterate over the names of the directories to be copied
+(currently only <code>css</code>, but a separate directory <code>js</code> for JavaScript
+files might be needed in the future).</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">source-dir <span class="paren4">(<span class="default">filepath:take-directory <span class="paren5">(<span class="default">car <span class="paren6">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+  <span class="paren2">(<span class="default">for-each
+   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">dir-name</span>)</span>
+     <span class="paren4">(<span class="default">dir-copy <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list source-dir dir-name</span>)</span></span>)</span>
+	       <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+					 dir-name</span>)</span></span>)</span></span>)</span></span>)</span>
+   <span class="paren3">(<span class="default">list <span class="string">&quot;css&quot;</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-26">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><h2>General-purpose functions</h2>
+
+<p>avoiding repetitions in the code (they must be used when creating
 the files and when producing the <code>&lt;a&gt;</code> links in the dropdown menu).
 The function <code>get-html-file-name</code> is the only access function we
 need for this alist, so we make <code>html-file-name</code> a local
@@ -400,9 +464,9 @@ definition.</p>
 			      <span class="paren5">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-22">
+<tr id="section-27">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p>The page contains a drop-down menu. Its look is specified in the
+<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>The page contains a drop-down menu. Its look is specified in the
 CSS file <code>dropdown_menu.css</code>, and its style is plagiarized from <a href="http://dhirajkumarsingh.wordpress.com/2012/05/20/css3-animated-dropdown-menu/">a
 nice tutorial available on the
 WWW</a>.
@@ -445,9 +509,9 @@ ad-hoc language (e.g. the Python library
 			  <span class="string">&quot;Table of contents&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-23">
+<tr id="section-28">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
+<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
 and encloses it in a self-contained HTML structure which comprises
 the dropdown menu. It returns a string.</p>
 </td>
@@ -461,9 +525,9 @@ the dropdown menu. It returns a string.</p>
 	     <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/dropdown_menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-24">
+<tr id="section-29">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p>This is the name of the data release. The function <code>make-title</code>
+<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>This is the name of the data release. The function <code>make-title</code>
 makes up the title for a page. It does so by prepending the name of
 the data release to the title itself (in the parameter <code>string</code>).
 We want to put the name of the release (e.g. <code>DX9</code>) at the
@@ -479,9 +543,9 @@ line/configuration file</p>
     <span class="paren3">(<span class="default">format #f <span class="string">&quot;~a null tests: ~a&quot;</span> test-release-name string</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-25">
+<tr id="section-30">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p>We are going to create a number of HTML files, and the creation of
+<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>We are going to create a number of HTML files, and the creation of
 each of them follows the same rules:</p>
 
 <ol>
@@ -505,16 +569,16 @@ parameter the output stream to be used to write into the file.</p>
     <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-26">
+<tr id="section-31">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><h2>The "information" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-31">&para;</a></div><h2>The "information" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-27">
+<tr id="section-32">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
+<div class="pilwrap"><a class="pilcrow" href="#section-32">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
 <code>lambda</code> function passing as parameter a stream (the <code>file</code>
 parameter) that can be used for writing. At the end of the
 execution of the <code>lambda</code> function, the file will be automatically
@@ -530,16 +594,16 @@ closed (much like Python's <code>with</code> statement).</p>
    <span class="paren3">(<span class="default">newline file</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-28">
+<tr id="section-33">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-33">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-29">
+<tr id="section-34">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
+<div class="pilwrap"><a class="pilcrow" href="#section-34">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
 all the JSON entries stored in <code>json-dictionary</code> (loaded from the
 JSON files specified from the command line). The use of <code>filter</code> is
 exactly the same as in Python.</p>
@@ -556,9 +620,9 @@ exactly the same as in Python.</p>
 				  <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
 				cur-dict</span>)</span></span>)</span></span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
-<tr id="section-30">
+<tr id="section-35">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>Create the .gif files</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-35">&para;</a></div><p>Create the .gif files</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">for-each <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">test-result</span>)</span>
@@ -570,9 +634,9 @@ exactly the same as in Python.</p>
 	       cur-dict</span>)</span>
      
 </pre></td></tr>
-<tr id="section-31">
+<tr id="section-36">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-31">&para;</a></div><p>Write links to each image</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-36">&para;</a></div><p>Write links to each image</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">display <span class="paren2">(<span class="default">wrap-html <span class="paren3">(<span class="default">make-title <span class="string">&quot;coupled horn, survey differences&quot;</span></span>)</span>
@@ -586,9 +650,9 @@ exactly the same as in Python.</p>
 
 
 </pre></td></tr>
-<tr id="section-32">
+<tr id="section-37">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-32">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
+<div class="pilwrap"><a class="pilcrow" href="#section-37">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
 
 <p>To help the reader who has never read Scheme code, I am summarizing
 here the main characteristics of the language. This is not a Scheme

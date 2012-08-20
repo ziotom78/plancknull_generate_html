@@ -28,6 +28,7 @@ $(DEPLOY_DIR)/generator: generator.scm
 	@for chicken_module in $(CHICKEN_EGGS_TO_DEPLOY); do \
 		$(CHICKEN_INSTALL) -deploy -p $(DEPLOY_DIR) $$chicken_module; \
 	done
+	cp -rf css $(DEPLOY_DIR) # Copy these directory as well
 
 documentation:
 	schematic -f markdown --directory docs generator.scm

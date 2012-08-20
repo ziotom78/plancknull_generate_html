@@ -258,10 +258,52 @@
    (filepath:join-path (list (assq-ref 'output-dir user-args)
 			     "images"))))
 
-;; HTML generation
+;; Report generation
 ;; ===============
 
-;; We keep the names of the HTML files to be created in a alist for
+;; Copying common files
+;; --------------------
+;;
+;; A small set of files (CSS styles, JavaScript files) need to be
+;; copied to the output directory, in order to make the report
+;; self-contained. These files should be taken from the directory
+;; where the executable has been launched.
+
+;; Chicken Scheme does not provide a function to copy whole
+;; directories. So we implement one using a nice function implemented
+;; in `directory-utils`: `directory-fold`. It takes a function to be
+;; applied to each file, a user-defined value that is passed to this
+;; function (we do not use it, so we call it `unused` and set it to
+;; `#f`) and the name of the directory.
+(define (dir-copy source dest)
+  (directory-fold
+   (lambda (filename unused)
+     (let ((output-file (filepath:join-path (list dest filename))))
+       (format #t "Copying file ~a to ~a...\n" filename dest)
+       ;; Create the destination directory if it does not exist
+       (create-pathname-directory output-file)
+       ;; Copy the file. `file_copy` is part of Chicken Scheme
+       (file-copy (filepath:join-path (list source filename))
+		  output-file
+		  'overwrite)))
+   #f ; This is our value for `unused`
+   source))
+
+;; Now we can iterate over the names of the directories to be copied
+;; (currently only `css`, but a separate directory `js` for JavaScript
+;; files might be needed in the future).
+(let ((source-dir (filepath:take-directory (car (argv)))))
+  (for-each
+   (lambda (dir-name)
+     (dir-copy (filepath:join-path (list source-dir dir-name))
+	       (filepath:join-path (list (assq-ref 'output-dir user-args)
+					 dir-name))))
+   (list "css")))
+
+;; General-purpose functions
+;; -------------------------
+;
+;;; We keep the names of the HTML files to be created in a alist for
 ;; avoiding repetitions in the code (they must be used when creating
 ;; the files and when producing the `<a>` links in the dropdown menu).
 ;; The function `get-html-file-name` is the only access function we
