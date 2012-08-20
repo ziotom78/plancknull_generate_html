@@ -31,14 +31,27 @@
 ;;
 ;; Use this command to build the executable:
 ;;
-;;     csc generator.scm
+;;     make generator
 ;;
 ;; This will silently convert `generator.scm` into a C program, which
-;; will then be compiled to a standalone executable. (Use the
-;; `-output-file` option to save the C source file, if you need it
-;; &mdash; see the [Chicken
-;; documentation](http://wiki.call-cc.org/man/4/Using%20the%20compiler#distributing-compiled-c-files)
-;; for instructions about how to compile this file.)
+;; will then be compiled to a standalone executable. The `Makefile`
+;; provided with the source code allows the following targets:
+;;
+;; * `generator` produces the executable. Be careful that this program
+;; needs the Chicken runtime libraries to be accessible at runtime
+;; (therefore you cannot distribute it)
+;; * `deploy` produces a stand-alone executable in the directory
+;; `standalone_generator`. Unlike the `generator` target, the content
+;; of the directory (containing the executable `standalone_generator`
+;; plus many dynamic libraries) _can_ be distributed to others, as all
+;; the Chicken libraries needed by the program are included in the
+;; directory. (You can think of it like Mac OS X `.app` directories.)
+;; * `install_eggs` repeatedly calls `chicken-install` to install the
+;; eggs required to compile the program. You might have to use `sudo`
+;; (e.g. this is the case if you installed Chicken using Ubuntu's
+;; `apt-get`).
+;; * `documentation` runs Schematic on the source code to produce this
+;; documentation.
 ;;
 ;; To run the program, you must have
 ;; [`map2gif`](http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm)
