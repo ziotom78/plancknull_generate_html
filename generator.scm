@@ -61,6 +61,9 @@
 ;; * `documentation` runs Schematic on the source code to produce this
 ;; documentation (in the `docs` directory).
 ;;
+;; How to run the program
+;; ======================
+;;
 ;; To run the program, you must have
 ;; [`map2gif`](http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm)
 ;; in your path. It is one of the programs provided by
@@ -68,14 +71,32 @@
 ;; Planck/LFI, you surely have it. (Note that it is already installed
 ;; on the LFI DPC.)
 ;;
+;; The program needs as input one or more JSON files containing
+;; information about the products of the null tests. Typically, these
+;; are produced by the
+;; [`plancknull`](https://github.com/zonca/plancknull) program. You
+;; can specify them from the command line:
+;;
+;;     $ generator FILE1.json FILE2.json ...
+;;
+;; (If you are using the standalone executable, run
+;; `standalone_generator` instead of `generator`). This will create
+;; the report in the current directory, which is usually not what you
+;; want. You can specify a output directory using the `-o` flag
+;; _before_ the JSON files:
+;;
+;;     $ generator -o OUTPUT_DIR FILE1.json FILE2.json ...
+;;
+;; Il the directory OUTPUT_DIR does not exist, it will be created.
+;;
 ;; How to read the source code of this program
 ;; ===========================================
 ;;
-;; The program source code was formatted with the aim of making it
-;; look nice using
-;; [`schematic`](http://wiki.call-cc.org/eggref/4/schematic), a
-;; documenting tool for Chicken Scheme. Install it using
-;; `chicken-install` as usual, then run
+;; This page was created automatically from the program source code
+;; using [`schematic`](http://wiki.call-cc.org/eggref/4/schematic), a
+;; documenting tool for Chicken Scheme. Install it from the command
+;; line with the command `sudo chicken-install schematic`, then
+;; run
 ;;
 ;;     schematic -f markdown generator.scm
 ;;
@@ -83,8 +104,7 @@
 ;; [`markdown`](http://en.wikipedia.org/wiki/Markdown), which can be
 ;; easily installed using `apt-get` under Debian/Ubuntu). This will
 ;; create a sub-directory `html` where you'll find the source code of
-;; the program nicely formatted in a HTML file &mdash; it's much
-;; easier to read!
+;; this very webpage.
 
 ;; Initialization
 ;; ==============
@@ -145,16 +165,36 @@
 ;; command-line and merge them into one big list of dictionaries
 ;; (a-lists).
 
-;; The names of the files to be read are taken from the command line
-;; (`cdr` returns all the elements of the list but the first, since
-;; this is the name of the executable file). Note that `argv`
-;; (function, not variable!) is not part of R5RS: it is a Chicken
-;; extension.
-(define input-files (cdr (argv)))
+;; If `args` is the list of command-line arguments provided to the
+;; program, function `parse-command-line` analyzes them and returns an
+;; associative list containing the following fields: `'output-dir` is
+;; a string specifying the directory where to save the report,
+;; `'input-files` is a list of the JSON files containing metadata for
+;; the null test products to be included in the report.
+(define (parse-command-line args)
+  (if (and (or (equal? (car args) "-o")
+	       (equal? (car args) "--output"))
+	   (>= (length args) 2))
+      (list (cons 'output-dir (cadr args))
+	    (cons 'input-files (cddr args)))
+      (list (cons 'output-dir ".")
+	    (cons 'input-files args))))
+
+;; The variable `user-args` holds all the information the user
+;; specified from the command line. Note that `argv` (function, not
+;; variable!) is not part of R5RS: it is a Chicken extension.
+(define user-args (parse-command-line (cdr (argv))))
+
+(format #t "Report will be created under the following path: ~a\n"
+	(assq-ref 'output-dir user-args))
+(format #t "JSON files to be read: ~a\n"
+	(string-intersperse (assq-ref 'input-files user-args)
+			    ", "))
 
 ;; Parse a file and return a list of associative lists suitable for
 ;; being used with functions like `assq` and `assv`.
 (define (extract-alists-from-json-file file-name)
+  (format #t "Reading file ~a...\n" file-name)
   (let ((entries (call-with-input-file file-name json-read)))
     (map json->alist entries)))
 
@@ -164,7 +204,8 @@
 ;; [SRFI-1](http://srfi.schemers.org/srfi-1/srfi-1.html)), but Chicken
 ;; incorporates it.
 (define dictionary
-  (apply append (map extract-alists-from-json-file input-files)))
+  (apply append (map extract-alists-from-json-file
+		     (assq-ref 'input-files user-args))))
 
 ;; GIF generation
 ;; ==============
@@ -208,8 +249,10 @@
 ;; directory as the input FITS file: in this was the user can run
 ;; `tar` or `zip` on it to obtain a self-contained report.
 (define (fits-name->gif-name fits-name)
-  (filepath:replace-directory (filepath:replace-extension fits-name ".gif")
-			      "./images"))
+  (filepath:replace-directory
+   (filepath:replace-extension fits-name ".gif")
+   (filepath:join-path (list (assq-ref 'output-dir user-args)
+			     "images"))))
 
 ;; HTML generation
 ;; ===============
@@ -232,7 +275,8 @@
 	   (full-frequency . "full_freq.html")
 	   (full-cross-freq . "full_cross.html")
 	   (table-of-contents . "toc.html"))))
-    (assq-ref label html-file-names)))
+    (filepath:join-path (list (assq-ref 'output-dir user-args)
+			      (assq-ref label html-file-names)))))
 
 ;; The page contains a drop-down menu. Its look is specified in the
 ;; CSS file `dropdown_menu.css`, and its style is plagiarized from [a
@@ -298,6 +342,25 @@
   (let ((test-release-name "DX9"))
     (format #f "~a null tests: ~a" test-release-name string)))
 
+;; We are going to create a number of HTML files, and the creation of
+;; each of them follows the same rules:
+;;
+;; 1. Determine the name of the file using `get-html-file-name`
+;; 1. Ensure that the directory where this file will be written exists
+;; 1. Inform the user about the pathname of the file we are going to
+;;    write
+;; 1. Write the file.
+;;
+;; Function `write-html` wraps all of this into one function. The
+;; parameter `file-tag` is passed to `get-html-file-name` as it is,
+;; while `write-function` is a function accepting as its unique
+;; parameter the output stream to be used to write into the file.
+(define (write-html file-tag write-function)
+  (let ((output-file-name (get-html-file-name file-tag)))
+    (create-pathname-directory output-file-name)
+    (format #t "Writing file ~a...\n" output-file-name)
+    (call-with-output-file output-file-name write-function)))
+
 ;; The "information" page
 ;; ----------------------
 
@@ -306,12 +369,13 @@
 ;; parameter) that can be used for writing. At the end of the
 ;; execution of the `lambda` function, the file will be automatically
 ;; closed (much like Python's `with` statement).
-(call-with-output-file (get-html-file-name 'information)
-  (lambda (file)
-    (display (wrap-html (make-title "results")
-			(<p> "General information about the release"))
-	     file)
-    (newline file)))
+(write-html
+ 'information
+ (lambda (file)
+   (display (wrap-html (make-title "results")
+		       (<p> "General information about the release"))
+	    file)
+   (newline file)))
 
 ;; The "Single survey coupled horn" page
 ;; -------------------------------------
@@ -320,33 +384,34 @@
 ;; all the JSON entries stored in `dictionary` (loaded from the JSON
 ;; files specified from the command line). The use of `filter` is
 ;; exactly the same as in Python.
-(call-with-output-file (get-html-file-name 'surv-pair)
-  (lambda (file)
-    (let* ((cur-dict (filter (lambda (x)
-			       (equal? (assq-ref 'file_type x)
-				       "single_survey_coupled_horn_map"))
-			     dictionary))
-	   (fits-file-paths (map (lambda (x)
-				   (assq-ref 'file_path x))
-				 cur-dict)))
-      ;; Create the .gif files
-      (for-each (lambda (test-result)
-		  (let ((fits-file-name (assq-ref 'file_path test-result)))
-		    (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
-		    (map2gif fits-file-name
-			     (fits-name->gif-name fits-file-name)
-			     (assq-ref 'title test-result))))
-		cur-dict)
-      
-      ;; Write links to each image
-      (display (wrap-html (make-title "coupled horn, survey differences")
-			  (itemize (map (lambda (fits-name)
-					  (let ((gif-name (fits-name->gif-name fits-name)))
-					    (<img> src: gif-name
-						   alt: gif-name)))
-					fits-file-paths)))
-	       file)
-      (newline file))))
+(write-html
+ 'surv-pair
+ (lambda (file)
+   (let* ((cur-dict (filter (lambda (x)
+			      (equal? (assq-ref 'file_type x)
+				      "single_survey_coupled_horn_map"))
+			    dictionary))
+	  (fits-file-paths (map (lambda (x)
+				  (assq-ref 'file_path x))
+				cur-dict)))
+     ;; Create the .gif files
+     (for-each (lambda (test-result)
+		 (let ((fits-file-name (assq-ref 'file_path test-result)))
+		   (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
+		   (map2gif fits-file-name
+			    (fits-name->gif-name fits-file-name)
+			    (assq-ref 'title test-result))))
+	       cur-dict)
+     
+     ;; Write links to each image
+     (display (wrap-html (make-title "coupled horn, survey differences")
+			 (itemize (map (lambda (fits-name)
+					 (let ((gif-name (fits-name->gif-name fits-name)))
+					   (<img> src: gif-name
+						  alt: gif-name)))
+				       fits-file-paths)))
+	      file)
+     (newline file))))
 
 
 ;; Appendix: a very short introduction to Scheme
