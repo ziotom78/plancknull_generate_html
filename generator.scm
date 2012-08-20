@@ -249,14 +249,13 @@
 ;; representation of the map shown in the report. It strips the
 ;; directory and extension parts and substitutes them using functions
 ;; from the `filepath` eggs. Note that we want the GIF file to be in a
-;; subdirectory of the current directory instead of being in the same
+;; subdirectory of the output directory instead of being in the same
 ;; directory as the input FITS file: in this was the user can run
 ;; `tar` or `zip` on it to obtain a self-contained report.
 (define (fits-name->gif-name fits-name)
   (filepath:replace-directory
    (filepath:replace-extension fits-name ".gif")
-   (filepath:join-path (list (assq-ref 'output-dir user-args)
-			     "images"))))
+   "images"))
 
 ;; Report generation
 ;; ===============
@@ -321,8 +320,7 @@
 	   (full-frequency . "full_freq.html")
 	   (full-cross-freq . "full_cross.html")
 	   (table-of-contents . "toc.html"))))
-    (filepath:join-path (list (assq-ref 'output-dir user-args)
-			      (assq-ref label html-file-names)))))
+    (assq-ref label html-file-names)))
 
 ;; The page contains a drop-down menu. Its look is specified in the
 ;; CSS file `dropdown_menu.css`, and its style is plagiarized from [a
@@ -402,7 +400,9 @@
 ;; while `write-function` is a function accepting as its unique
 ;; parameter the output stream to be used to write into the file.
 (define (write-html file-tag write-function)
-  (let ((output-file-name (get-html-file-name file-tag)))
+  (let ((output-file-name (filepath:join-path
+			   (list (assq-ref 'output-dir user-args)
+				 (get-html-file-name file-tag)))))
     (create-pathname-directory output-file-name)
     (format #t "Writing file ~a...\n" output-file-name)
     (call-with-output-file output-file-name write-function)))
@@ -445,7 +445,9 @@
 		 (let ((fits-file-name (assq-ref 'file_path test-result)))
 		   (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
 		   (map2gif fits-file-name
-			    (fits-name->gif-name fits-file-name)
+			    (filepath:join-path
+			     (list (assq-ref 'output-dir user-args)
+				   (fits-name->gif-name fits-file-name)))
 			    (assq-ref 'title test-result))))
 	       cur-dict)
      
