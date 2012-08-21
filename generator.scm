@@ -391,10 +391,9 @@ EOF
 ;
 ;; We keep the names of the HTML files to be created in a alist for
 ;; avoiding repetitions in the code (they must be used when creating
-;; the files and when producing the `<a>` links in the dropdown menu).
-;; The function `get-html-file-name` is the only access function we
-;; need for this alist, so we make `html-file-name` a local
-;; definition.
+;; the files and when producing the `<a>` links in the side menu). The
+;; function `get-html-file-name` is the only access function we need
+;; for this alist, so we make `html-file-name` a local definition.
 (define (get-html-file-name label)
   (let ((html-file-names
 	 '((information . "index.html")
@@ -411,19 +410,19 @@ EOF
     (assq-ref label html-file-names)))
 
 ;; The page contains a menu on the left, whose look is specified by
-;; the CSS file `css/dropdown_menu.css`. Note how nice is to use the
-;; `html-tag` package: we are producing HTML code using commands like
-;; `<a>` just in plain HTML, yet we can freely call Scheme functions
-;; within it (in this case, `get-html-file-name`). This is a cleaner
-;; approach than other template libraries, which usually need to
-;; define and implement some ad-hoc language (e.g. the Python library
+;; the CSS file `css/menu.css`. Note how nice is to use the `html-tag`
+;; package: we are producing HTML code using commands like `<a>` just
+;; in plain HTML, yet we can freely call Scheme functions within it
+;; (in this case, `get-html-file-name`). This is a cleaner approach
+;; than other template libraries, which usually need to define and
+;; implement some ad-hoc language (e.g. the Python library
 ;; [Jinja2](http://jinja.pocoo.org/)).
 ;;
 ;; Note that we implement a local function named `smart-<a>`. Its
 ;; purpose is to produce a link to a page, which is of the class
 ;; "selected" if the page to be linked is the same page we are
 ;; generating.
-(define (dropdown-menu page)
+(define (side-menu page)
   (let ((smart-<a> (lambda (title tag)
 		     (<a> href: (get-html-file-name tag)
 			  class: (if (eq? tag page)
@@ -466,16 +465,16 @@ EOF
 
 ;; The function `wrap-html` takes a string containing some HTML code
 ;; and encloses it in a self-contained HTML structure which comprises
-;; the dropdown menu. It returns a string.
+;; the side menu. It returns a string.
 (define (wrap-html file-tag page-title body)
   (html-page (html:++ (list
 		       (<h1> (make-title-for-report))
-		       (dropdown-menu file-tag)
+		       (side-menu file-tag)
 		       (<div> id: "body"
 			      (<h2> page-title)
 			      body)))
 	     title: page-title
-	     css: '("css/main.css" "css/dropdown_menu.css")))
+	     css: '("css/main.css" "css/menu.css")))
 
 ;; We are going to create a number of HTML files, and the creation of
 ;; each of them follows the same rules:
