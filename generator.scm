@@ -409,14 +409,15 @@ EOF
 	   (table-of-contents . "toc.html"))))
     (assq-ref label html-file-names)))
 
-;; The page contains a menu on the left, whose look is specified by
-;; the CSS file `css/menu.css`. Note how nice is to use the `html-tag`
-;; package: we are producing HTML code using commands like `<a>` just
-;; in plain HTML, yet we can freely call Scheme functions within it
-;; (in this case, `get-html-file-name`). This is a cleaner approach
-;; than other template libraries, which usually need to define and
-;; implement some ad-hoc language (e.g. the Python library
-;; [Jinja2](http://jinja.pocoo.org/)).
+;; Each HTML page contains a menu on the left, whose look is specified
+;; by the CSS file `css/menu.css`. Note how nice is to use the
+;; `html-tag` package: we are producing HTML code using commands like
+;; `<a>` just in plain HTML, yet we can freely call Scheme functions
+;; within it (in this case, `get-html-file-name`). We define a
+;; `smart-<a>` function which uses `get-html-file-name` to retrieve
+;; the link to be used in the `<a>` tag, and it also defines the class
+;; according to the fact that the entry links to its own page or not
+;; (the CSS style uses this to highlight selected items in bold).
 ;;
 ;; Note that we implement a local function named `smart-<a>`. Its
 ;; purpose is to produce a link to a page, which is of the class
