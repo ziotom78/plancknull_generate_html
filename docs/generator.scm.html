@@ -21,37 +21,71 @@
 
 <p>Start date: August 13th, 2012</p>
 
-<h1>How to compile the program</h1>
+<h1>How to generate the executable</h1>
 
 <p>The program is written in Scheme
-<a href="http://www.schemers.org/Documents/Standards/R5RS/">R5RS</a>. It
-requires the <a href="http://www.call-cc.org/">Chicken Scheme</a> compiler and
-a few open-source libraries (called
-<a href="http://wiki.call-cc.org/eggs"><em>eggs</em></a>). Once you have Chicken on
-your system (just run <code>sudo apt-get install chicken-bin</code> under
-Debian/Ubuntu), you can install any egg you need using the command</p>
+<a href="http://www.schemers.org/Documents/Standards/R5RS/">R5RS</a>, and it
+needs to be compiled into an executable in order to be executed.
+There are two ways to do it: either grab a precompiled binary (easy
+way) or compile it by yourself (hard way). In the following section
+we'll detail the two procedures.</p>
 
-<pre><code>sudo chicken-install &lt;NAME&gt;
+<h2>Grabbing the executable (easy way)</h2>
+
+<p>You can ask Maurizio Tomasi for a self-contained bundle. At the LFI
+DPC and at NERSC, he keeps one in his homedir. The bundle is a
+directory containing the executable (named <code>standalone_generator</code>)
+and a large set of dynamic libraries needed to run the program. You
+can move this directory anywhere in your filesystem, but do not try
+to run it on different architectures/distributions (e.g. from a
+RedHat system to Ubuntu, from x86 to x86_64...).</p>
+
+<h2>Compiling the executable from the source (hard way)</h2>
+
+<p>To compile the source code into an executable you must have the
+<a href="http://www.call-cc.org/">Chicken Scheme</a> compiler and a few
+open-source libraries for Chicken (called
+<a href="http://wiki.call-cc.org/eggs"><em>eggs</em></a>). To install Chicken, you
+can use your package manager (e.g. <code>sudo apt-get install
+chicken-bin</code> under Ubuntu Linux) if you are a <code>sudo</code> user.
+Otherwise, you must install it from source in your home directory.
+Open a terminal and run the following commands (if you do not see
+the second line fully, select the text with the mouse):</p>
+
+<pre><code>mkdir -p $HOME/usr $HOME/.chicken-temp
+curl http://code.call-cc.org/releases/current/chicken.tar.gz | tar xz -C $HOME/.chicken-temp
+pushd $HOME/.chicken-temp/chicken-*
+make PLATFORM=linux PREFIX=$HOME/usr install
+popd
+rm -rf $HOME/.chicken-temp
 </code></pre>
 
-<p>To compile this program, you need the following eggs:</p>
+<p>(If you want, you can change <code>$HOME/usr</code> with any other directory
+you want. It should be the place where you usually install things
+under your home directory.) At this point, if you did not so
+already, put the following lines at the end of your <code>~/.profile</code>
+(assuming you're using <code>sh</code>, <code>bash</code> or <code>dash</code> as your login shell):</p>
 
-<ul>
-<li><a href="(http://wiki.call-cc.org/eggref/4/shell"><code>shell</code></a> (run shell
-commands)</li>
-<li><a href="(http://wiki.call-cc.org/eggref/4/filepath"><code>filepath</code></a>
-(operations on strings representing file paths)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/directory-utils"><code>directory-utils</code></a>
-(operations on directories)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/json"><code>json</code></a> (read/write JSON
-data)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/html-tags"><code>html-tags</code></a>
-(generate HTML directly from Scheme code)</li>
-<li><a href="http://wiki.call-cc.org/eggref/4/html-utils"><code>html-utils</code></a> (nice
-shorthands to produce complex HTML patterns)</li>
-</ul>
+<pre><code>export PATH=$HOME/usr/bin:$PATH
+export C_INCLUDE_PATH=$HOME/usr/include:$C_INCLUDE_PATH
+export LIBRARY_PATH=$HOME/usr/lib:$LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/usr/lib:$LD_LIBRARY_PATH
+export MANPATH=$HOME/usr/man:$MANPATH
+</code></pre>
 
-<p>Use this command to build the executable:</p>
+<p>Logout and login to see the new variabiles. If you are able to run
+<code>chicken -version</code>, then the installation of the compiler
+completed successfully.</p>
+
+<p>Now you need some "eggs" (that is, Chicken's libraries). Move to
+the directory where you have the source code of
+<code>plancknull_generate_html</code> and run the following command:</p>
+
+<pre><code>sudo make install_eggs
+</code></pre>
+
+<p>(If you've installed Chicken under your homedir, omit <code>sudo</code>). Now
+you should be able to compile the program, simply run</p>
 
 <pre><code>make generator
 </code></pre>
@@ -78,16 +112,21 @@ eggs required to compile the program. You might have to use <code>sudo</code>
 <code>apt-get</code>).</li>
 <li><code>documentation</code> runs Schematic on the source code to produce this
 documentation (in the <code>docs</code> directory).</li>
+<li><code>help</code> prints a summary of the available options implemented in
+the makefile.</li>
 </ul>
 
 <h1>How to run the program</h1>
 
 <p>To run the program, you must have
-<a href="http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm"><code>map2gif</code></a>
-in your path. It is one of the programs provided by
+<a href="http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm"><code>map2tga</code></a>
+and <code>convert</code> (part of
+<a href="http://www.imagemagick.org/script/index.php">ImageMagick</a> &mdash;
+its fork <a href="http://www.graphicsmagick.org/">GraphicsMagick</a> should be
+ok as well) in your path. <code>map2tga</code> is provided by
 <a href="http://healpix.jpl.nasa.gov/">Healpix</a>: if you work with
 Planck/LFI, you surely have it. (Note that it is already installed
-on the LFI DPC.)</p>
+at the LFI DPC.)</p>
 
 <p>The program needs as input one or more JSON files containing
 information about the products of the null tests. Typically, these
