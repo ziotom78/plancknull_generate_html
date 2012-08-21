@@ -238,11 +238,25 @@
      ;; because we want it to be interpreted as a Scheme expression:
      ;; otherwise it would be put as it is in the arguments to the
      ;; process call.)
-     (run (map2gif -inp ,input-fits-file-name
-		   -out ,output-gif-file-name
-		   -bar .T.
-		   -xsz 512
-		   -ttl ,(html:++ (list "\"" title "\"")))))))
+     (let ((output-tga-file-name
+	    (filepath:replace-extension output-gif-file-name ".tga")))
+       (call-with-values
+	   (lambda ()
+	     (format #t "Running map2tga and convert on ~a...\n"
+		     input-fits-file-name)
+	     (run* (map2tga ,input-fits-file-name
+			    ,output-tga-file-name
+			    -bar
+			    -xsz 640
+			    -title ,(html:++ (list "\"" title "\"")))
+		   (convert ,output-tga-file-name
+			    ,output-gif-file-name)))
+	 (lambda (map2tga-return-code convert-return-code)
+	   (if (> map2tga-return-code 0)
+	       (abort "Error when executing \"map2tga\""))
+	   (if (> convert-return-code 0)
+	       (abort "Error when executing \"convert\""))))
+       (delete-file output-tga-file-name)))))
 
 ;; This function converts the name of a FITS file containing a map
 ;; into the name of the `.gif` file that will contain the
