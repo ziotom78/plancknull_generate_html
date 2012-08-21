@@ -232,12 +232,19 @@
      ;; Create the directory that will contain the output file,
      ;; if it does not exist
      (create-pathname-directory output-gif-file-name)
-     ;; Run the program. Note the elegance of "run" (from the "shell"
+     ;; Run the program. Note the elegance of "run*" (from the "shell"
      ;; egg): we include the command-line switches as if they were
      ;; Scheme symbols! (We put a comma in front of `(html:++ ...)`
      ;; because we want it to be interpreted as a Scheme expression:
      ;; otherwise it would be put as it is in the arguments to the
-     ;; process call.)
+     ;; process call.) *Note:* `run*` is defined in the `shell` egg.
+     ;; When multiple commands are specified (in this case, `map2tga`
+     ;; and `convert`), it returns a set of values. These must be
+     ;; interpreted using `call-with-values`, which is a standard
+     ;; Scheme function accepting a "producer" and a "consumer". Refer
+     ;; to the [R5RS
+     ;; documentation](http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features)
+     ;; for further details.
      (let ((output-tga-file-name
 	    (filepath:replace-extension output-gif-file-name ".tga")))
        (call-with-values

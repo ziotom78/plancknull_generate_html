@@ -333,12 +333,19 @@ if it does not exist</p>
 </pre></td></tr>
 <tr id="section-18">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run" (from the "shell"
+<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run<em>" (from the "shell"
 egg): we include the command-line switches as if they were
 Scheme symbols! (We put a comma in front of <code>(html:++ ...)</code>
 because we want it to be interpreted as a Scheme expression:
 otherwise it would be put as it is in the arguments to the
-process call.)</p>
+process call.) *Note:</em> <code>run*</code> is defined in the <code>shell</code> egg.
+When multiple commands are specified (in this case, <code>map2tga</code>
+and <code>convert</code>), it returns a set of values. These must be
+interpreted using <code>call-with-values</code>, which is a standard
+Scheme function accepting a "producer" and a "consumer". Refer
+to the <a href="http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features">R5RS
+documentation</a>
+for further details.</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">output-tga-file-name
