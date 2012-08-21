@@ -134,19 +134,16 @@ are produced by the
 <a href="https://github.com/zonca/plancknull"><code>plancknull</code></a> program. You
 can specify them from the command line:</p>
 
-<pre><code>$ generator FILE1.json FILE2.json ...
+<pre><code>$ generator NULL_TEST_DIRECTORY OUTPUT_PATH
 </code></pre>
 
 <p>(If you are using the standalone executable, run
-<code>standalone_generator</code> instead of <code>generator</code>). This will create
-the report in the current directory, which is usually not what you
-want. You can specify a output directory using the <code>-o</code> flag
-<em>before</em> the JSON files:</p>
-
-<pre><code>$ generator -o OUTPUT_DIR FILE1.json FILE2.json ...
-</code></pre>
-
-<p>Il the directory OUTPUT_DIR does not exist, it will be created.</p>
+<code>standalone_generator</code> instead of <code>generator</code>). This will read the
+results of the null tests from the subdirectories under
+<code>NULL_TEST_DIRECTORY</code>, and it will create the directory
+<code>OUTPUT_PATH</code> and populate it with the files needed for the HTML
+report. If <code>OUTPUT_PATH</code> does not exist, it will be silently
+created.</p>
 
 <h1>How to read the source code of this program</h1>
 
@@ -270,18 +267,24 @@ command-line and merge them into one big list of dictionaries
 program, function <code>parse-command-line</code> analyzes them and returns an
 associative list containing the following fields: <code>'output-dir</code> is
 a string specifying the directory where to save the report,
-<code>'input-files</code> is a list of the JSON files containing metadata for
-the null test products to be included in the report.</p>
+<code>'input-dir</code> is a string containing the path where to look for JSON
+files.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">parse-command-line args</span>)</span>
-  <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">and <span class="paren4">(<span class="default">or <span class="paren5">(<span class="default">equal? <span class="paren6">(<span class="default">car args</span>)</span> <span class="string">&quot;-o&quot;</span></span>)</span>
-	       <span class="paren5">(<span class="default">equal? <span class="paren6">(<span class="default">car args</span>)</span> <span class="string">&quot;--output&quot;</span></span>)</span></span>)</span>
-	   <span class="paren4">(<span class="default">&gt;= <span class="paren5">(<span class="default">length args</span>)</span> 2</span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">list <span class="paren4">(<span class="default">cons &#x27;output-dir <span class="paren5">(<span class="default">cadr args</span>)</span></span>)</span>
-	    <span class="paren4">(<span class="default">cons &#x27;input-files <span class="paren5">(<span class="default">cddr args</span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">list <span class="paren4">(<span class="default">cons &#x27;output-dir <span class="string">&quot;.&quot;</span></span>)</span>
-	    <span class="paren4">(<span class="default">cons &#x27;input-files args</span>)</span></span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">parse-command-line program-name args</span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">not <span class="paren4">(<span class="default">eq? <span class="paren5">(<span class="default">length args</span>)</span> 2</span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">begin <span class="paren4">(<span class="default">format #t #&lt;&lt;EOF
+<span class="keyword">Usage:</span> ~a NULL_TEST_DIR OUTPUT_PATH
+
+where NULL_TEST_DIR is <i><span class="symbol">the</span></i> path to <i><span class="symbol">the</span></i> directory containing
+<i><span class="symbol">the</span></i> results of <i><span class="symbol">the</span></i> null tests to be included in <i><span class="symbol">the</span></i> report,
+and OUTPUT_PATH is <i><span class="symbol">the</span></i> path where to save <i><span class="symbol">the</span></i> files of <i><span class="symbol">the</span></i>
+HTML report. If OUTPUT_PATH does not exist, it will be created.
+EOF
+		      program-name</span>)</span>
+	     <span class="paren4">(<span class="default">exit 1</span>)</span></span>)</span></span>)</span>
+  <span class="paren2">(<span class="default">list <span class="paren3">(<span class="default">cons &#x27;input-dir <span class="paren4">(<span class="default">car args</span>)</span></span>)</span>
+	<span class="paren3">(<span class="default">cons &#x27;output-dir <span class="paren4">(<span class="default">cadr args</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-11">
@@ -291,39 +294,47 @@ specified from the command line. Note that <code>argv</code> (function, not
 variable!) is not part of R5RS: it is a Chicken extension.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> user-args <span class="paren2">(<span class="default">parse-command-line <span class="paren3">(<span class="default">cdr <span class="paren4">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> user-args <span class="paren2">(<span class="default">parse-command-line <span class="paren3">(<span class="default">car <span class="paren4">(<span class="default">argv</span>)</span></span>)</span>
+				      <span class="paren3">(<span class="default">cdr <span class="paren4">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span>
 
 <span class="paren1">(<span class="default">format #t <span class="string">&quot;Report will be created under the following path: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
 	<span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
-<span class="paren1">(<span class="default">format #t <span class="string">&quot;JSON files to be read: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
-	<span class="paren2">(<span class="default">string-intersperse <span class="paren3">(<span class="default">assq-ref &#x27;input-files user-args</span>)</span>
-			    <span class="string">&quot;, &quot;</span></span>)</span></span>)</span>
+<span class="paren1">(<span class="default">format #t <span class="string">&quot;Directory where to look for JSON files: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
+	<span class="paren2">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-12">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Parse a file and return a list of associative lists suitable for
-being used with functions like <code>assq</code> and <code>assv</code>.</p>
+being used with functions like <code>assq</code> and <code>assv</code>. Note that, unlike
+<code>json-read</code>, this function returns a list even if the JSON file
+contains just one object: this is done through the <code>(if (list?
+...))</code>.</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">extract-alists-from-json-file file-name</span>)</span>
   <span class="paren2">(<span class="default">format #t <span class="string">&quot;Reading file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> file-name</span>)</span>
   <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">entries <span class="paren5">(<span class="default">call-with-input-file file-name json-read</span>)</span></span>)</span></span>)</span>
-    <span class="paren3">(<span class="default">map json-&gt;alist entries</span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default">map json-&gt;alist <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">list? entries</span>)</span> entries <span class="paren5">(<span class="default">list entries</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-13">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>Read all the files specified from the command line and join the
-a-lists returned by <code>extract-alists-from-json-file</code>. Note that
-<code>append</code> is not a R5RS built-in (it is part of
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>Find all the files in the null test directory and read their
+contents, then assemble all the objects (a-lists) into a list
+(using <code>extract-alists-from-json-file</code>). Note that <code>append</code> is not
+a R5RS built-in (it is part of
 <a href="http://srfi.schemers.org/srfi-1/srfi-1.html">SRFI-1</a>), but Chicken
-incorporates it.</p>
+incorporates it. Also, <code>find-files</code> is part of the Chicken <code>posix</code>
+library, and it accepts regular expressions to match the files (the
+meaning of <code>.+\\.json$</code> is: a sequence of N>0 characters which ends
+with <code>.json</code>).</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> json-dictionary
   <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
-		     <span class="paren4">(<span class="default">assq-ref &#x27;input-files user-args</span>)</span></span>)</span></span>)</span></span>)</span>
+		     <span class="paren4">(<span class="default">find-files <span class="paren5">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span>
+				 <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-14">

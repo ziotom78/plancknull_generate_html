@@ -118,17 +118,15 @@
 ;; [`plancknull`](https://github.com/zonca/plancknull) program. You
 ;; can specify them from the command line:
 ;;
-;;     $ generator FILE1.json FILE2.json ...
+;;     $ generator NULL_TEST_DIRECTORY OUTPUT_PATH
 ;;
 ;; (If you are using the standalone executable, run
-;; `standalone_generator` instead of `generator`). This will create
-;; the report in the current directory, which is usually not what you
-;; want. You can specify a output directory using the `-o` flag
-;; _before_ the JSON files:
-;;
-;;     $ generator -o OUTPUT_DIR FILE1.json FILE2.json ...
-;;
-;; Il the directory OUTPUT_DIR does not exist, it will be created.
+;; `standalone_generator` instead of `generator`). This will read the
+;; results of the null tests from the subdirectories under
+;; `NULL_TEST_DIRECTORY`, and it will create the directory
+;; `OUTPUT_PATH` and populate it with the files needed for the HTML
+;; report. If `OUTPUT_PATH` does not exist, it will be silently
+;; created.
 ;;
 ;; How to read the source code of this program
 ;; ===========================================
@@ -210,43 +208,57 @@
 ;; program, function `parse-command-line` analyzes them and returns an
 ;; associative list containing the following fields: `'output-dir` is
 ;; a string specifying the directory where to save the report,
-;; `'input-files` is a list of the JSON files containing metadata for
-;; the null test products to be included in the report.
-(define (parse-command-line args)
-  (if (and (or (equal? (car args) "-o")
-	       (equal? (car args) "--output"))
-	   (>= (length args) 2))
-      (list (cons 'output-dir (cadr args))
-	    (cons 'input-files (cddr args)))
-      (list (cons 'output-dir ".")
-	    (cons 'input-files args))))
+;; `'input-dir` is a string containing the path where to look for JSON
+;; files.
+(define (parse-command-line program-name args)
+  (if (not (eq? (length args) 2))
+      (begin (format #t #<<EOF
+Usage: ~a NULL_TEST_DIR OUTPUT_PATH
+
+where NULL_TEST_DIR is the path to the directory containing
+the results of the null tests to be included in the report,
+and OUTPUT_PATH is the path where to save the files of the
+HTML report. If OUTPUT_PATH does not exist, it will be created.
+EOF
+		      program-name)
+	     (exit 1)))
+  (list (cons 'input-dir (car args))
+	(cons 'output-dir (cadr args))))
 
 ;; The variable `user-args` holds all the information the user
 ;; specified from the command line. Note that `argv` (function, not
 ;; variable!) is not part of R5RS: it is a Chicken extension.
-(define user-args (parse-command-line (cdr (argv))))
+(define user-args (parse-command-line (car (argv))
+				      (cdr (argv))))
 
 (format #t "Report will be created under the following path: ~a\n"
 	(assq-ref 'output-dir user-args))
-(format #t "JSON files to be read: ~a\n"
-	(string-intersperse (assq-ref 'input-files user-args)
-			    ", "))
+(format #t "Directory where to look for JSON files: ~a\n"
+	(assq-ref 'input-dir user-args))
 
 ;; Parse a file and return a list of associative lists suitable for
-;; being used with functions like `assq` and `assv`.
+;; being used with functions like `assq` and `assv`. Note that, unlike
+;; `json-read`, this function returns a list even if the JSON file
+;; contains just one object: this is done through the `(if (list?
+;; ...))`.
 (define (extract-alists-from-json-file file-name)
   (format #t "Reading file ~a...\n" file-name)
   (let ((entries (call-with-input-file file-name json-read)))
-    (map json->alist entries)))
+    (map json->alist (if (list? entries) entries (list entries)))))
 
-;; Read all the files specified from the command line and join the
-;; a-lists returned by `extract-alists-from-json-file`. Note that
-;; `append` is not a R5RS built-in (it is part of
+;; Find all the files in the null test directory and read their
+;; contents, then assemble all the objects (a-lists) into a list
+;; (using `extract-alists-from-json-file`). Note that `append` is not
+;; a R5RS built-in (it is part of
 ;; [SRFI-1](http://srfi.schemers.org/srfi-1/srfi-1.html)), but Chicken
-;; incorporates it.
+;; incorporates it. Also, `find-files` is part of the Chicken `posix`
+;; library, and it accepts regular expressions to match the files (the
+;; meaning of `.+\\.json$` is: a sequence of N>0 characters which ends
+;; with `.json`).
 (define json-dictionary
   (apply append (map extract-alists-from-json-file
-		     (assq-ref 'input-files user-args))))
+		     (find-files (assq-ref 'input-dir user-args)
+				 ".+\\.json$"))))
 
 ;; GIF generation
 ;; ==============
