@@ -333,19 +333,40 @@ if it does not exist</p>
 </pre></td></tr>
 <tr id="section-18">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run" (from the "shell"
+<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Run the program. Note the elegance of "run<em>" (from the "shell"
 egg): we include the command-line switches as if they were
 Scheme symbols! (We put a comma in front of <code>(html:++ ...)</code>
 because we want it to be interpreted as a Scheme expression:
 otherwise it would be put as it is in the arguments to the
-process call.)</p>
+process call.) *Note:</em> <code>run*</code> is defined in the <code>shell</code> egg.
+When multiple commands are specified (in this case, <code>map2tga</code>
+and <code>convert</code>), it returns a set of values. These must be
+interpreted using <code>call-with-values</code>, which is a standard
+Scheme function accepting a "producer" and a "consumer". Refer
+to the <a href="http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features">R5RS
+documentation</a>
+for further details.</p>
 </td>
 <td class="code">
-<pre class="highlight">     <span class="paren1">(<span class="default">run <span class="paren2">(<span class="default">map2gif -inp ,input-fits-file-name
-		   -out ,output-gif-file-name
-		   -bar .T.
-		   -xsz 512
-		   -ttl ,<span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>)))
+<pre class="highlight">     <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">output-tga-file-name
+	    <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.tga&quot;</span></span>)</span></span>)</span></span>)</span>
+       <span class="paren2">(<span class="default">call-with-values
+	   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default"></span>)</span>
+	     <span class="paren4">(<span class="default">format #t <span class="string">&quot;Running map2tga and convert on ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
+		     input-fits-file-name</span>)</span>
+	     <span class="paren4">(<span class="default">run* <span class="paren5">(<span class="default">map2tga ,input-fits-file-name
+			    ,output-tga-file-name
+			    -bar
+			    -xsz 640
+			    -title ,<span class="paren6">(<span class="default">html:++ <span class="paren1">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">convert ,output-tga-file-name
+			    ,output-gif-file-name</span>)</span></span>)</span></span>)</span>
+	 <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">map2tga-return-code convert-return-code</span>)</span>
+	   <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; map2tga-return-code 0</span>)</span>
+	       <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">map2tga</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; convert-return-code 0</span>)</span>
+	       <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">convert</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+       <span class="paren2">(<span class="default">delete-file output-tga-file-name</span>)</span></span>)</span>)))
 
 </pre></td></tr>
 <tr id="section-19">
