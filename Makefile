@@ -5,7 +5,9 @@ CHICKEN_INSTALL=chicken-install
 CHICKEN_CSC=csc
 CHICKEN_EGGS_TO_DEPLOY=json packrat html-tags html-utils matchable \
 	list-utils check-errors stack shell filepath \
-	directory-utils
+	directory-utils numbers record-variants srfi-29 locale \
+	regex lookup-table posix-utils condition-utils \
+	variable-item srfi-19
 CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 .phony: all deploy install_eggs help documentation
@@ -28,9 +30,11 @@ $(DEPLOY_DIR)/generator: generator.scm
 	@for chicken_module in $(CHICKEN_EGGS_TO_DEPLOY); do \
 		$(CHICKEN_INSTALL) -deploy -p $(DEPLOY_DIR) $$chicken_module; \
 	done
-	cp -rf css $(DEPLOY_DIR) # Copy these directory as well
+	cp -rf css $(DEPLOY_DIR) # Copy this directory as well
 
-documentation:
+documentation: docs/generator.scm.html
+
+docs/generator.scm.html: generator.scm
 	schematic -f markdown --directory docs generator.scm
 
 help:

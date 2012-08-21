@@ -1,17 +1,31 @@
 body {
     font-family: Verdana, Arial, sans-serif;
-    background: #ccc;
+    background: white;
 }
 
 h1 {
     padding: 25px;
     background: #113;
-    width: 912px;
-    color: #fff;
+    /*width: 912px;*/
+    color: white;
+    font-weight: bold;
+    font-size: 190%;
 }
 
 h2 {
-    text-align: center;
+    text-align: left;
+    color: #225;
+    font-family: Palatino, serif;
+    font-weight: bold;
+    font-size: 130%;
+}
+
+h3 {
+    text-align: left;
+    color: #225;
+    font-family: Palatino, serif;
+    font-weight: bold;
+    font-size: 110%;
 }
 
 p, table {
@@ -61,4 +75,12 @@ table {
 
 td {
     text-align: center;
+}
+
+#body {
+    position: absolute;
+    z-index: 0;
+    width: 93.9%;
+    margin-left: 16em;
+    padding-left: 25px;
 }

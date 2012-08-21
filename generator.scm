@@ -157,13 +157,16 @@
 ;; `directory-utils` are used respectively to manipulate file paths
 ;; and to create/modify the directory structure of a file system (we
 ;; are going to use it to create the tree of directories that will
-;; contain the HTML report).
+;; contain the HTML report). SRFI-19 implements a set of functions to
+;; deal with date and times. We use it to put timestamps in the
+;; report.
 (require-extension json)
 (require-extension html-tags)
 (require-extension html-utils)
 (require-extension shell)
 (require-extension filepath)
 (require-extension directory-utils)
+(require-extension srfi-19)
 
 ;; We're going to concatenate a number of HTML statements, so it is
 ;; nicer to have a shorthand for the Scheme function
@@ -260,6 +263,15 @@ EOF
 		     (find-files (assq-ref 'input-dir user-args)
 				 ".+\\.json$"))))
 
+;; The function `filter-on-filetype` filters the contents of
+;; `json-dictionary` acc ording to a given file type. The use of
+;; `filter` is exactly the same as in Python.
+(define (filter-on-filetype file-type)
+  (filter (lambda (object)
+	    (equal? (assq-ref 'file_type object)
+		    file-type))
+	  json-dictionary))
+
 ;; GIF generation
 ;; ==============
 
@@ -310,6 +322,7 @@ EOF
 			    -xsz 640
 			    -title ,(html:++ (list "\"" title "\"")))
 		   (convert ,output-tga-file-name
+			    -transparent white
 			    ,output-gif-file-name)))
 	 (lambda (map2tga-return-code convert-return-code)
 	   (if (> map2tga-return-code 0)
@@ -385,6 +398,7 @@ EOF
 (define (get-html-file-name label)
   (let ((html-file-names
 	 '((information . "index.html")
+	   (halfring-frequency . "halfring_freq.html")
 	   (surv-rad . "surv_radiometer.html")
 	   (surv-horn . "surv_horn.html")
 	   (surv-pair . "surv_pair.html")
@@ -396,69 +410,72 @@ EOF
 	   (table-of-contents . "toc.html"))))
     (assq-ref label html-file-names)))
 
-;; The page contains a drop-down menu. Its look is specified in the
-;; CSS file `dropdown_menu.css`, and its style is plagiarized from [a
-;; nice tutorial available on the
-;; WWW](http://dhirajkumarsingh.wordpress.com/2012/05/20/css3-animated-dropdown-menu/).
-;; Note how nice is to use the `html-tag` package: we are producing
-;; HTML code using commands like `<a>` just in plain HTML, yet we can
-;; freely call Scheme functions within it (in this case,
-;; `get-html-file-name`). This is a cleaner approach than other
-;; template libraries, which usually need to define and implement some
-;; ad-hoc language (e.g. the Python library
+;; The page contains a menu on the left, whose look is specified by
+;; the CSS file `css/dropdown_menu.css`. Note how nice is to use the
+;; `html-tag` package: we are producing HTML code using commands like
+;; `<a>` just in plain HTML, yet we can freely call Scheme functions
+;; within it (in this case, `get-html-file-name`). This is a cleaner
+;; approach than other template libraries, which usually need to
+;; define and implement some ad-hoc language (e.g. the Python library
 ;; [Jinja2](http://jinja.pocoo.org/)).
-(define dropdown-menu
-  (<nav> id: "nav"
-	 (<ul> id: "menu"
-	       (<li> (<a> href: (get-html-file-name 'information)
-			  "Information"))
-	       (<li> (<a> href: "#" "1-h tests &raquo;"))
-	       (<li> (<a> href: "#" "Survey tests &raquo;")
-		     (<ul>
-		      (<li> (<a> href: (get-html-file-name 'surv-rad)
-				 "Single radiometer"))
-		      (<li> (<a> href: (get-html-file-name 'surv-horn)
-				 "Single horn"))
-		      (<li> (<a> href: (get-html-file-name 'surv-pair)
-				 "Horn pair"))
-		      (<li> (<a> href: (get-html-file-name 'surv-frequency)
-				 "Frequency"))
-		      (<li> (<a> href: (get-html-file-name 'surv-cross-freq)
-				 "Cross-frequency"))))
-	       (<li> (<a> href: "#" "Full-mission tests &raquo;")
-		     (<ul>
-		      (<li> (<a> href: (get-html-file-name 'full-pair)
-				 "Horn pair"))
-		      (<li> (<a> href: (get-html-file-name 'full-frequency)
-				 "Frequency"))
-		      (<li> (<a> href: (get-html-file-name 'full-cross-freq)
-				 "Cross-frequency"))))
-	       (<li> (<a> href: (get-html-file-name 'table-of-contents)
-			  "Table of contents")))))
+;;
+;; Note that we implement a local function named `smart-<a>`. Its
+;; purpose is to produce a link to a page, which is of the class
+;; "selected" if the page to be linked is the same page we are
+;; generating.
+(define (dropdown-menu page)
+  (let ((smart-<a> (lambda (title tag)
+		     (<a> href: (get-html-file-name tag)
+			  class: (if (eq? tag page)
+				     "selected"
+				     "unselected")
+			  title))))
+    (<nav> id: "nav"
+	   (<ul> id: "menu"
+		 (<li> (smart-<a> "Information" 'information))
+		 (<li> "1-h tests (half rings) &raquo;"
+		       (<ul> (smart-<a> "Frequency" 'halfring-frequency)))
+		 (<li> "Survey tests &raquo;"
+		       (<ul>
+			(<li> (smart-<a> "Single radiometer" 'surv-rad))
+			(<li> (smart-<a> "Single horn" 'surv-horn))
+			(<li> (smart-<a> "Horn pair" 'surv-pair))
+			(<li> (smart-<a> "Frequency" 'surv-frequency))
+			(<li> (smart-<a> "Cross-frequency" 'surv-cross-freq))))
+		 (<li> "Full-mission tests &raquo;"
+		       (<ul>
+			(<li> (smart-<a> "Horn pair" 'full-pair))
+			(<li> (smart-<a> "Frequency" 'full-frequency))
+			(<li> (smart-<a> "Cross-frequency" 'full-cross-freq))))
+		 (<li> (smart-<a> "Table of contents" 'table-of-contents))))))
+
+
+;; This is the name of the data release. *TODO*: make the release name
+;; specifiable from the command line/configuration file
+(define test-release-name "DX9")
+
+;; The function `make-title-for-report` makes up the title for the
+;; overall report, which is going to be repeated at the beginning of
+;; each HTML page. It does so by prepending the name of the data
+;; release to the title itself (in the parameter `string`). We want to
+;; put the name of the release (e.g. `DX9`) at the beginning, so it
+;; will be shown by tabbed browsers like Chrome even when a lot of
+;; tabs are opened.
+(define (make-title-for-report)
+  (format #f "~a null tests" test-release-name))
 
 ;; The function `wrap-html` takes a string containing some HTML code
 ;; and encloses it in a self-contained HTML structure which comprises
 ;; the dropdown menu. It returns a string.
-(define (wrap-html title body)
+(define (wrap-html file-tag page-title body)
   (html-page (html:++ (list
-		       (<h1> title)
-		       dropdown-menu
-		       body))
-	     title: title
+		       (<h1> (make-title-for-report))
+		       (dropdown-menu file-tag)
+		       (<div> id: "body"
+			      (<h2> page-title)
+			      body)))
+	     title: page-title
 	     css: '("css/main.css" "css/dropdown_menu.css")))
-
-;; This is the name of the data release. The function `make-title`
-;; makes up the title for a page. It does so by prepending the name of
-;; the data release to the title itself (in the parameter `string`).
-;; We want to put the name of the release (e.g. `DX9`) at the
-;; beginning, so it will be shown by tabbed browsers like Chrome even
-;; when a lot of tabs are opened.
-;;
-;; *TODO*: make the release name specifiable from the command
-;; line/configuration file
-(define (make-title string)
-  (let ((test-release-name "DX9"))
-    (format #f "~a null tests: ~a" test-release-name string)))
 
 ;; We are going to create a number of HTML files, and the creation of
 ;; each of them follows the same rules:
@@ -492,8 +509,16 @@ EOF
 (write-html
  'information
  (lambda (file)
-   (display (wrap-html (make-title "results")
-		       (<p> "General information about the release"))
+   (display (wrap-html 'information
+		       "General information about this release"
+		       (<p> (format #f #<<EOF
+This data release of the null tests contains ~a
+objects. It was generated on <i>~a</i> by user <b>~a</b>.
+EOF
+				    (length json-dictionary)
+				    (date->string (current-date)
+						  "~A ~e ~B ~Y, at ~H:~M:~S")
+				    (get-environment-variable "USER"))))
 	    file)
    (newline file)))
 
@@ -502,15 +527,11 @@ EOF
 
 ;; Write the HTML file. The variable `cur-dict` contains a subset of
 ;; all the JSON entries stored in `json-dictionary` (loaded from the
-;; JSON files specified from the command line). The use of `filter` is
-;; exactly the same as in Python.
+;; JSON files specified from the command line).
 (write-html
  'surv-pair
  (lambda (file)
-   (let* ((cur-dict (filter (lambda (x)
-			      (equal? (assq-ref 'file_type x)
-				      "single_survey_coupled_horn_map"))
-			    json-dictionary))
+   (let* ((cur-dict (filter-on-filetype "single_survey_coupled_horn_map"))
 	  (fits-file-paths (map (lambda (x)
 				  (assq-ref 'file_path x))
 				cur-dict)))
@@ -526,7 +547,8 @@ EOF
 	       cur-dict)
      
      ;; Write links to each image
-     (display (wrap-html (make-title "coupled horn, survey differences")
+     (display (wrap-html 'surv-pair
+			 "Coupled horn, survey differences"
 			 (itemize (map (lambda (fits-name)
 					 (let ((gif-name (fits-name->gif-name fits-name)))
 					   (<img> src: gif-name
@@ -535,6 +557,16 @@ EOF
 	      file)
      (newline file))))
 
+;; The "Half rings" page
+;; ---------------------
+
+;; (write-html
+;;  'halfring-frequency
+;;  (lambda (file)
+;;    (let* ((cur-dict (filter-on-filetype "halfring_frequency"))
+;; 	  (fits-file-paths (map (lambda (x)
+;; 				  (assq-ref 'file_path x))
+;; 				cur-dict)))
 
 ;; Appendix: a very short introduction to Scheme
 ;; =============================================
