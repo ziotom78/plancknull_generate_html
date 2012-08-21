@@ -422,11 +422,13 @@ EOF
 ;; Note that we implement a local function named `smart-<a>`. Its
 ;; purpose is to produce a link to a page, which is of the class
 ;; "selected" if the page to be linked is the same page we are
-;; generating.
-(define (side-menu page)
+;; generating. The argument `page-tag` is one of the symbols
+;; recognized by `get-html-file-name` (see above), and specifies for
+;; which HTML page we are generating this menu.
+(define (side-menu page-tag)
   (let ((smart-<a> (lambda (title tag)
 		     (<a> href: (get-html-file-name tag)
-			  class: (if (eq? tag page)
+			  class: (if (eq? tag page-tag)
 				     "selected"
 				     "unselected")
 			  title))))

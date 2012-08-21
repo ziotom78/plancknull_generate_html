@@ -567,13 +567,15 @@ according to the fact that the entry links to its own page or not
 <p>Note that we implement a local function named <code>smart-&lt;a&gt;</code>. Its
 purpose is to produce a link to a page, which is of the class
 "selected" if the page to be linked is the same page we are
-generating.</p>
+generating. The argument <code>page-tag</code> is one of the symbols
+recognized by <code>get-html-file-name</code> (see above), and specifies for
+which HTML page we are generating this menu.</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">side-menu page</span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">side-menu page-tag</span>)</span>
   <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">smart-&lt;a&gt; <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">title tag</span>)</span>
 		     <span class="paren6">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren1">(<span class="default">get-html-file-name tag</span>)</span>
-			  <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? tag page</span>)</span>
+			  <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? tag page-tag</span>)</span>
 				     <span class="string">&quot;selected&quot;</span>
 				     <span class="string">&quot;unselected&quot;</span></span>)</span>
 			  title</span>)</span></span>)</span></span>)</span></span>)</span>
