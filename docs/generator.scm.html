@@ -243,8 +243,8 @@ function <code>assq</code> we need to have lists, not vectors. The function
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-&gt;alist dictionary</span>)</span>
   <span class="paren2">(<span class="default">map <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x</span>)</span>
-	 <span class="paren4">(<span class="default">cons <span class="paren5">(<span class="default">string-&gt;symbol <span class="paren6">(<span class="default">car x</span>)</span></span>)</span>
-	       <span class="paren5">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span>
+         <span class="paren4">(<span class="default">cons <span class="paren5">(<span class="default">string-&gt;symbol <span class="paren6">(<span class="default">car x</span>)</span></span>)</span>
+               <span class="paren5">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span>
        <span class="paren3">(<span class="default">vector-&gt;list dictionary</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
@@ -277,17 +277,18 @@ files.</p>
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">parse-command-line program-name args</span>)</span>
   <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">not <span class="paren4">(<span class="default">eq? <span class="paren5">(<span class="default">length args</span>)</span> 2</span>)</span></span>)</span>
       <span class="paren3">(<span class="default">begin <span class="paren4">(<span class="default">format #t #&lt;&lt;EOF
-<span class="keyword">Usage:</span> ~a NULL_TEST_DIR OUTPUT_PATH
+                     <span class="keyword">Usage:</span> ~a NULL_TEST_DIR OUTPUT_PATH
 
-where NULL_TEST_DIR is <i><span class="symbol">the</span></i> path to <i><span class="symbol">the</span></i> directory containing
-<i><span class="symbol">the</span></i> results of <i><span class="symbol">the</span></i> null tests to be included in <i><span class="symbol">the</span></i> report,
-and OUTPUT_PATH is <i><span class="symbol">the</span></i> path where to save <i><span class="symbol">the</span></i> files of <i><span class="symbol">the</span></i>
-HTML report. If OUTPUT_PATH does not exist, it will be created.
+                     where NULL_TEST_DIR is <i><span class="symbol">the</span></i> path to <i><span class="symbol">the</span></i> directory containing
+                     <i><span class="symbol">the</span></i> results of <i><span class="symbol">the</span></i> null tests to be included in <i><span class="symbol">the</span></i> report,
+                     and OUTPUT_PATH is <i><span class="symbol">the</span></i> path where to save <i><span class="symbol">the</span></i> files of <i><span class="symbol">the</span></i>
+                     HTML report. If OUTPUT_PATH does not exist, it will be created.
+
 EOF
-		      program-name</span>)</span>
-	     <span class="paren4">(<span class="default">exit 1</span>)</span></span>)</span></span>)</span>
+                     program-name</span>)</span>
+             <span class="paren4">(<span class="default">exit 1</span>)</span></span>)</span></span>)</span>
   <span class="paren2">(<span class="default">list <span class="paren3">(<span class="default">cons &#x27;input-dir <span class="paren4">(<span class="default">car args</span>)</span></span>)</span>
-	<span class="paren3">(<span class="default">cons &#x27;output-dir <span class="paren4">(<span class="default">cadr args</span>)</span></span>)</span></span>)</span></span>)</span>
+        <span class="paren3">(<span class="default">cons &#x27;output-dir <span class="paren4">(<span class="default">cadr args</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-11">
@@ -298,12 +299,12 @@ variable!) is not part of R5RS: it is a Chicken extension.</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> user-args <span class="paren2">(<span class="default">parse-command-line <span class="paren3">(<span class="default">car <span class="paren4">(<span class="default">argv</span>)</span></span>)</span>
-				      <span class="paren3">(<span class="default">cdr <span class="paren4">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span>
+                                      <span class="paren3">(<span class="default">cdr <span class="paren4">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span>
 
 <span class="paren1">(<span class="default">format #t <span class="string">&quot;Report will be created under the following path: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
-	<span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
+        <span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
 <span class="paren1">(<span class="default">format #t <span class="string">&quot;Directory where to look for JSON files: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
-	<span class="paren2">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span>
+        <span class="paren2">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-12">
@@ -336,8 +337,8 @@ with <code>.json</code>).</p>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> json-dictionary
   <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
-		     <span class="paren4">(<span class="default">find-files <span class="paren5">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span>
-				 <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+                     <span class="paren4">(<span class="default">find-files <span class="paren5">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span>
+                                 <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-14">
@@ -349,9 +350,9 @@ with <code>.json</code>).</p>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">filter-on-filetype file-type</span>)</span>
   <span class="paren2">(<span class="default">filter <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">object</span>)</span>
-	    <span class="paren4">(<span class="default">equal? <span class="paren5">(<span class="default">assq-ref &#x27;file_type object</span>)</span>
-		    file-type</span>)</span></span>)</span>
-	  json-dictionary</span>)</span></span>)</span>
+            <span class="paren4">(<span class="default">equal? <span class="paren5">(<span class="default">assq-ref &#x27;file_type object</span>)</span>
+                    file-type</span>)</span></span>)</span>
+          json-dictionary</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-15">
@@ -380,15 +381,15 @@ first need to delete the file.</p>
 <td class="code">
 <pre class="highlight">
 <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">map2gif input-fits-file-name
-		 output-gif-file-name
-		 title
-		 #!key <span class="paren3">(<span class="default">overwrite? #f</span>)</span></span>)</span> <span class="comment">; If not specified, it is #f
+                 output-gif-file-name
+                 title
+                 #!key <span class="paren3">(<span class="default">overwrite? #f</span>)</span></span>)</span> <span class="comment">; If not specified, it is #f
 </span>  <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
 </span>   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
      <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">file-exists? output-gif-file-name</span>)</span>
-	 <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> overwrite?
-	     <span class="paren6">(<span class="default">delete-file output-gif-file-name</span>)</span>
-	     <span class="paren6">(<span class="default">return &#x27;<span class="paren1">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
+         <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> overwrite?
+             <span class="paren6">(<span class="default">delete-file output-gif-file-name</span>)</span>
+             <span class="paren6">(<span class="default">return &#x27;<span class="paren1">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
 <tr id="section-18">
 <td class="docs">
@@ -416,24 +417,24 @@ for further details.</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">output-tga-file-name
-	    <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.tga&quot;</span></span>)</span></span>)</span></span>)</span>
+            <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.tga&quot;</span></span>)</span></span>)</span></span>)</span>
        <span class="paren2">(<span class="default">call-with-values
-	   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default"></span>)</span>
-	     <span class="paren4">(<span class="default">format #t <span class="string">&quot;Running map2tga and convert on ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
-		     input-fits-file-name</span>)</span>
-	     <span class="paren4">(<span class="default">run* <span class="paren5">(<span class="default">map2tga ,input-fits-file-name
-			    ,output-tga-file-name
-			    -bar
-			    -xsz 640
-			    -title ,<span class="paren6">(<span class="default">html:++ <span class="paren1">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
-		   <span class="paren5">(<span class="default">convert ,output-tga-file-name
-			    -transparent white
-			    ,output-gif-file-name</span>)</span></span>)</span></span>)</span>
-	 <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">map2tga-return-code convert-return-code</span>)</span>
-	   <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; map2tga-return-code 0</span>)</span>
-	       <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">map2tga</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span>
-	   <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; convert-return-code 0</span>)</span>
-	       <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">convert</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+           <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default"></span>)</span>
+             <span class="paren4">(<span class="default">format #t <span class="string">&quot;Running map2tga and convert on ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
+                     input-fits-file-name</span>)</span>
+             <span class="paren4">(<span class="default">run* <span class="paren5">(<span class="default">map2tga ,input-fits-file-name
+                            ,output-tga-file-name
+                            -bar
+                            -xsz 640
+                            -title ,<span class="paren6">(<span class="default">html:++ <span class="paren1">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
+                   <span class="paren5">(<span class="default">convert ,output-tga-file-name
+                            -transparent white
+                            ,output-gif-file-name</span>)</span></span>)</span></span>)</span>
+         <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">map2tga-return-code convert-return-code</span>)</span>
+           <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; map2tga-return-code 0</span>)</span>
+               <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">map2tga</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span>
+           <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; convert-return-code 0</span>)</span>
+               <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">convert</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
        <span class="paren2">(<span class="default">delete-file output-tga-file-name</span>)</span></span>)</span>)))
 
 </pre></td></tr>
@@ -503,8 +504,8 @@ function (we do not use it, so we call it <code>unused</code> and set it to
 </td>
 <td class="code">
 <pre class="highlight">       <span class="paren1">(<span class="default">file-copy <span class="paren2">(<span class="default">filepath:join-path <span class="paren3">(<span class="default">list source filename</span>)</span></span>)</span>
-		  output-file
-		  &#x27;overwrite</span>)</span>))
+                  output-file
+                  &#x27;overwrite</span>)</span>))
    #f <span class="comment">; This is our value for `unused`
 </span>   source))
 
@@ -520,16 +521,21 @@ files might be needed in the future).</p>
   <span class="paren2">(<span class="default">for-each
    <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">dir-name</span>)</span>
      <span class="paren4">(<span class="default">dir-copy <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list source-dir dir-name</span>)</span></span>)</span>
-	       <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
-					 dir-name</span>)</span></span>)</span></span>)</span></span>)</span>
+               <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+                                         dir-name</span>)</span></span>)</span></span>)</span></span>)</span>
    <span class="paren3">(<span class="default">list <span class="string">&quot;css&quot;</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-27">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><h2>General-purpose functions</h2>
-
-<p>We keep the names of the HTML files to be created in a alist for
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-28">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>We keep the names of the HTML files to be created in a alist for
 avoiding repetitions in the code (they must be used when creating
 the files and when producing the <code>&lt;a&gt;</code> links in the side menu). The
 function <code>get-html-file-name</code> is the only access function we need
@@ -538,80 +544,78 @@ for this alist, so we make <code>html-file-name</code> a local definition.</p>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">get-html-file-name label</span>)</span>
   <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">html-file-names
-	 &#x27;<span class="paren5">(<span class="default"><span class="paren6">(<span class="default">information . <span class="string">&quot;index.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">halfring-frequency . <span class="string">&quot;halfring_freq.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">surv-rad . <span class="string">&quot;surv_radiometer.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">surv-horn . <span class="string">&quot;surv_horn.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">surv-pair . <span class="string">&quot;surv_pair.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">surv-frequency . <span class="string">&quot;surv_freq.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">surv-cross-freq . <span class="string">&quot;surv_cross.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">full-pair . <span class="string">&quot;full_pair.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">full-frequency . <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">full-cross-freq . <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
-	   <span class="paren6">(<span class="default">table-of-contents . <span class="string">&quot;toc.html&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+         &#x27;<span class="paren5">(<span class="default"><span class="paren6">(<span class="default">information . <span class="string">&quot;index.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">halfring-frequency . <span class="string">&quot;halfring_freq.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">surv-rad . <span class="string">&quot;surv_radiometer.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">surv-horn . <span class="string">&quot;surv_horn.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">surv-pair . <span class="string">&quot;surv_pair.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">surv-frequency . <span class="string">&quot;surv_freq.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">surv-cross-freq . <span class="string">&quot;surv_cross.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">full-pair . <span class="string">&quot;full_pair.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">full-frequency . <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">full-cross-freq . <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
+           <span class="paren6">(<span class="default">table-of-contents . <span class="string">&quot;toc.html&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
     <span class="paren3">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span>
-
-</pre></td></tr>
-<tr id="section-28">
-<td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>Each HTML page contains a menu on the left, whose look is specified
-by the CSS file <code>css/menu.css</code>. Note how nice is to use the
-<code>html-tag</code> package: we are producing HTML code using commands like
-<code>&lt;a&gt;</code> just in plain HTML, yet we can freely call Scheme functions
-within it (in this case, <code>get-html-file-name</code>). We define a
-<code>smart-&lt;a&gt;</code> function which uses <code>get-html-file-name</code> to retrieve
-the link to be used in the <code>&lt;a&gt;</code> tag, and it also defines the class
-according to the fact that the entry links to its own page or not
-(the CSS style uses this to highlight selected items in bold).</p>
-
-<p>Note that we implement a local function named <code>smart-&lt;a&gt;</code>. Its
-purpose is to produce a link to a page, which is of the class
-"selected" if the page to be linked is the same page we are
-generating. The argument <code>page-tag</code> is one of the symbols
-recognized by <code>get-html-file-name</code> (see above), and specifies for
-which HTML page we are generating this menu.</p>
-</td>
-<td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">side-menu page-tag</span>)</span>
-  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">smart-&lt;a&gt; <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">title tag</span>)</span>
-		     <span class="paren6">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren1">(<span class="default">get-html-file-name tag</span>)</span>
-			  <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? tag page-tag</span>)</span>
-				     <span class="string">&quot;selected&quot;</span>
-				     <span class="string">&quot;unselected&quot;</span></span>)</span>
-			  title</span>)</span></span>)</span></span>)</span></span>)</span>
-    <span class="paren3">(<span class="default">&lt;nav&gt; <span class="keyword">id:</span> <span class="string">&quot;nav&quot;</span>
-	   <span class="paren4">(<span class="default">&lt;ul&gt; <span class="keyword">id:</span> <span class="string">&quot;menu&quot;</span>
-		 <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Information&quot;</span> &#x27;information</span>)</span></span>)</span>
-		 <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;1-h tests (half rings) &amp;raquo;&quot;</span>
-		       <span class="paren6">(<span class="default">&lt;ul&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;halfring-frequency</span>)</span></span>)</span></span>)</span>
-		 <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Survey tests &amp;raquo;&quot;</span>
-		       <span class="paren6">(<span class="default">&lt;ul&gt;
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single radiometer&quot;</span> &#x27;surv-rad</span>)</span></span>)</span>
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single horn&quot;</span> &#x27;surv-horn</span>)</span></span>)</span>
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;surv-pair</span>)</span></span>)</span>
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;surv-frequency</span>)</span></span>)</span>
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;surv-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
-		 <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Full-mission tests &amp;raquo;&quot;</span>
-		       <span class="paren6">(<span class="default">&lt;ul&gt;
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;full-pair</span>)</span></span>)</span>
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;full-frequency</span>)</span></span>)</span>
-			<span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;full-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
-		 <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Table of contents&quot;</span> &#x27;table-of-contents</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
-
 
 </pre></td></tr>
 <tr id="section-29">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>This is the name of the data release. <em>TODO</em>: make the release name
+<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>Each HTML page contains a menu on the left, whose look is specified
+by the CSS file <code>css/menu.css</code>. Function <code>side-menu</code> is
+responsibile for creating this menu for each HTML page. The
+argument <code>page-tag</code> is one of the symbols recognized by
+<code>get-html-file-name</code> (see above), and specifies for which HTML page
+we are generating this menu. We define a <code>smart-&lt;a&gt;</code> function which
+uses <code>get-html-file-name</code> to retrieve the link to be used in the
+<code>&lt;a&gt;</code> tag, and it also defines the class according to the fact that
+the entry links to its own page or not (the CSS style uses this to
+highlight selected items in bold).</p>
+
+<p>Note how nice is to use the <code>html-tag</code> package: we are producing
+HTML code using commands like <code>&lt;a&gt;</code> just in plain HTML, yet we can
+freely call Scheme functions within it (in this case,
+<code>get-html-file-name</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">side-menu page-tag</span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">smart-&lt;a&gt; <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">title tag</span>)</span>
+                     <span class="paren6">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren1">(<span class="default">get-html-file-name tag</span>)</span>
+                          <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? tag page-tag</span>)</span>
+                                     <span class="string">&quot;selected&quot;</span>
+                                     <span class="string">&quot;unselected&quot;</span></span>)</span>
+                          title</span>)</span></span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default">&lt;nav&gt; <span class="keyword">id:</span> <span class="string">&quot;nav&quot;</span>
+           <span class="paren4">(<span class="default">&lt;ul&gt; <span class="keyword">id:</span> <span class="string">&quot;menu&quot;</span>
+                 <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Information&quot;</span> &#x27;information</span>)</span></span>)</span>
+                 <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;1-h tests (half rings) &amp;raquo;&quot;</span>
+                       <span class="paren6">(<span class="default">&lt;ul&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;halfring-frequency</span>)</span></span>)</span></span>)</span>
+                 <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Survey tests &amp;raquo;&quot;</span>
+                       <span class="paren6">(<span class="default">&lt;ul&gt;
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single radiometer&quot;</span> &#x27;surv-rad</span>)</span></span>)</span>
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single horn&quot;</span> &#x27;surv-horn</span>)</span></span>)</span>
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;surv-pair</span>)</span></span>)</span>
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;surv-frequency</span>)</span></span>)</span>
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;surv-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
+                 <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Full-mission tests &amp;raquo;&quot;</span>
+                       <span class="paren6">(<span class="default">&lt;ul&gt;
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;full-pair</span>)</span></span>)</span>
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;full-frequency</span>)</span></span>)</span>
+                        <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;full-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
+                 <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Table of contents&quot;</span> &#x27;table-of-contents</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-30">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>This is the name of the data release. <em>TODO</em>: make the release name
 specifiable from the command line/configuration file</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> test-release-name <span class="string">&quot;DX9&quot;</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-30">
+<tr id="section-31">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>The function <code>make-title-for-report</code> makes up the title for the
+<div class="pilwrap"><a class="pilcrow" href="#section-31">&para;</a></div><p>The function <code>make-title-for-report</code> makes up the title for the
 overall report, which is going to be repeated at the beginning of
 each HTML page. It does so by prepending the name of the data
 release to the title itself (in the parameter <code>string</code>). We want to
@@ -624,27 +628,27 @@ tabs are opened.</p>
   <span class="paren2">(<span class="default">format #f <span class="string">&quot;~a null tests&quot;</span> test-release-name</span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-31">
+<tr id="section-32">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-31">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
+<div class="pilwrap"><a class="pilcrow" href="#section-32">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
 and encloses it in a self-contained HTML structure which comprises
 the side menu. It returns a string.</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">wrap-html file-tag page-title body</span>)</span>
   <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">list
-		       <span class="paren5">(<span class="default">&lt;h1&gt; <span class="paren6">(<span class="default">make-title-for-report</span>)</span></span>)</span>
-		       <span class="paren5">(<span class="default">side-menu file-tag</span>)</span>
-		       <span class="paren5">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;body&quot;</span>
-			      <span class="paren6">(<span class="default">&lt;h2&gt; page-title</span>)</span>
-			      body</span>)</span></span>)</span></span>)</span>
-	     <span class="keyword">title:</span> page-title
-	     <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
+                       <span class="paren5">(<span class="default">&lt;h1&gt; <span class="paren6">(<span class="default">make-title-for-report</span>)</span></span>)</span>
+                       <span class="paren5">(<span class="default">side-menu file-tag</span>)</span>
+                       <span class="paren5">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;body&quot;</span>
+                              <span class="paren6">(<span class="default">&lt;h2&gt; page-title</span>)</span>
+                              body</span>)</span></span>)</span></span>)</span>
+             <span class="keyword">title:</span> page-title
+             <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-32">
+<tr id="section-33">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-32">&para;</a></div><p>We are going to create a number of HTML files, and the creation of
+<div class="pilwrap"><a class="pilcrow" href="#section-33">&para;</a></div><p>We are going to create a number of HTML files, and the creation of
 each of them follows the same rules:</p>
 
 <ol>
@@ -663,23 +667,23 @@ parameter the output stream to be used to write into the file.</p>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-html file-tag write-function</span>)</span>
   <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-file-name <span class="paren5">(<span class="default">filepath:join-path
-			   <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
-				 <span class="paren1">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+                           <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+                                 <span class="paren1">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
     <span class="paren3">(<span class="default">create-pathname-directory output-file-name</span>)</span>
     <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> output-file-name</span>)</span>
     <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-33">
+<tr id="section-34">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-33">&para;</a></div><h2>The "information" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-34">&para;</a></div><h2>The "information" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-34">
+<tr id="section-35">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-34">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
+<div class="pilwrap"><a class="pilcrow" href="#section-35">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
 <code>lambda</code> function passing as parameter a stream (the <code>file</code>
 parameter) that can be used for writing. At the end of the
 execution of the <code>lambda</code> function, the file will be automatically
@@ -690,29 +694,30 @@ closed (much like Python's <code>with</code> statement).</p>
  &#x27;information
  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
    <span class="paren3">(<span class="default">display <span class="paren4">(<span class="default">wrap-html &#x27;information
-		       <span class="string">&quot;General information about this release&quot;</span>
-		       <span class="paren5">(<span class="default">&lt;p&gt; <span class="paren6">(<span class="default">format #f #&lt;&lt;EOF
-This data release of <i><span class="symbol">the</span></i> null tests contains ~a
-objects. It was generated on &lt;i&gt;~a&lt;/i&gt; by user &lt;b&gt;~a&lt;/b&gt;.
+                       <span class="string">&quot;General information about this release&quot;</span>
+                       <span class="paren5">(<span class="default">&lt;p&gt; <span class="paren6">(<span class="default">format #f #&lt;&lt;EOF
+                                    This data release of <i><span class="symbol">the</span></i> null tests contains ~a
+                                    objects. It was generated on &lt;i&gt;~a&lt;/i&gt; by user &lt;b&gt;~a&lt;/b&gt;.
+
 EOF
-				    <span class="paren1">(<span class="default">length json-dictionary</span>)</span>
-				    <span class="paren1">(<span class="default">date-&gt;string <span class="paren2">(<span class="default">current-date</span>)</span>
-						  <span class="string">&quot;~A ~e ~B ~Y, at ~H:~M:~S&quot;</span></span>)</span>
-				    <span class="paren1">(<span class="default">get-environment-variable <span class="string">&quot;USER&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
-	    file</span>)</span>
+                                    <span class="paren1">(<span class="default">length json-dictionary</span>)</span>
+                                    <span class="paren1">(<span class="default">date-&gt;string <span class="paren2">(<span class="default">current-date</span>)</span>
+                                                  <span class="string">&quot;~A ~e ~B ~Y, at ~H:~M:~S&quot;</span></span>)</span>
+                                    <span class="paren1">(<span class="default">get-environment-variable <span class="string">&quot;USER&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+            file</span>)</span>
    <span class="paren3">(<span class="default">newline file</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-35">
+<tr id="section-36">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-35">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-36">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-36">
+<tr id="section-37">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-36">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
+<div class="pilwrap"><a class="pilcrow" href="#section-37">&para;</a></div><p>Write the HTML file. The variable <code>cur-dict</code> contains a subset of
 all the JSON entries stored in <code>json-dictionary</code> (loaded from the
 JSON files specified from the command line).</p>
 </td>
@@ -721,65 +726,65 @@ JSON files specified from the command line).</p>
  &#x27;surv-pair
  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
    <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">cur-dict <span class="paren6">(<span class="default">filter-on-filetype <span class="string">&quot;single_survey_coupled_horn_map&quot;</span></span>)</span></span>)</span>
-	  <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
-				  <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
-				cur-dict</span>)</span></span>)</span></span>)</span>
+          <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
+                                  <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
+                                cur-dict</span>)</span></span>)</span></span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
-<tr id="section-37">
+<tr id="section-38">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-37">&para;</a></div><p>Create the .gif files</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-38">&para;</a></div><p>Create the .gif files</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">for-each <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">test-result</span>)</span>
-		 <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">assq-ref &#x27;file_path test-result</span>)</span></span>)</span></span>)</span>
-		   <span class="paren4">(<span class="default">format #t <span class="string">&quot;Writing to ~a</span><span class="string">\n</span><span class="string">&quot;</span> <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span>
-		   <span class="paren4">(<span class="default">map2gif fits-file-name
-			    <span class="paren5">(<span class="default">filepath:join-path
-			     <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
-				   <span class="paren1">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span></span>)</span>
-			    <span class="paren5">(<span class="default">assq-ref &#x27;title test-result</span>)</span></span>)</span></span>)</span></span>)</span>
-	       cur-dict</span>)</span>
-     
-</pre></td></tr>
-<tr id="section-38">
-<td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-38">&para;</a></div><p>Write links to each image</p>
-</td>
-<td class="code">
-<pre class="highlight">     <span class="paren1">(<span class="default">display <span class="paren2">(<span class="default">wrap-html &#x27;surv-pair
-			 <span class="string">&quot;Coupled horn, survey differences&quot;</span>
-			 <span class="paren3">(<span class="default">itemize <span class="paren4">(<span class="default">map <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">fits-name</span>)</span>
-					 <span class="paren6">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">gif-name <span class="paren3">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span></span>)</span></span>)</span>
-					   <span class="paren1">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-name
-						  <span class="keyword">alt:</span> gif-name</span>)</span></span>)</span></span>)</span>
-				       fits-file-paths</span>)</span></span>)</span></span>)</span>
-	      file</span>)</span>
-     <span class="paren1">(<span class="default">newline file</span>)</span>)))
+                 <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">assq-ref &#x27;file_path test-result</span>)</span></span>)</span></span>)</span>
+                   <span class="paren4">(<span class="default">format #t <span class="string">&quot;Writing to ~a</span><span class="string">\n</span><span class="string">&quot;</span> <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span>
+                   <span class="paren4">(<span class="default">map2gif fits-file-name
+                            <span class="paren5">(<span class="default">filepath:join-path
+                             <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+                                   <span class="paren1">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span></span>)</span>
+                            <span class="paren5">(<span class="default">assq-ref &#x27;title test-result</span>)</span></span>)</span></span>)</span></span>)</span>
+               cur-dict</span>)</span>
 
 </pre></td></tr>
 <tr id="section-39">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-39">&para;</a></div><h2>The "Half rings" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-39">&para;</a></div><p>Write links to each image</p>
 </td>
 <td class="code">
-<pre class="highlight">
+<pre class="highlight">     <span class="paren1">(<span class="default">display <span class="paren2">(<span class="default">wrap-html &#x27;surv-pair
+                         <span class="string">&quot;Coupled horn, survey differences&quot;</span>
+                         <span class="paren3">(<span class="default">itemize <span class="paren4">(<span class="default">map <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">fits-name</span>)</span>
+                                         <span class="paren6">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">gif-name <span class="paren3">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span></span>)</span></span>)</span>
+                                           <span class="paren1">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-name
+                                                  <span class="keyword">alt:</span> gif-name</span>)</span></span>)</span></span>)</span>
+                                       fits-file-paths</span>)</span></span>)</span></span>)</span>
+              file</span>)</span>
+     <span class="paren1">(<span class="default">newline file</span>)</span>)))
+
 </pre></td></tr>
 <tr id="section-40">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-40">&para;</a></div><p>(write-html
- 'halfring-frequency
- (lambda (file)
-   (let* ((cur-dict (filter-on-filetype "halfring<em>frequency"))
-      (fits-file-paths (map (lambda (x)
-                  (assq-ref 'file</em>path x))
-                cur-dict)))</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-40">&para;</a></div><h2>The "Half rings" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
 <tr id="section-41">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-41">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
+<div class="pilwrap"><a class="pilcrow" href="#section-41">&para;</a></div><p>(write-html
+ 'halfring-frequency
+ (lambda (file)
+   (let* ((cur-dict (filter-on-filetype "halfring<em>frequency"))
+       (fits-file-paths (map (lambda (x)
+                               (assq-ref 'file</em>path x))
+                             cur-dict)))</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-42">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-42">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
 
 <p>To help the reader who has never read Scheme code, I am summarizing
 here the main characteristics of the language. This is not a Scheme

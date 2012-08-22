@@ -196,8 +196,8 @@
 ;; `string->symbol` and `vector->list` (two Scheme built-ins).
 (define (json->alist dictionary)
   (map (lambda (x)
-	 (cons (string->symbol (car x))
-	       (cdr x)))
+         (cons (string->symbol (car x))
+               (cdr x)))
        (vector->list dictionary)))
 
 ;; Command-line parsing
@@ -216,29 +216,29 @@
 (define (parse-command-line program-name args)
   (if (not (eq? (length args) 2))
       (begin (format #t #<<EOF
-Usage: ~a NULL_TEST_DIR OUTPUT_PATH
+                     Usage: ~a NULL_TEST_DIR OUTPUT_PATH
 
-where NULL_TEST_DIR is the path to the directory containing
-the results of the null tests to be included in the report,
-and OUTPUT_PATH is the path where to save the files of the
-HTML report. If OUTPUT_PATH does not exist, it will be created.
+                     where NULL_TEST_DIR is the path to the directory containing
+                     the results of the null tests to be included in the report,
+                     and OUTPUT_PATH is the path where to save the files of the
+                     HTML report. If OUTPUT_PATH does not exist, it will be created.
 
 EOF
-		      program-name)
-	     (exit 1)))
+                     program-name)
+             (exit 1)))
   (list (cons 'input-dir (car args))
-	(cons 'output-dir (cadr args))))
+        (cons 'output-dir (cadr args))))
 
 ;; The variable `user-args` holds all the information the user
 ;; specified from the command line. Note that `argv` (function, not
 ;; variable!) is not part of R5RS: it is a Chicken extension.
 (define user-args (parse-command-line (car (argv))
-				      (cdr (argv))))
+                                      (cdr (argv))))
 
 (format #t "Report will be created under the following path: ~a\n"
-	(assq-ref 'output-dir user-args))
+        (assq-ref 'output-dir user-args))
 (format #t "Directory where to look for JSON files: ~a\n"
-	(assq-ref 'input-dir user-args))
+        (assq-ref 'input-dir user-args))
 
 ;; Parse a file and return a list of associative lists suitable for
 ;; being used with functions like `assq` and `assv`. Note that, unlike
@@ -261,17 +261,17 @@ EOF
 ;; with `.json`).
 (define json-dictionary
   (apply append (map extract-alists-from-json-file
-		     (find-files (assq-ref 'input-dir user-args)
-				 ".+\\.json$"))))
+                     (find-files (assq-ref 'input-dir user-args)
+                                 ".+\\.json$"))))
 
 ;; The function `filter-on-filetype` filters the contents of
 ;; `json-dictionary` acc ording to a given file type. The use of
 ;; `filter` is exactly the same as in Python.
 (define (filter-on-filetype file-type)
   (filter (lambda (object)
-	    (equal? (assq-ref 'file_type object)
-		    file-type))
-	  json-dictionary))
+            (equal? (assq-ref 'file_type object)
+                    file-type))
+          json-dictionary))
 
 ;; GIF generation
 ;; ==============
@@ -286,15 +286,15 @@ EOF
 ;; first need to delete the file.
 
 (define (map2gif input-fits-file-name
-		 output-gif-file-name
-		 title
-		 #!key (overwrite? #f)) ; If not specified, it is #f
+                 output-gif-file-name
+                 title
+                 #!key (overwrite? #f)) ; If not specified, it is #f
   (call/cc ; Chicken's shortcut for call-with-current-continuation
    (lambda (return)
      (if (file-exists? output-gif-file-name)
-	 (if overwrite?
-	     (delete-file output-gif-file-name)
-	     (return '())))
+         (if overwrite?
+             (delete-file output-gif-file-name)
+             (return '())))
      ;; Create the directory that will contain the output file,
      ;; if it does not exist
      (create-pathname-directory output-gif-file-name)
@@ -312,24 +312,24 @@ EOF
      ;; documentation](http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features)
      ;; for further details.
      (let ((output-tga-file-name
-	    (filepath:replace-extension output-gif-file-name ".tga")))
+            (filepath:replace-extension output-gif-file-name ".tga")))
        (call-with-values
-	   (lambda ()
-	     (format #t "Running map2tga and convert on ~a...\n"
-		     input-fits-file-name)
-	     (run* (map2tga ,input-fits-file-name
-			    ,output-tga-file-name
-			    -bar
-			    -xsz 640
-			    -title ,(html:++ (list "\"" title "\"")))
-		   (convert ,output-tga-file-name
-			    -transparent white
-			    ,output-gif-file-name)))
-	 (lambda (map2tga-return-code convert-return-code)
-	   (if (> map2tga-return-code 0)
-	       (abort "Error when executing \"map2tga\""))
-	   (if (> convert-return-code 0)
-	       (abort "Error when executing \"convert\""))))
+           (lambda ()
+             (format #t "Running map2tga and convert on ~a...\n"
+                     input-fits-file-name)
+             (run* (map2tga ,input-fits-file-name
+                            ,output-tga-file-name
+                            -bar
+                            -xsz 640
+                            -title ,(html:++ (list "\"" title "\"")))
+                   (convert ,output-tga-file-name
+                            -transparent white
+                            ,output-gif-file-name)))
+         (lambda (map2tga-return-code convert-return-code)
+           (if (> map2tga-return-code 0)
+               (abort "Error when executing \"map2tga\""))
+           (if (> convert-return-code 0)
+               (abort "Error when executing \"convert\""))))
        (delete-file output-tga-file-name)))))
 
 ;; This function converts the name of a FITS file containing a map
@@ -371,8 +371,8 @@ EOF
        (create-pathname-directory output-file)
        ;; Copy the file. `file_copy` is part of Chicken Scheme
        (file-copy (filepath:join-path (list source filename))
-		  output-file
-		  'overwrite)))
+                  output-file
+                  'overwrite)))
    #f ; This is our value for `unused`
    source))
 
@@ -383,13 +383,13 @@ EOF
   (for-each
    (lambda (dir-name)
      (dir-copy (filepath:join-path (list source-dir dir-name))
-	       (filepath:join-path (list (assq-ref 'output-dir user-args)
-					 dir-name))))
+               (filepath:join-path (list (assq-ref 'output-dir user-args)
+                                         dir-name))))
    (list "css")))
 
 ;; General-purpose functions
 ;; -------------------------
-;
+
 ;; We keep the names of the HTML files to be created in a alist for
 ;; avoiding repetitions in the code (they must be used when creating
 ;; the files and when producing the `<a>` links in the side menu). The
@@ -397,61 +397,59 @@ EOF
 ;; for this alist, so we make `html-file-name` a local definition.
 (define (get-html-file-name label)
   (let ((html-file-names
-	 '((information . "index.html")
-	   (halfring-frequency . "halfring_freq.html")
-	   (surv-rad . "surv_radiometer.html")
-	   (surv-horn . "surv_horn.html")
-	   (surv-pair . "surv_pair.html")
-	   (surv-frequency . "surv_freq.html")
-	   (surv-cross-freq . "surv_cross.html")
-	   (full-pair . "full_pair.html")
-	   (full-frequency . "full_freq.html")
-	   (full-cross-freq . "full_cross.html")
-	   (table-of-contents . "toc.html"))))
+         '((information . "index.html")
+           (halfring-frequency . "halfring_freq.html")
+           (surv-rad . "surv_radiometer.html")
+           (surv-horn . "surv_horn.html")
+           (surv-pair . "surv_pair.html")
+           (surv-frequency . "surv_freq.html")
+           (surv-cross-freq . "surv_cross.html")
+           (full-pair . "full_pair.html")
+           (full-frequency . "full_freq.html")
+           (full-cross-freq . "full_cross.html")
+           (table-of-contents . "toc.html"))))
     (assq-ref label html-file-names)))
 
 ;; Each HTML page contains a menu on the left, whose look is specified
-;; by the CSS file `css/menu.css`. Note how nice is to use the
-;; `html-tag` package: we are producing HTML code using commands like
-;; `<a>` just in plain HTML, yet we can freely call Scheme functions
-;; within it (in this case, `get-html-file-name`). We define a
-;; `smart-<a>` function which uses `get-html-file-name` to retrieve
-;; the link to be used in the `<a>` tag, and it also defines the class
-;; according to the fact that the entry links to its own page or not
-;; (the CSS style uses this to highlight selected items in bold).
+;; by the CSS file `css/menu.css`. Function `side-menu` is
+;; responsibile for creating this menu for each HTML page. The
+;; argument `page-tag` is one of the symbols recognized by
+;; `get-html-file-name` (see above), and specifies for which HTML page
+;; we are generating this menu. We define a `smart-<a>` function which
+;; uses `get-html-file-name` to retrieve the link to be used in the
+;; `<a>` tag, and it also defines the class according to the fact that
+;; the entry links to its own page or not (the CSS style uses this to
+;; highlight selected items in bold).
 ;;
-;; Note that we implement a local function named `smart-<a>`. Its
-;; purpose is to produce a link to a page, which is of the class
-;; "selected" if the page to be linked is the same page we are
-;; generating. The argument `page-tag` is one of the symbols
-;; recognized by `get-html-file-name` (see above), and specifies for
-;; which HTML page we are generating this menu.
+;; Note how nice is to use the `html-tag` package: we are producing
+;; HTML code using commands like `<a>` just in plain HTML, yet we can
+;; freely call Scheme functions within it (in this case,
+;; `get-html-file-name`).
 (define (side-menu page-tag)
   (let ((smart-<a> (lambda (title tag)
-		     (<a> href: (get-html-file-name tag)
-			  class: (if (eq? tag page-tag)
-				     "selected"
-				     "unselected")
-			  title))))
+                     (<a> href: (get-html-file-name tag)
+                          class: (if (eq? tag page-tag)
+                                     "selected"
+                                     "unselected")
+                          title))))
     (<nav> id: "nav"
-	   (<ul> id: "menu"
-		 (<li> (smart-<a> "Information" 'information))
-		 (<li> "1-h tests (half rings) &raquo;"
-		       (<ul> (smart-<a> "Frequency" 'halfring-frequency)))
-		 (<li> "Survey tests &raquo;"
-		       (<ul>
-			(<li> (smart-<a> "Single radiometer" 'surv-rad))
-			(<li> (smart-<a> "Single horn" 'surv-horn))
-			(<li> (smart-<a> "Horn pair" 'surv-pair))
-			(<li> (smart-<a> "Frequency" 'surv-frequency))
-			(<li> (smart-<a> "Cross-frequency" 'surv-cross-freq))))
-		 (<li> "Full-mission tests &raquo;"
-		       (<ul>
-			(<li> (smart-<a> "Horn pair" 'full-pair))
-			(<li> (smart-<a> "Frequency" 'full-frequency))
-			(<li> (smart-<a> "Cross-frequency" 'full-cross-freq))))
-		 (<li> (smart-<a> "Table of contents" 'table-of-contents))))))
-
+           (<ul> id: "menu"
+                 (<li> (smart-<a> "Information" 'information))
+                 (<li> "1-h tests (half rings) &raquo;"
+                       (<ul> (smart-<a> "Frequency" 'halfring-frequency)))
+                 (<li> "Survey tests &raquo;"
+                       (<ul>
+                        (<li> (smart-<a> "Single radiometer" 'surv-rad))
+                        (<li> (smart-<a> "Single horn" 'surv-horn))
+                        (<li> (smart-<a> "Horn pair" 'surv-pair))
+                        (<li> (smart-<a> "Frequency" 'surv-frequency))
+                        (<li> (smart-<a> "Cross-frequency" 'surv-cross-freq))))
+                 (<li> "Full-mission tests &raquo;"
+                       (<ul>
+                        (<li> (smart-<a> "Horn pair" 'full-pair))
+                        (<li> (smart-<a> "Frequency" 'full-frequency))
+                        (<li> (smart-<a> "Cross-frequency" 'full-cross-freq))))
+                 (<li> (smart-<a> "Table of contents" 'table-of-contents))))))
 
 ;; This is the name of the data release. *TODO*: make the release name
 ;; specifiable from the command line/configuration file
@@ -472,13 +470,13 @@ EOF
 ;; the side menu. It returns a string.
 (define (wrap-html file-tag page-title body)
   (html-page (html:++ (list
-		       (<h1> (make-title-for-report))
-		       (side-menu file-tag)
-		       (<div> id: "body"
-			      (<h2> page-title)
-			      body)))
-	     title: page-title
-	     css: '("css/main.css" "css/menu.css")))
+                       (<h1> (make-title-for-report))
+                       (side-menu file-tag)
+                       (<div> id: "body"
+                              (<h2> page-title)
+                              body)))
+             title: page-title
+             css: '("css/main.css" "css/menu.css")))
 
 ;; We are going to create a number of HTML files, and the creation of
 ;; each of them follows the same rules:
@@ -495,8 +493,8 @@ EOF
 ;; parameter the output stream to be used to write into the file.
 (define (write-html file-tag write-function)
   (let ((output-file-name (filepath:join-path
-			   (list (assq-ref 'output-dir user-args)
-				 (get-html-file-name file-tag)))))
+                           (list (assq-ref 'output-dir user-args)
+                                 (get-html-file-name file-tag)))))
     (create-pathname-directory output-file-name)
     (format #t "Writing file ~a...\n" output-file-name)
     (call-with-output-file output-file-name write-function)))
@@ -513,16 +511,17 @@ EOF
  'information
  (lambda (file)
    (display (wrap-html 'information
-		       "General information about this release"
-		       (<p> (format #f #<<EOF
-This data release of the null tests contains ~a
-objects. It was generated on <i>~a</i> by user <b>~a</b>.
+                       "General information about this release"
+                       (<p> (format #f #<<EOF
+                                    This data release of the null tests contains ~a
+                                    objects. It was generated on <i>~a</i> by user <b>~a</b>.
+
 EOF
-				    (length json-dictionary)
-				    (date->string (current-date)
-						  "~A ~e ~B ~Y, at ~H:~M:~S")
-				    (get-environment-variable "USER"))))
-	    file)
+                                    (length json-dictionary)
+                                    (date->string (current-date)
+                                                  "~A ~e ~B ~Y, at ~H:~M:~S")
+                                    (get-environment-variable "USER"))))
+            file)
    (newline file)))
 
 ;; The "Single survey coupled horn" page
@@ -535,29 +534,29 @@ EOF
  'surv-pair
  (lambda (file)
    (let* ((cur-dict (filter-on-filetype "single_survey_coupled_horn_map"))
-	  (fits-file-paths (map (lambda (x)
-				  (assq-ref 'file_path x))
-				cur-dict)))
+          (fits-file-paths (map (lambda (x)
+                                  (assq-ref 'file_path x))
+                                cur-dict)))
      ;; Create the .gif files
      (for-each (lambda (test-result)
-		 (let ((fits-file-name (assq-ref 'file_path test-result)))
-		   (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
-		   (map2gif fits-file-name
-			    (filepath:join-path
-			     (list (assq-ref 'output-dir user-args)
-				   (fits-name->gif-name fits-file-name)))
-			    (assq-ref 'title test-result))))
-	       cur-dict)
-     
+                 (let ((fits-file-name (assq-ref 'file_path test-result)))
+                   (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
+                   (map2gif fits-file-name
+                            (filepath:join-path
+                             (list (assq-ref 'output-dir user-args)
+                                   (fits-name->gif-name fits-file-name)))
+                            (assq-ref 'title test-result))))
+               cur-dict)
+
      ;; Write links to each image
      (display (wrap-html 'surv-pair
-			 "Coupled horn, survey differences"
-			 (itemize (map (lambda (fits-name)
-					 (let ((gif-name (fits-name->gif-name fits-name)))
-					   (<img> src: gif-name
-						  alt: gif-name)))
-				       fits-file-paths)))
-	      file)
+                         "Coupled horn, survey differences"
+                         (itemize (map (lambda (fits-name)
+                                         (let ((gif-name (fits-name->gif-name fits-name)))
+                                           (<img> src: gif-name
+                                                  alt: gif-name)))
+                                       fits-file-paths)))
+              file)
      (newline file))))
 
 ;; The "Half rings" page
@@ -567,9 +566,9 @@ EOF
 ;;  'halfring-frequency
 ;;  (lambda (file)
 ;;    (let* ((cur-dict (filter-on-filetype "halfring_frequency"))
-;; 	  (fits-file-paths (map (lambda (x)
-;; 				  (assq-ref 'file_path x))
-;; 				cur-dict)))
+;;        (fits-file-paths (map (lambda (x)
+;;                                (assq-ref 'file_path x))
+;;                              cur-dict)))
 
 ;; Appendix: a very short introduction to Scheme
 ;; =============================================
