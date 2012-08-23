@@ -277,6 +277,18 @@ EOF
                     file-type))
           json-dictionary))
 
+;; Given a JSON object, returns the full path associated with it. To
+;; understand this code, keep in mind that the path specified in each
+;; JSON object is relative to the root directory where the null tests
+;; were saved. The path to this root directory is passed to the
+;; program through the command line (hence the reference to
+;; `user-args`).
+(define (abspath-from-json object)
+  (filepath:join-path
+   (list
+    (assq-ref 'input-dir user-args)
+    (assq-ref 'file_name object))))
+
 ;; GIF generation
 ;; ==============
 
@@ -517,8 +529,8 @@ EOF
    (display (wrap-html 'information
                        "General information about this release"
                        (<p> (format #f #<<EOF
-                                    This data release of the null tests contains ~a
-                                    objects. It was generated on <i>~a</i> by user <b>~a</b>.
+This data release of the null tests contains ~a
+objects. It was generated on <i>~a</i> by user <b>~a</b>.
 
 EOF
                                     (length json-dictionary)
@@ -527,12 +539,6 @@ EOF
                                     (get-environment-variable "USER"))))
             file)
    (newline file)))
-
-(define (absolute-file-path-from-json object)
-  (filepath:join-path
-   (list
-    (assq-ref 'input-dir user-args)
-    (assq-ref 'file_name object))))
 
 ;; The "Single survey coupled horn" page
 ;; -------------------------------------
@@ -545,13 +551,14 @@ EOF
  (lambda (file)
    (let* ((cur-dict (sort (filter-on-filetype "surveydiff_detset_map")
 			  (lambda (x y)
+			    ;; Sort the entries according to their channel
 			    (string<? (assq-ref 'channel x)
 				      (assq-ref 'channel y)))))
-          (fits-file-paths (map absolute-file-path-from-json
+          (fits-file-paths (map abspath-from-json
                                 cur-dict)))
      ;; Create the .gif files
      (for-each (lambda (test-result)
-                 (let ((fits-file-name (absolute-file-path-from-json test-result)))
+                 (let ((fits-file-name (abspath-from-json test-result)))
                    (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
                    (map2gif fits-file-name
                             (filepath:join-path
