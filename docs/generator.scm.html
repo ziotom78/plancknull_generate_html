@@ -711,6 +711,12 @@ EOF
             file</span>)</span>
    <span class="paren3">(<span class="default">newline file</span>)</span></span>)</span></span>)</span>
 
+<span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">absolute-file-path-from-json object</span>)</span>
+  <span class="paren2">(<span class="default">filepath:join-path
+   <span class="paren3">(<span class="default">list
+    <span class="paren4">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span>
+    <span class="paren4">(<span class="default">assq-ref &#x27;file_name object</span>)</span></span>)</span></span>)</span></span>)</span>
+
 </pre></td></tr>
 <tr id="section-36">
 <td class="docs">
@@ -729,9 +735,11 @@ JSON files specified from the command line).</p>
 <pre class="highlight"><span class="paren1">(<span class="default">write-html
  &#x27;surv-pair
  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
-   <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">cur-dict <span class="paren6">(<span class="default">filter-on-filetype <span class="string">&quot;single_survey_coupled_horn_map&quot;</span></span>)</span></span>)</span>
-          <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x</span>)</span>
-                                  <span class="paren2">(<span class="default">assq-ref &#x27;file_path x</span>)</span></span>)</span>
+   <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">cur-dict <span class="paren6">(<span class="default">sort <span class="paren1">(<span class="default">filter-on-filetype <span class="string">&quot;surveydiff_detset_map&quot;</span></span>)</span>
+			  <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">x y</span>)</span>
+			    <span class="paren2">(<span class="default">string&lt;? <span class="paren3">(<span class="default">assq-ref &#x27;channel x</span>)</span>
+				      <span class="paren3">(<span class="default">assq-ref &#x27;channel y</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+          <span class="paren5">(<span class="default">fits-file-paths <span class="paren6">(<span class="default">map absolute-file-path-from-json
                                 cur-dict</span>)</span></span>)</span></span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
 <tr id="section-38">
@@ -740,7 +748,7 @@ JSON files specified from the command line).</p>
 </td>
 <td class="code">
 <pre class="highlight">     <span class="paren1">(<span class="default">for-each <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">test-result</span>)</span>
-                 <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">assq-ref &#x27;file_path test-result</span>)</span></span>)</span></span>)</span>
+                 <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">fits-file-name <span class="paren6">(<span class="default">absolute-file-path-from-json test-result</span>)</span></span>)</span></span>)</span>
                    <span class="paren4">(<span class="default">format #t <span class="string">&quot;Writing to ~a</span><span class="string">\n</span><span class="string">&quot;</span> <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span>
                    <span class="paren4">(<span class="default">map2gif fits-file-name
                             <span class="paren5">(<span class="default">filepath:join-path
@@ -780,7 +788,7 @@ JSON files specified from the command line).</p>
  (lambda (file)
    (let* ((cur-dict (filter-on-filetype "halfring<em>frequency"))
        (fits-file-paths (map (lambda (x)
-                               (assq-ref 'file</em>path x))
+                               (assq-ref 'file</em>name x))
                              cur-dict)))</p>
 </td>
 <td class="code">

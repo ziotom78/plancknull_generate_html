@@ -528,6 +528,12 @@ EOF
             file)
    (newline file)))
 
+(define (absolute-file-path-from-json object)
+  (filepath:join-path
+   (list
+    (assq-ref 'input-dir user-args)
+    (assq-ref 'file_name object))))
+
 ;; The "Single survey coupled horn" page
 ;; -------------------------------------
 
@@ -537,13 +543,15 @@ EOF
 (write-html
  'surv-pair
  (lambda (file)
-   (let* ((cur-dict (filter-on-filetype "single_survey_coupled_horn_map"))
-          (fits-file-paths (map (lambda (x)
-                                  (assq-ref 'file_path x))
+   (let* ((cur-dict (sort (filter-on-filetype "surveydiff_detset_map")
+			  (lambda (x y)
+			    (string<? (assq-ref 'channel x)
+				      (assq-ref 'channel y)))))
+          (fits-file-paths (map absolute-file-path-from-json
                                 cur-dict)))
      ;; Create the .gif files
      (for-each (lambda (test-result)
-                 (let ((fits-file-name (assq-ref 'file_path test-result)))
+                 (let ((fits-file-name (absolute-file-path-from-json test-result)))
                    (format #t "Writing to ~a\n" (fits-name->gif-name fits-file-name))
                    (map2gif fits-file-name
                             (filepath:join-path
@@ -571,7 +579,7 @@ EOF
 ;;  (lambda (file)
 ;;    (let* ((cur-dict (filter-on-filetype "halfring_frequency"))
 ;;        (fits-file-paths (map (lambda (x)
-;;                                (assq-ref 'file_path x))
+;;                                (assq-ref 'file_name x))
 ;;                              cur-dict)))
 
 ;; Appendix: a very short introduction to Scheme
