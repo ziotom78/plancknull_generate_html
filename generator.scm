@@ -181,7 +181,11 @@
 ;; however that `assq-ref` is a
 ;; [built-in](http://www.gnu.org/software/guile/manual/html_node/Retrieving-Alist-Entries.html)
 ;; in GNU Guile, but - alas! - not in Chicken Scheme).
-(define (assq-ref entry a-list) (cdr (assq entry a-list)))
+(define (assq-ref entry a-list) 
+  (let ((field (assq entry a-list)))
+    (if field
+	(cdr field)
+	#f)))
 
 ;; JSON parsing
 ;; ============

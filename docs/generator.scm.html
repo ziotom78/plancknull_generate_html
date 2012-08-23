@@ -219,7 +219,11 @@ however that <code>assq-ref</code> is a
 in GNU Guile, but - alas! - not in Chicken Scheme).</p>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">assq-ref entry a-list</span>)</span> <span class="paren2">(<span class="default">cdr <span class="paren3">(<span class="default">assq entry a-list</span>)</span></span>)</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">assq-ref entry a-list</span>)</span> 
+  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">field <span class="paren5">(<span class="default">assq entry a-list</span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> field
+	<span class="paren4">(<span class="default">cdr field</span>)</span>
+	#f</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-6">
