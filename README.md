@@ -131,8 +131,8 @@ the results of the null tests from the subdirectories under
 The source code of the program can be processed using
 [`schematic`](http://wiki.call-cc.org/eggref/4/schematic), a
 documenting tool for Chicken Scheme, in order to have some nicely
-formatted HTMLs. Install it from the command line
-with the command `sudo chicken-install schematic`, then run
+formatted HTMLs. Install it from the command line with the command
+`sudo chicken-install schematic`, then run
 
     schematic -f markdown generator.scm
 
