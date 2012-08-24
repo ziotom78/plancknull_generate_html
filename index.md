@@ -1,5 +1,5 @@
-Source code for Plancknull_generate_html
-========================================
+Source code for `plancknull_generate_html`
+==========================================
 
 This site provides the full documentation of the program
 [`plancknull_generate_html`](https://github.com/ziotom78/plancknull_generate_html),
@@ -13,7 +13,7 @@ below to read the commented source code:
 * [`file-utils.scm`](./file-utils.scm.html): functions that deal with
   files (e.g. producing a GIF file from a
   [Healpix](http://healpix.jpl.nasa.gov/) map in FITS format).
-* [`generate.scm`](./generate.scm.html): the main program
+* [`generator.scm`](./generator.scm.html): the main program
 * [`html-gen-utils.scm`](./html-gen-utils.scm.html): functions that ease
   the production of HTML pages for the null test reports.
 * [`json-utils.scm`](./json-utils.scm.html): utility functions to
