@@ -32,10 +32,15 @@ $(DEPLOY_DIR)/generator: generator.scm
 	done
 	cp -rf css $(DEPLOY_DIR) # Copy this directory as well
 
-documentation: docs/generator.scm.html
+documentation: \
+	docs/install-notes.scm.html \
+	docs/generator.scm.html \
+	docs/json-utils.scm.html \
+	docs/file-utils.scm.html \
+	docs/scheme-help.scm.html
 
-docs/generator.scm.html: generator.scm json-utils.scm scheme-help.scm
-	schematic -f markdown --directory docs $^
+docs/%.scm.html: %.scm
+	schematic -f markdown --directory docs $<
 
 help:
 	@echo "Available targets:"

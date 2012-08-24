@@ -6,144 +6,6 @@
 ;; Author: Maurizio Tomasi
 ;;
 ;; Start date: August 13th, 2012
-;;
-;; How to generate the executable
-;; ==============================
-;;
-;; The program is written in Scheme
-;; [R5RS](http://www.schemers.org/Documents/Standards/R5RS/), and it
-;; needs to be compiled into an executable in order to be executed.
-;; There are two ways to do it: either grab a precompiled binary (easy
-;; way) or compile it by yourself (hard way). In the following section
-;; we'll detail the two procedures.
-;;
-;; Grabbing the executable (easy way)
-;; ----------------------------------
-;;
-;; You can ask Maurizio Tomasi for a self-contained bundle. At the LFI
-;; DPC and at NERSC, he keeps one in his homedir. The bundle is a
-;; directory containing the executable (named `standalone_generator`)
-;; and a large set of dynamic libraries needed to run the program. You
-;; can move this directory anywhere in your filesystem, but do not try
-;; to run it on different architectures/distributions (e.g. from a
-;; RedHat system to Ubuntu, from x86 to x86_64...).
-;;
-;; Compiling the executable from the source (hard way)
-;; ---------------------------------------------------
-;;
-;; To compile the source code into an executable you must have the
-;; [Chicken Scheme](http://www.call-cc.org/) compiler and a few
-;; open-source libraries for Chicken (called
-;; [_eggs_](http://wiki.call-cc.org/eggs)). To install Chicken, you
-;; can use your package manager (e.g. `sudo apt-get install
-;; chicken-bin` under Ubuntu Linux) if you are a `sudo` user.
-;; Otherwise, you must install it from source in your home directory.
-;; Open a terminal and run the following commands (if you do not see
-;; the second line fully, select the text with the mouse):
-;;
-;;     mkdir -p $HOME/usr $HOME/.chicken-temp
-;;     curl http://code.call-cc.org/releases/current/chicken.tar.gz | tar xz -C $HOME/.chicken-temp
-;;     pushd $HOME/.chicken-temp/chicken-*
-;;     make PLATFORM=linux PREFIX=$HOME/usr install
-;;     popd
-;;     rm -rf $HOME/.chicken-temp
-;;
-;; (If you want, you can change `$HOME/usr` with any other directory
-;; you want. It should be the place where you usually install things
-;; under your home directory.) At this point, if you did not so
-;; already, put the following lines at the end of your `~/.profile`
-;; (assuming you're using `sh`, `bash` or `dash` as your login shell):
-;;
-;;     export PATH=$HOME/usr/bin:$PATH
-;;     export C_INCLUDE_PATH=$HOME/usr/include:$C_INCLUDE_PATH
-;;     export LIBRARY_PATH=$HOME/usr/lib:$LIBRARY_PATH
-;;     export LD_LIBRARY_PATH=$HOME/usr/lib:$LD_LIBRARY_PATH
-;;     export MANPATH=$HOME/usr/man:$MANPATH
-;;
-;; Logout and login to see the new variabiles. If you are able to run
-;; `chicken -version`, then the installation of the compiler
-;; completed successfully.
-;;
-;; Now you need some "eggs" (that is, Chicken's libraries). Move to
-;; the directory where you have the source code of
-;; `plancknull_generate_html` and run the following command:
-;;
-;;     sudo make install_eggs
-;;
-;; (If you've installed Chicken under your homedir, omit `sudo`). Now
-;; you should be able to compile the program, simply run
-;;
-;;     make generator
-;;
-;; This will silently convert `generator.scm` into a C program, which
-;; will then be compiled to a standalone executable. The `Makefile`
-;; provided with the source code allows for many targets, run `make
-;; TARGET` where `TARGET` is one of the following:
-;;
-;; * `generator` produces the executable. Be careful that this program
-;; needs the Chicken runtime libraries to be accessible at runtime
-;; (therefore you cannot distribute it)
-;; * `deploy` produces a stand-alone executable in the directory
-;; `standalone_generator`. Unlike the `generator` target, the content
-;; of the directory (containing the executable `standalone_generator`
-;; plus many dynamic libraries) _can_ be distributed to others, as all
-;; the Chicken libraries needed by the program are included in the
-;; directory. (You can think of it as Chicken's analogous to Mac OS X
-;; `.app` directories.)
-;; * `install_eggs` repeatedly calls `chicken-install` to install the
-;; eggs required to compile the program. You might have to use `sudo`
-;; (e.g. this is the case if you installed Chicken using Ubuntu's
-;; `apt-get`).
-;; * `documentation` runs Schematic on the source code to produce this
-;; documentation (in the `docs` directory).
-;; * `help` prints a summary of the available options implemented in
-;; the makefile.
-;;
-;; How to run the program
-;; ======================
-;;
-;; To run the program, you must have
-;; [`map2tga`](http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm)
-;; and `convert` (part of
-;; [ImageMagick](http://www.imagemagick.org/script/index.php) &mdash;
-;; its fork [GraphicsMagick](http://www.graphicsmagick.org/) should be
-;; ok as well) in your path. `map2tga` is provided by
-;; [Healpix](http://healpix.jpl.nasa.gov/): if you work with
-;; Planck/LFI, you surely have it. (Note that it is already installed
-;; at the LFI DPC.)
-;;
-;; The program needs as input one or more JSON files containing
-;; information about the products of the null tests. Typically, these
-;; are produced by the
-;; [`plancknull`](https://github.com/zonca/plancknull) program. You
-;; can specify them from the command line:
-;;
-;;     $ generator NULL_TEST_DIRECTORY OUTPUT_PATH
-;;
-;; (If you are using the standalone executable, run
-;; `standalone_generator` instead of `generator`). This will read the
-;; results of the null tests from the subdirectories under
-;; `NULL_TEST_DIRECTORY`, and it will create the directory
-;; `OUTPUT_PATH` and populate it with the files needed for the HTML
-;; report. If `OUTPUT_PATH` does not exist, it will be silently
-;; created.
-;;
-;; How to read the source code of this program
-;; ===========================================
-;;
-;; This page was created automatically from the program source code
-;; using [`schematic`](http://wiki.call-cc.org/eggref/4/schematic), a
-;; documenting tool for Chicken Scheme. Install it from the command
-;; line with the command `sudo chicken-install schematic`, then
-;; run
-;;
-;;     schematic -f markdown generator.scm
-;;
-;; (assuming you have
-;; [`markdown`](http://en.wikipedia.org/wiki/Markdown), which can be
-;; easily installed using `apt-get` under Debian/Ubuntu). This will
-;; create a sub-directory `html` where you'll find the source code of
-;; this very webpage.
 
 ;; Initialization
 ;; ==============
@@ -168,9 +30,8 @@
 (require-extension directory-utils)
 (require-extension srfi-19)
 
-;; We import a separate module which contains a number of
-;; useful definitions for working with JSON modules.
 (include "json-utils.scm") (import json-utils)
+(include "file-utils.scm") (import file-utils)
 
 ;; We're going to concatenate a number of HTML statements, so it is
 ;; nicer to have a shorthand for the Scheme function
@@ -253,112 +114,13 @@ EOF
     (assq-ref 'input-dir user-args)
     (assq-ref 'file_name object))))
 
-;; GIF generation
-;; ==============
-
-;; We need to implement the code that will convert the maps in FITS
-;; format into GIF images that can be included in the HTML report. We
-;; assume the availability of the `map2gif` program bundled with
-;; [Healpix](http://healpix.jpl.nasa.gov/).
-
-;; Note that, since `map2gif` does not overwrite existing GIF files,
-;; if the file already exists and the flag `overwrite?` is true we
-;; first need to delete the file.
-
-(define (map2gif input-fits-file-name
-                 output-gif-file-name
-                 title
-                 #!key (overwrite? #f)) ; If not specified, it is #f
-  (call/cc ; Chicken's shortcut for call-with-current-continuation
-   (lambda (return)
-     (if (file-exists? output-gif-file-name)
-         (if overwrite?
-             (delete-file output-gif-file-name)
-             (return '())))
-     ;; Create the directory that will contain the output file,
-     ;; if it does not exist
-     (create-pathname-directory output-gif-file-name)
-     ;; Run the program. Note the elegance of "run*" (from the "shell"
-     ;; egg): we include the command-line switches as if they were
-     ;; Scheme symbols! (We put a comma in front of `(html:++ ...)`
-     ;; because we want it to be interpreted as a Scheme expression:
-     ;; otherwise it would be put as it is in the arguments to the
-     ;; process call.) *Note:* `run*` is defined in the `shell` egg.
-     ;; When multiple commands are specified (in this case, `map2tga`
-     ;; and `convert`), it returns a set of values. These must be
-     ;; interpreted using `call-with-values`, which is a standard
-     ;; Scheme function accepting a "producer" and a "consumer". Refer
-     ;; to the [R5RS
-     ;; documentation](http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features)
-     ;; for further details.
-     (let ((output-tga-file-name
-            (filepath:replace-extension output-gif-file-name ".tga")))
-       (call-with-values
-           (lambda ()
-             (format #t "Running map2tga and convert on ~a...\n"
-                     input-fits-file-name)
-             (run* (map2tga ,input-fits-file-name
-                            ,output-tga-file-name
-                            -bar
-                            -xsz 512
-			    -title ,(string-concatenate (list "\"" title "\"")))
-                   (convert ,output-tga-file-name
-                            -transparent white
-                            ,output-gif-file-name)))
-         (lambda (map2tga-return-code convert-return-code)
-           (if (> map2tga-return-code 0)
-               (abort "Error when executing \"map2tga\""))
-           (if (> convert-return-code 0)
-               (abort "Error when executing \"convert\""))))
-       (delete-file output-tga-file-name)))))
-
-;; This function converts the name of a FITS file containing a map
-;; into the name of the `.gif` file that will contain the
-;; representation of the map shown in the report. It strips the
-;; directory and extension parts and substitutes them using functions
-;; from the `filepath` eggs. Note that we want the GIF file to be in a
-;; subdirectory of the output directory instead of being in the same
-;; directory as the input FITS file: in this was the user can run
-;; `tar` or `zip` on it to obtain a self-contained report.
-(define (fits-name->gif-name fits-name)
-  (filepath:replace-directory
-   (filepath:replace-extension fits-name ".gif")
-   "images"))
-
 ;; Report generation
 ;; ===============
 
-;; Copying common files
-;; --------------------
-;;
-;; A small set of files (CSS styles, JavaScript files) need to be
-;; copied to the output directory, in order to make the report
-;; self-contained. These files should be taken from the directory
-;; where the executable has been launched.
-
-;; Chicken Scheme does not provide a function to copy whole
-;; directories. So we implement one using a nice function implemented
-;; in `directory-utils`: `directory-fold`. It takes a function to be
-;; applied to each file, a user-defined value that is passed to this
-;; function (we do not use it, so we call it `unused` and set it to
-;; `#f`) and the name of the directory.
-(define (dir-copy source dest)
-  (directory-fold
-   (lambda (filename unused)
-     (let ((output-file (filepath:join-path (list dest filename))))
-       (format #t "Copying file ~a to ~a...\n" filename dest)
-       ;; Create the destination directory if it does not exist
-       (create-pathname-directory output-file)
-       ;; Copy the file. `file_copy` is part of Chicken Scheme
-       (file-copy (filepath:join-path (list source filename))
-                  output-file
-                  'overwrite)))
-   #f ; This is our value for `unused`
-   source))
-
-;; Now we can iterate over the names of the directories to be copied
-;; (currently only `css`, but a separate directory `js` for JavaScript
-;; files might be needed in the future).
+;; We copy the content of a number of directories into the destination
+;; path using `dir-copy` (defined in `file-utils.scm`). Currently only
+;; `css` is copied, but a separate directory `js` for JavaScript files
+;; might be needed in the future).
 (let ((source-dir (filepath:take-directory (car (argv)))))
   (for-each
    (lambda (dir-name)
