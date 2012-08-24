@@ -43,13 +43,11 @@ $(DEPLOY_DIR)/generator: $(INPUT_FILES)
 	zip -r $(DEPLOY_FILE) $(DEPLOY_DIR)
 
 documentation: \
-	docs/install-notes.scm.html \
 	docs/generator.scm.html \
 	docs/user-settings.scm.html \
 	docs/json-utils.scm.html \
 	docs/file-utils.scm.html \
-	docs/html-gen-utils.scm.html \
-	docs/scheme-help.scm.html
+	docs/html-gen-utils.scm.html
 
 docs/%.scm.html: %.scm
 	schematic -f markdown --directory docs $<
