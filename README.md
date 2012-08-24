@@ -113,22 +113,25 @@ DPC.)
 The program needs as input one or more JSON files containing
 information about the products of the null tests. Typically, these are
 produced by the [`plancknull`](https://github.com/zonca/plancknull)
-program. You can specify them from the command line:
+program. You specify the directory containing the output of
+`plancknull` as the first parameter of the program, followed by the
+directory where to save the report:
 
     $ generator NULL_TEST_DIRECTORY OUTPUT_PATH
 
 (If you are using the standalone executable, run
-`standalone_generator` instead of `generator`). This will read the
-results of the null tests from the subdirectories under
-`NULL_TEST_DIRECTORY`, and it will create the directory `OUTPUT_PATH`
-and populate it with the files needed for the HTML report. If
+`plancknull_generate_html_*` instead of `generator`). This will read
+the results of the null tests from the subdirectories under
+`NULL_TEST_DIRECTORY`, then it will populate the directory
+`OUTPUT_PATH` with the files needed for the HTML report. If
 `OUTPUT_PATH` does not exist, it will be silently created.
 
 ## How to read the source code of this program
 
-This page was created automatically from the program source code using
+The source code of the program can be processed using
 [`schematic`](http://wiki.call-cc.org/eggref/4/schematic), a
-documenting tool for Chicken Scheme. Install it from the command line
+documenting tool for Chicken Scheme, in order to have some nicely
+formatted HTMLs. Install it from the command line
 with the command `sudo chicken-install schematic`, then run
 
     schematic -f markdown generator.scm
@@ -162,10 +165,11 @@ This simplicity derives from three facts:
 1. The syntax is extremely simple: apart from letters and numbers, the
 only symbols which have special meaning for the compiler are `(`, `)`,
 quote, backtick, comma (rarely used) and whitespaces (plus `;`, which
-starts a comment). 2. The standard library is quite small. Clearly
-this is not an advantage, but Chicken Scheme provides a broad
-selection of extensions, called "eggs", that mitigate this problem. 3.
-No complex features of high-end languages are specified by the
+starts a comment).
+2. The standard library is quite small. Clearly this is not an
+advantage, but Chicken Scheme provides a broad selection of
+extensions, called "eggs", that mitigate this problem.
+3. No complex features of high-end languages are specified by the
 standard. For instance, a typical Python program uses OOP techniques,
 which are grounded on many non-trivial concepts (object encapsulation,
 inheritance, abstract methods, static methods...). You can easily
