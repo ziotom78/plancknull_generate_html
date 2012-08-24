@@ -11,12 +11,14 @@
    extract-alists-from-json-file
    read-json-dictionary
    abspath-from-json
-   filter-on-filetype)
+   filter-on-filetype
+   json-obj->HTML-anchor)
 
   (import chicken
 	  scheme
 	  extras
 	  posix
+	  regex
 	  srfi-1
 	  user-settings)
   (require-extension json
@@ -98,4 +100,9 @@
 	(filter (lambda (object)
 		  (equal? (assq-ref 'file_type object)
 			  file-types))
-		dict))))
+		dict)))
+
+    (define (json-obj->HTML-anchor obj)
+      (string-substitute "/" "_"
+			 (assq-ref 'base_file_name obj)
+			 'every-match)))

@@ -17,7 +17,8 @@
   ;; the entry.
   (define (emit-HTML-index-entry-for-object obj)
     (let ((title (assq-ref 'title obj)))
-      (<ul> (<a> href: "#" title "\n"))))
+      (<ul> (<a> href: (html:++ (list "#" (json-obj->HTML-anchor obj)))
+		 title "\n"))))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
@@ -32,7 +33,7 @@
 		      gif-file-name))
 	       title)
       (<div> class: "page_section"
-	     (<h4> title)
+	     (<h4> (<a> name: (json-obj->HTML-anchor obj) title))
 	     "\n"
 	     (<img> src: gif-file-name alt: title)
 	     "\n")))
