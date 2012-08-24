@@ -1,5 +1,13 @@
 LOADLIBES=-lm
-DEPLOY_DIR=$(PWD)/standalone_generator
+CUR_DATE := $(shell date +"%Y_%m_%d")
+DEPLOY_DIR=$(PWD)/plancknull_generate_html_$(CUR_DATE)
+DEPLOY_FILE=$(PWD)/plancknull_generate_html_$(CUR_DATE).zip
+
+INPUT_FILES=generator.scm \
+	    user-settings.scm \
+	    json-utils.scm \
+	    file-utils.scm \
+	    html-gen-utils.scm
 
 CHICKEN_INSTALL=chicken-install
 CHICKEN_CSC=csc
@@ -14,11 +22,8 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 all: generator documentation
 
-generator: generator.scm \
-	user-settings.scm \
-	json-utils.scm \
-	file-utils.scm \
-	html-gen-utils.scm
+generator: $(INPUT_FILES)
+	@echo "Current date:" $(CUR_DATE)
 	$(CHICKEN_CSC) $< -o $@
 
 deploy: $(DEPLOY_DIR)/generator
@@ -28,13 +33,14 @@ install_eggs:
 		$(CHICKEN_INSTALL) $$chicken_module; \
 	done
 
-$(DEPLOY_DIR)/generator: generator.scm
+$(DEPLOY_DIR)/generator: $(INPUT_FILES)
 	mkdir -p $(DEPLOY_DIR)
 	csc -deploy -o $(DEPLOY_DIR) $<
 	@for chicken_module in $(CHICKEN_EGGS_TO_DEPLOY); do \
 		$(CHICKEN_INSTALL) -deploy -p $(DEPLOY_DIR) $$chicken_module; \
 	done
 	cp -rf css $(DEPLOY_DIR) # Copy this directory as well
+	zip -r $(DEPLOY_FILE) $(DEPLOY_DIR)
 
 documentation: \
 	docs/install-notes.scm.html \
