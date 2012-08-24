@@ -17,7 +17,10 @@
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default">module html-gen-utils
-  <span class="paren2">(<span class="default">html:++ wrap-html write-html</span>)</span>
+  <span class="paren2">(<span class="default">html:++
+   wrap-html
+   write-html
+   emit-HTML-index-entry-for-object</span>)</span>
 
   <span class="paren2">(<span class="default">import chicken
 	  scheme
@@ -36,11 +39,14 @@
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>We're going to concatenate a number of HTML statements, so it is
 nicer to have a shorthand for the Scheme function
-<code>string-concatenate</code>. Note that Scheme identifiers can include
-symbols as well, not only letters and numbers.</p>
+<code>string-concatenate</code>. (Also, our shorthand does not require a
+list but a variable number of parameters.) Note that Scheme
+identifiers can include symbols as well, not only letters and
+numbers.</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> html:++ string-concatenate</span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">html:++ . args</span>)</span>
+    <span class="paren2">(<span class="default">string-concatenate args</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-3">
@@ -148,12 +154,11 @@ comprises the side menu. It returns a string.</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">wrap-html file-tag page-title body</span>)</span>
-    <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">list
-			 <span class="paren5">(<span class="default">&lt;h1&gt; <span class="paren6">(<span class="default">make-title-for-report</span>)</span></span>)</span>
-			 <span class="paren5">(<span class="default">side-menu file-tag</span>)</span>
-			 <span class="paren5">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;body&quot;</span>
-				<span class="paren6">(<span class="default">&lt;h2&gt; page-title</span>)</span>
-				body</span>)</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;h1&gt; <span class="paren5">(<span class="default">make-title-for-report</span>)</span></span>)</span>
+			<span class="paren4">(<span class="default">side-menu file-tag</span>)</span>
+			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;body&quot;</span>
+			       <span class="paren5">(<span class="default">&lt;h2&gt; page-title</span>)</span>
+			       body</span>)</span></span>)</span>
 	       <span class="keyword">title:</span> page-title
 	       <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
 
@@ -184,5 +189,22 @@ parameter the output stream to be used to write into the file.</p>
 				   <span class="paren1">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">create-pathname-directory output-file-name</span>)</span>
       <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> output-file-name</span>)</span>
-      <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>)
+      <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>
+
+  
+</pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>This function accepts a JSON object and will produce a link to
+the entry. It is meant to be used e.g. with <code>itemize</code> (from the
+<code>html-utils</code> egg), like in the following code:</p>
+
+<pre><code> (itemize (map emit-HTML-index-entry-for-object list-of-objs))
+</code></pre>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-index-entry-for-object obj</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">&lt;ul&gt; <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren5">(<span class="default">html:++ <span class="string">&quot;#&quot;</span> <span class="paren6">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span></span>)</span>
+		 title <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>)
 </pre></td></tr></table></div></body></html>

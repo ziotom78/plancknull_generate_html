@@ -13,13 +13,6 @@
 		     html-utils
 		     filepath)
 
-  ;; This function accepts a JSON object and will produce a link to
-  ;; the entry.
-  (define (emit-HTML-index-entry-for-object obj)
-    (let ((title (assq-ref 'title obj)))
-      (<ul> (<a> href: (html:++ (list "#" (json-obj->HTML-anchor obj)))
-		 title "\n"))))
-
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
   (define (emit-HTML-for-object obj)
@@ -52,11 +45,11 @@
 		 (length cl-objs))
 	 (display (wrap-html 'surv-pair
 			   "Coupled horn, survey differences"
-			   (html:++ (list (<div> class: "page_index"
-						 (itemize (map emit-HTML-index-entry-for-object
-							       map-objs)))
-					  (string-intersperse
-					   (map emit-HTML-for-object map-objs)
-					   "\n"))))
+			   (html:++ (<div> class: "page_index"
+					   (itemize (map emit-HTML-index-entry-for-object
+							 map-objs)))
+				    (string-intersperse
+				     (map emit-HTML-for-object map-objs)
+				     "\n")))
 		file)
        (newline file))))))

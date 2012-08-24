@@ -1,5 +1,8 @@
 (module html-gen-utils
-  (html:++ wrap-html write-html)
+  (html:++
+   wrap-html
+   write-html
+   emit-HTML-index-entry-for-object)
 
   (import chicken
 	  scheme
@@ -15,9 +18,12 @@
 
   ;; We're going to concatenate a number of HTML statements, so it is
   ;; nicer to have a shorthand for the Scheme function
-  ;; `string-concatenate`. Note that Scheme identifiers can include
-  ;; symbols as well, not only letters and numbers.
-  (define html:++ string-concatenate)
+  ;; `string-concatenate`. (Also, our shorthand does not require a
+  ;; list but a variable number of parameters.) Note that Scheme
+  ;; identifiers can include symbols as well, not only letters and
+  ;; numbers.
+  (define (html:++ . args)
+    (string-concatenate args))
 
   ;; We keep the names of the HTML files to be created in a alist for
   ;; avoiding repetitions in the code (they must be used when creating
@@ -100,12 +106,11 @@
   ;; and encloses it in a self-contained HTML structure which
   ;; comprises the side menu. It returns a string.
   (define (wrap-html file-tag page-title body)
-    (html-page (html:++ (list
-			 (<h1> (make-title-for-report))
-			 (side-menu file-tag)
-			 (<div> id: "body"
-				(<h2> page-title)
-				body)))
+    (html-page (html:++ (<h1> (make-title-for-report))
+			(side-menu file-tag)
+			(<div> id: "body"
+			       (<h2> page-title)
+			       body))
 	       title: page-title
 	       css: '("css/main.css" "css/menu.css")))
 
@@ -129,4 +134,16 @@
 				   (get-html-file-name file-tag)))))
       (create-pathname-directory output-file-name)
       (format #t "Writing file ~a...\n" output-file-name)
-      (call-with-output-file output-file-name write-function))))
+      (call-with-output-file output-file-name write-function)))
+
+  
+  ;; This function accepts a JSON object and will produce a link to
+  ;; the entry. It is meant to be used e.g. with `itemize` (from the
+  ;; `html-utils` egg), like in the following code:
+  ;;
+  ;;      (itemize (map emit-HTML-index-entry-for-object list-of-objs))
+  ;;
+  (define (emit-HTML-index-entry-for-object obj)
+    (let ((title (assq-ref 'title obj)))
+      (<ul> (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
+		 title "\n")))))
