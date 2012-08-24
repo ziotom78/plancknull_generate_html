@@ -7,29 +7,10 @@
 	  extras
 	  json-utils
 	  html-gen-utils
-	  user-settings
-	  file-utils)
+	  user-settings)
   (require-extension html-tags
 		     html-utils
 		     filepath)
-
-  ;; This function accepts a JSON object and will produce
-  ;; HTML code to be put straight into the page.
-  (define (emit-HTML-for-object obj)
-    (let* ((title (assq-ref 'title obj))
-	   (fits-file-name (abspath-from-json obj))
-	   (gif-file-name (fits-name->gif-name fits-file-name)))
-      (format #t "Writing GIF file ~a\n" gif-file-name)
-      (map2gif fits-file-name
-	       (filepath:join-path
-		(list (assq-ref 'output-dir user-args)
-		      gif-file-name))
-	       title)
-      (<div> class: "page_section"
-	     (<h4> (<a> name: (json-obj->HTML-anchor obj) title))
-	     "\n"
-	     (<img> src: gif-file-name alt: title)
-	     "\n")))
 
   (define (write-single-survey-horn-pair-page obj-list)
     (write-html

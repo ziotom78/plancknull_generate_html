@@ -2,13 +2,16 @@
   (html:++
    wrap-html
    write-html
-   emit-HTML-index-entry-for-object)
+   emit-HTML-index-entry-for-object
+   emit-HTML-for-map-object
+   emit-HTML-for-object)
 
   (import chicken
 	  scheme
 	  extras
 	  srfi-13
 	  json-utils
+	  file-utils
 	  user-settings)
 
   (require-extension directory-utils
@@ -146,4 +149,29 @@
   (define (emit-HTML-index-entry-for-object obj)
     (let ((title (assq-ref 'title obj)))
       (<ul> (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
-		 title "\n")))))
+		 title "\n"))))
+
+  
+  ;; This function accepts a JSON object and will produce
+  ;; HTML code to be put straight into the page.
+  (define (emit-HTML-for-map-object obj)
+    (let* ((title (assq-ref 'title obj))
+	   (fits-file-name (abspath-from-json obj))
+	   (gif-file-name (fits-name->gif-name fits-file-name)))
+      (format #t "Writing GIF file ~a\n" gif-file-name)
+      (map2gif fits-file-name
+	       (filepath:join-path
+		(list (assq-ref 'output-dir user-args)
+		      gif-file-name))
+	       title)
+      (<img> src: gif-file-name alt: title)))
+
+  ;; This function accepts a JSON object and will produce
+  ;; HTML code to be put straight into the page.
+  (define (emit-HTML-for-object map-obj)
+    (<div> class: "page_section"
+	   (<h4> (<a> name: (json-obj->HTML-anchor map-obj)
+		      (assq-ref 'title map-obj)))
+	   "\n"
+	   (emit-HTML-for-map-object map-obj)
+	   "\n")))

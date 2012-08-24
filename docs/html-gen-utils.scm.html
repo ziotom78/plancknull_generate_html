@@ -20,13 +20,16 @@
   <span class="paren2">(<span class="default">html:++
    wrap-html
    write-html
-   emit-HTML-index-entry-for-object</span>)</span>
+   emit-HTML-index-entry-for-object
+   emit-HTML-for-map-object
+   emit-HTML-for-object</span>)</span>
 
   <span class="paren2">(<span class="default">import chicken
 	  scheme
 	  extras
 	  srfi-13
 	  json-utils
+	  file-utils
 	  user-settings</span>)</span>
 
   <span class="paren2">(<span class="default">require-extension directory-utils
@@ -206,5 +209,40 @@ the entry. It is meant to be used e.g. with <code>itemize</code> (from the
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-index-entry-for-object obj</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">&lt;ul&gt; <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren5">(<span class="default">html:++ <span class="string">&quot;#&quot;</span> <span class="paren6">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span></span>)</span>
-		 title <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>)
+		 title <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  
+</pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>This function accepts a JSON object and will produce
+HTML code to be put straight into the page.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-for-map-object obj</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">fits-file-name <span class="paren5">(<span class="default">abspath-from-json obj</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">gif-file-name <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing GIF file ~a</span><span class="string">\n</span><span class="string">&quot;</span> gif-file-name</span>)</span>
+      <span class="paren3">(<span class="default">map2gif fits-file-name
+	       <span class="paren4">(<span class="default">filepath:join-path
+		<span class="paren5">(<span class="default">list <span class="paren6">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+		      gif-file-name</span>)</span></span>)</span>
+	       title</span>)</span>
+      <span class="paren3">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-file-name <span class="keyword">alt:</span> title</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-11">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>This function accepts a JSON object and will produce
+HTML code to be put straight into the page.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-for-object map-obj</span>)</span>
+    <span class="paren2">(<span class="default">&lt;div&gt; <span class="keyword">class:</span> <span class="string">&quot;page_section&quot;</span>
+	   <span class="paren3">(<span class="default">&lt;h4&gt; <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">name:</span> <span class="paren5">(<span class="default">json-obj-&gt;HTML-anchor map-obj</span>)</span>
+		      <span class="paren5">(<span class="default">assq-ref &#x27;title map-obj</span>)</span></span>)</span></span>)</span>
+	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
+	   <span class="paren3">(<span class="default">emit-HTML-for-map-object map-obj</span>)</span>
+	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span>)
 </pre></td></tr></table></div></body></html>
