@@ -55,12 +55,12 @@
 (define (parse-command-line program-name args)
   (if (not (eq? (length args) 2))
       (begin (format #t #<<EOF
-                     Usage: ~a NULL_TEST_DIR OUTPUT_PATH
+Usage: ~a NULL_TEST_DIR OUTPUT_PATH
 
-                     where NULL_TEST_DIR is the path to the directory containing
-                     the results of the null tests to be included in the report,
-                     and OUTPUT_PATH is the path where to save the files of the
-                     HTML report. If OUTPUT_PATH does not exist, it will be created.
+where NULL_TEST_DIR is the path to the directory containing
+the results of the null tests to be included in the report,
+and OUTPUT_PATH is the path where to save the files of the
+HTML report. If OUTPUT_PATH does not exist, it will be created.
 
 EOF
                      program-name)

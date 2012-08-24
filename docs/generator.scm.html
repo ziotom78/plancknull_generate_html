@@ -99,12 +99,12 @@ files.</p>
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">parse-command-line program-name args</span>)</span>
   <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">not <span class="paren4">(<span class="default">eq? <span class="paren5">(<span class="default">length args</span>)</span> 2</span>)</span></span>)</span>
       <span class="paren3">(<span class="default">begin <span class="paren4">(<span class="default">format #t #&lt;&lt;EOF
-                     <span class="keyword">Usage:</span> ~a NULL_TEST_DIR OUTPUT_PATH
+<span class="keyword">Usage:</span> ~a NULL_TEST_DIR OUTPUT_PATH
 
-                     where NULL_TEST_DIR is <i><span class="symbol">the</span></i> path to <i><span class="symbol">the</span></i> directory containing
-                     <i><span class="symbol">the</span></i> results of <i><span class="symbol">the</span></i> null tests to be included in <i><span class="symbol">the</span></i> report,
-                     and OUTPUT_PATH is <i><span class="symbol">the</span></i> path where to save <i><span class="symbol">the</span></i> files of <i><span class="symbol">the</span></i>
-                     HTML report. If OUTPUT_PATH does not exist, it will be created.
+where NULL_TEST_DIR is <i><span class="symbol">the</span></i> path to <i><span class="symbol">the</span></i> directory containing
+<i><span class="symbol">the</span></i> results of <i><span class="symbol">the</span></i> null tests to be included in <i><span class="symbol">the</span></i> report,
+and OUTPUT_PATH is <i><span class="symbol">the</span></i> path where to save <i><span class="symbol">the</span></i> files of <i><span class="symbol">the</span></i>
+HTML report. If OUTPUT_PATH does not exist, it will be created.
 
 EOF
                      program-name</span>)</span>
