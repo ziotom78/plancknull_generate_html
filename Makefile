@@ -34,8 +34,8 @@ $(DEPLOY_DIR)/generator: generator.scm
 
 documentation: docs/generator.scm.html
 
-docs/generator.scm.html: generator.scm
-	schematic -f markdown --directory docs generator.scm
+docs/generator.scm.html: generator.scm json-utils.scm scheme-help.scm
+	schematic -f markdown --directory docs $^
 
 help:
 	@echo "Available targets:"
