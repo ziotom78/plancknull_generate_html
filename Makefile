@@ -1,7 +1,7 @@
 LOADLIBES=-lm
-CUR_DATE := $(shell date +"%Y-%m-%d")
-DEPLOY_DIR=$(PWD)/standalone_generator_$(CUR_DATE)
-DEPLOY_FILE=$(PWD)/standalone_generator_$(CUR_DATE).zip
+CUR_DATE := $(shell date +"%Y_%m_%d")
+DEPLOY_DIR=$(PWD)/plancknull_generate_html_$(CUR_DATE)
+DEPLOY_FILE=$(PWD)/plancknull_generate_html_$(CUR_DATE).zip
 
 INPUT_FILES=generator.scm \
 	    user-settings.scm \
