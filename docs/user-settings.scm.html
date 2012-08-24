@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+<title>user-settings.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>user-settings.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">module user-settings
+  <span class="paren2">(<span class="default">parse-command-line user-args</span>)</span>
+
+  <span class="paren2">(<span class="default">import chicken scheme extras</span>)</span>
+
+</span></span></pre></td></tr>
+<tr id="section-2">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><h1>Command-line parsing</h1>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>Here we implement the code that will read the JSON files from the
+command-line and merge them into one big list of dictionaries
+(a-lists).</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-4">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>If <code>args</code> is the list of command-line arguments provided to the
+program, function <code>parse-command-line</code> analyzes them and returns an
+associative list containing the following fields: <code>'output-dir</code> is
+a string specifying the directory where to save the report,
+<code>'input-dir</code> is a string containing the path where to look for JSON
+files.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">parse-command-line program-name args</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">not <span class="paren4">(<span class="default">eq? <span class="paren5">(<span class="default">length args</span>)</span> 2</span>)</span></span>)</span>
+	<span class="paren3">(<span class="default">begin <span class="paren4">(<span class="default">format #t #&lt;&lt;EOF
+<span class="keyword">Usage:</span> ~a NULL_TEST_DIR OUTPUT_PATH
+
+where NULL_TEST_DIR is <i><span class="symbol">the</span></i> path to <i><span class="symbol">the</span></i> directory containing
+<i><span class="symbol">the</span></i> results of <i><span class="symbol">the</span></i> null tests to be included in <i><span class="symbol">the</span></i> report,
+and OUTPUT_PATH is <i><span class="symbol">the</span></i> path where to save <i><span class="symbol">the</span></i> files of <i><span class="symbol">the</span></i>
+HTML report. If OUTPUT_PATH does not exist, it will be created.
+
+EOF
+		       program-name</span>)</span>
+	       <span class="paren4">(<span class="default">exit 1</span>)</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">list <span class="paren3">(<span class="default">cons &#x27;input-dir <span class="paren4">(<span class="default">car args</span>)</span></span>)</span>
+	  <span class="paren3">(<span class="default">cons &#x27;output-dir <span class="paren4">(<span class="default">cadr args</span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>The variable <code>user-args</code> holds all the information the user
+specified from the command line. Note that <code>argv</code> (function, not
+variable!) is not part of R5RS: it is a Chicken extension.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> user-args <span class="paren2">(<span class="default">parse-command-line <span class="paren3">(<span class="default">car <span class="paren4">(<span class="default">argv</span>)</span></span>)</span>
+					<span class="paren3">(<span class="default">cdr <span class="paren4">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span>)
+</pre></td></tr></table></div></body></html>

@@ -14,7 +14,12 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 all: generator documentation
 
-generator: generator.scm
+generator: generator.scm \
+	user-settings.scm \
+	json-utils.scm \
+	file-utils.scm \
+	html-gen-utils.scm \
+	single-surv-coupled-horn.scm
 	$(CHICKEN_CSC) $< -o $@
 
 deploy: $(DEPLOY_DIR)/generator
@@ -35,8 +40,10 @@ $(DEPLOY_DIR)/generator: generator.scm
 documentation: \
 	docs/install-notes.scm.html \
 	docs/generator.scm.html \
+	docs/user-settings.scm.html \
 	docs/json-utils.scm.html \
 	docs/file-utils.scm.html \
+	docs/html-gen-utils.scm.html \
 	docs/scheme-help.scm.html
 
 docs/%.scm.html: %.scm

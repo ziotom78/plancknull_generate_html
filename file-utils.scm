@@ -6,7 +6,7 @@
 ;; the program.
 
 (module file-utils
-  (export map2gif fits-name->gif-name)
+  (export map2gif fits-name->gif-name dir-copy)
 
   (import chicken scheme extras files srfi-13)
   (require-extension shell)

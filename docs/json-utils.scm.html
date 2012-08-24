@@ -27,10 +27,21 @@ loading/interpreting JSON data.</p>
 <div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>List of exported symbols</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default">json-&gt;alist assq-ref extract-alists-from-json-file</span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default">json-&gt;alist
+   assq-ref
+   extract-alists-from-json-file
+   read-json-dictionary
+   abspath-from-json
+   filter-on-filetype</span>)</span>
 
-  <span class="paren1">(<span class="default">import chicken scheme extras</span>)</span>
-  <span class="paren1">(<span class="default">require-extension json</span>)</span>
+  <span class="paren1">(<span class="default">import chicken
+	  scheme
+	  extras
+	  posix
+	  srfi-1
+	  user-settings</span>)</span>
+  <span class="paren1">(<span class="default">require-extension json
+		     filepath</span>)</span>
 
 </pre></td></tr>
 <tr id="section-3">
@@ -82,5 +93,71 @@ contains just one object: this is done through the <code>(if (list?
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">extract-alists-from-json-file file-name</span>)</span>
     <span class="paren2">(<span class="default">format #t <span class="string">&quot;Reading file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> file-name</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">entries <span class="paren5">(<span class="default">call-with-input-file file-name json-read</span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">map json-&gt;alist <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">list? entries</span>)</span> entries <span class="paren5">(<span class="default">list entries</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>)
+      <span class="paren3">(<span class="default">map json-&gt;alist <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">list? entries</span>)</span> entries <span class="paren5">(<span class="default">list entries</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  
+</pre></td></tr>
+<tr id="section-6">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>Find all the files in the null test directory and read their
+contents, then assemble all the objects (a-lists) into a list
+(using <code>extract-alists-from-json-file</code>). Note that <code>append</code> is
+not a R5RS built-in (it is part of
+<a href="http://srfi.schemers.org/srfi-1/srfi-1.html">SRFI-1</a>), but
+Chicken incorporates it. Also, <code>find-files</code> is part of the
+Chicken <code>posix</code> library, and it accepts regular expressions to
+match the files (the meaning of <code>.+\\.json$</code> is: a sequence of
+N>0 characters which ends with <code>.json</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">read-json-dictionary input-dir</span>)</span>
+    <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
+		       <span class="paren4">(<span class="default">find-files input-dir <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+
+</pre></td></tr>
+<tr id="section-7">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>Given a JSON object, returns the full path associated with it. To
+understand this code, keep in mind that the path specified in each
+JSON object is relative to the root directory where the null tests
+were saved. The path to this root directory is passed to the
+program through the command line (hence the reference to
+<code>user-args</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">abspath-from-json object</span>)</span>
+    <span class="paren2">(<span class="default">filepath:join-path
+     <span class="paren3">(<span class="default">list
+      <span class="paren4">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span>
+      <span class="paren4">(<span class="default">assq-ref &#x27;file_name object</span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-8">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>The function <code>filter-on-filetype</code> filters the contents of a JSON
+a-list ording to one or more file types. The use of <code>filter</code> is
+exactly the same as in Python.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">filter-on-filetype dict file-types</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">list? file-types</span>)</span>
+</span></span></span></span></pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>This is the <code>ten</code> part of the <code>if</code>. We're going recursive!</p>
+</td>
+<td class="code">
+<pre class="highlight">	<span class="paren1">(<span class="default">apply append <span class="paren2">(<span class="default">map <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">type</span>)</span> <span class="paren4">(<span class="default">filter-on-filetype dict type</span>)</span></span>)</span>
+			   file-types</span>)</span></span>)</span>
+</pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>This is the <code>else</code> part of the <code>if</code>.</p>
+</td>
+<td class="code">
+<pre class="highlight">	<span class="paren1">(<span class="default">filter <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">object</span>)</span>
+		  <span class="paren3">(<span class="default">equal? <span class="paren4">(<span class="default">assq-ref &#x27;file_type object</span>)</span>
+			  file-types</span>)</span></span>)</span>
+		dict</span>)</span>)))
 </pre></td></tr></table></div></body></html>
