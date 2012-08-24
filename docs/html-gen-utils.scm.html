@@ -22,12 +22,14 @@
    write-html
    emit-HTML-index-entry-for-object
    emit-HTML-for-map-object
-   emit-HTML-for-object</span>)</span>
+   emit-HTML-for-object
+   write-results-page</span>)</span>
 
   <span class="paren2">(<span class="default">import chicken
 	  scheme
 	  extras
 	  srfi-13
+	  data-structures
 	  json-utils
 	  file-utils
 	  user-settings</span>)</span>
@@ -244,5 +246,60 @@ HTML code to be put straight into the page.</p>
 		      <span class="paren5">(<span class="default">assq-ref &#x27;title map-obj</span>)</span></span>)</span></span>)</span>
 	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
 	   <span class="paren3">(<span class="default">emit-HTML-for-map-object map-obj</span>)</span>
-	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span>)
+	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">sort-obj-list obj-list key-tag</span>)</span>
+    <span class="paren2">(<span class="default">sort obj-list
+	  <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x y</span>)</span>
+	    <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">channel-x <span class="paren1">(<span class="default">assq-ref key-tag x</span>)</span></span>)</span>
+		  <span class="paren6">(<span class="default">channel-y <span class="paren1">(<span class="default">assq-ref key-tag y</span>)</span></span>)</span></span>)</span>
+</span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-12">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Sort the entries according to their channel</p>
+</td>
+<td class="code">
+<pre class="highlight">	      <span class="paren1">(<span class="default">string&lt;? channel-x channel-y</span>)</span>))))
+
+</pre></td></tr>
+<tr id="section-13">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>This function generates the main content of a page within a
+number of <div> (one with class "page<em>index" and all the others
+with "page</em>section").</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-results-page obj-list file-tag map-tag cl-tag title</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">sorted-list <span class="paren5">(<span class="default">sort-obj-list <span class="paren6">(<span class="default">filter-on-filetype obj-list
+							  <span class="paren1">(<span class="default">list map-tag
+								cl-tag</span>)</span></span>)</span>
+				      &#x27;channel</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">write-html
+       file-tag
+       <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">file</span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">map-objs <span class="paren2">(<span class="default">filter-on-filetype sorted-list map-tag</span>)</span></span>)</span>
+	       <span class="paren1">(<span class="default">cl-objs  <span class="paren2">(<span class="default">filter-on-filetype sorted-list cl-tag</span>)</span></span>)</span></span>)</span>
+</span></span></span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-14">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>We simply apply <code>emit-HTML-for-object</code> to the whole list
+of objects, and wrap the output into some nice HTML tags
+(using <code>wrap-html</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">	   <span class="paren1">(<span class="default">printf <span class="string">&quot;Including ~a maps and ~a spectra in the page...</span><span class="string">\n</span><span class="string">&quot;</span>
+		   <span class="paren2">(<span class="default">length map-objs</span>)</span>
+		   <span class="paren2">(<span class="default">length cl-objs</span>)</span></span>)</span>
+	   <span class="paren1">(<span class="default">display
+	    <span class="paren2">(<span class="default">wrap-html file-tag
+		       title
+		       <span class="paren3">(<span class="default">html:++
+			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">class:</span> <span class="string">&quot;page_index&quot;</span>
+			       <span class="paren5">(<span class="default">itemize <span class="paren6">(<span class="default">map emit-HTML-index-entry-for-object
+					     map-objs</span>)</span></span>)</span></span>)</span>
+			<span class="paren4">(<span class="default">string-intersperse
+			 <span class="paren5">(<span class="default">map emit-HTML-for-object map-objs</span>)</span>
+			 <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
+	    file</span>)</span>
+	   <span class="paren1">(<span class="default">newline file</span>)</span>))))))
 </pre></td></tr></table></div></body></html>

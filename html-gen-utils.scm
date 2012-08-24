@@ -4,12 +4,14 @@
    write-html
    emit-HTML-index-entry-for-object
    emit-HTML-for-map-object
-   emit-HTML-for-object)
+   emit-HTML-for-object
+   write-results-page)
 
   (import chicken
 	  scheme
 	  extras
 	  srfi-13
+	  data-structures
 	  json-utils
 	  file-utils
 	  user-settings)
@@ -174,4 +176,44 @@
 		      (assq-ref 'title map-obj)))
 	   "\n"
 	   (emit-HTML-for-map-object map-obj)
-	   "\n")))
+	   "\n"))
+
+  (define (sort-obj-list obj-list key-tag)
+    (sort obj-list
+	  (lambda (x y)
+	    (let ((channel-x (assq-ref key-tag x))
+		  (channel-y (assq-ref key-tag y)))
+	      ;; Sort the entries according to their channel
+	      (string<? channel-x channel-y)))))
+
+  ;; This function generates the main content of a page within a
+  ;; number of <div> (one with class "page_index" and all the others
+  ;; with "page_section").
+  (define (write-results-page obj-list file-tag map-tag cl-tag title)
+    (let ((sorted-list (sort-obj-list (filter-on-filetype obj-list
+							  (list map-tag
+								cl-tag))
+				      'channel)))
+      (write-html
+       file-tag
+       (lambda (file)
+	 (let ((map-objs (filter-on-filetype sorted-list map-tag))
+	       (cl-objs  (filter-on-filetype sorted-list cl-tag)))
+	   ;; We simply apply `emit-HTML-for-object` to the whole list
+	   ;; of objects, and wrap the output into some nice HTML tags
+	   ;; (using `wrap-html`).
+	   (printf "Including ~a maps and ~a spectra in the page...\n"
+		   (length map-objs)
+		   (length cl-objs))
+	   (display
+	    (wrap-html file-tag
+		       title
+		       (html:++
+			(<div> class: "page_index"
+			       (itemize (map emit-HTML-index-entry-for-object
+					     map-objs)))
+			(string-intersperse
+			 (map emit-HTML-for-object map-objs)
+			 "\n")))
+	    file)
+	   (newline file)))))))

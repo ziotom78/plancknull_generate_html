@@ -35,7 +35,8 @@
 (include "file-utils.scm") (import file-utils)
 (include "html-gen-utils.scm") (import html-gen-utils)
 
-(include "single-surv-coupled-horn.scm") (import single-surv-coupled-horn)
+;(include "halfring-coupled-horn.scm") (import halfring-coupled-horn)
+;(include "single-surv-coupled-horn.scm") (import single-surv-coupled-horn)
 
 (format #t "Report will be created under the following path: ~a\n"
         (assq-ref 'output-dir user-args))
@@ -84,35 +85,48 @@ EOF
             file)
    (newline file)))
 
+;; The "Halfring coupled horn" page
+;; -------------------------------------
+
+(write-results-page json-dictionary
+		    'halfring-pair
+		    "halfring_detset_map"
+		    "halfring_detset_cl"
+		    "Coupled horn, halfring differences")
+
+
+;; The "Halfring frequency" page
+;; -------------------------------------
+
+(write-results-page json-dictionary
+		    'halfring-frequency
+		    "halfring_frequency_map"
+		    "halfring_frequency_cl"
+		    "Frequency map, halfring differences")
+
+;; The "Single survey single channel" page
+;; -------------------------------------
+
+(write-results-page json-dictionary
+		    'surv-rad
+		    "surveydiff_single_ch_map"
+		    "surveydiff_single_ch_cl"
+		    "Single channel, survey differences")
+
 ;; The "Single survey coupled horn" page
 ;; -------------------------------------
 
-;; Write the HTML file. We're passing only a (sorted) subset of the
-;; entries in `json-dictionary` (list of JSON objects loaded from the
-;; input directory), namely only those that are relevant to this page.
-(write-single-survey-horn-pair-page
- (sort (filter-on-filetype json-dictionary
-			   '("surveydiff_detset_map"
-			     "surveydiff_detset_cl"))
-       (lambda (x y)
-	 (let ((channel-x (assq-ref 'channel x))
-	       (channel-y (assq-ref 'channel y)))
-	   (if (not channel-x)
-	       (abort (sprintf "Object #1 ~a does not have the \"channel\" tag"
-			       x)))
-	   (if (not channel-y)
-	       (abort (sprintf "Object #2 ~a does not have the \"channel\" tag"
-			       y)))
-	   ;; Sort the entries according to their channel
-	   (string<? channel-x channel-y)))))
+(write-results-page json-dictionary
+		    'surv-pair
+		    "surveydiff_detset_map"
+		    "surveydiff_detset_cl"
+		    "Coupled horn, survey differences")
 
-;; The "Half rings" page
-;; ---------------------
+;; The "Single survey coupled horn" page
+;; -------------------------------------
 
-;; (write-html
-;;  'halfring-frequency
-;;  (lambda (file)
-;;    (let* ((cur-dict (filter-on-filetype "halfring_frequency"))
-;;        (fits-file-paths (map (lambda (x)
-;;                                (assq-ref 'file_name x))
-;;                              cur-dict)))
+(write-results-page json-dictionary
+		    'surv-frequency
+		    "surveydiff_frequency_map"
+		    "surveydiff_frequency_cl"
+		    "Frequency map, survey differences")

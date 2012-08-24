@@ -60,7 +60,6 @@ report.</p>
 <span class="paren1">(<span class="default">include <span class="string">&quot;file-utils.scm&quot;</span></span>)</span> <span class="paren1">(<span class="default">import file-utils</span>)</span>
 <span class="paren1">(<span class="default">include <span class="string">&quot;html-gen-utils.scm&quot;</span></span>)</span> <span class="paren1">(<span class="default">import html-gen-utils</span>)</span>
 
-<span class="paren1">(<span class="default">include <span class="string">&quot;single-surv-coupled-horn.scm&quot;</span></span>)</span> <span class="paren1">(<span class="default">import single-surv-coupled-horn</span>)</span>
 
 <span class="paren1">(<span class="default">format #t <span class="string">&quot;Report will be created under the following path: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
         <span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
@@ -130,56 +129,66 @@ EOF
 </pre></td></tr>
 <tr id="section-8">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><h2>The "Halfring coupled horn" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;halfring-pair
+		    <span class="string">&quot;halfring_detset_map&quot;</span>
+		    <span class="string">&quot;halfring_detset_cl&quot;</span>
+		    <span class="string">&quot;Coupled horn, halfring differences&quot;</span></span>)</span>
+
+
 </pre></td></tr>
 <tr id="section-9">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>Write the HTML file. We're passing only a (sorted) subset of the
-entries in <code>json-dictionary</code> (list of JSON objects loaded from the
-input directory), namely only those that are relevant to this page.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><h2>The "Halfring frequency" page</h2>
 </td>
 <td class="code">
-<pre class="highlight"><span class="paren1">(<span class="default">write-single-survey-horn-pair-page
- <span class="paren2">(<span class="default">sort <span class="paren3">(<span class="default">filter-on-filetype json-dictionary
-			   &#x27;<span class="paren4">(<span class="default"><span class="string">&quot;surveydiff_detset_map&quot;</span>
-			     <span class="string">&quot;surveydiff_detset_cl&quot;</span></span>)</span></span>)</span>
-       <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x y</span>)</span>
-	 <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">channel-x <span class="paren1">(<span class="default">assq-ref &#x27;channel x</span>)</span></span>)</span>
-	       <span class="paren6">(<span class="default">channel-y <span class="paren1">(<span class="default">assq-ref &#x27;channel y</span>)</span></span>)</span></span>)</span>
-	   <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren6">(<span class="default">not channel-x</span>)</span>
-	       <span class="paren6">(<span class="default">abort <span class="paren1">(<span class="default">sprintf <span class="string">&quot;Object #1 ~a does not have the </span><span class="string">\&quot;</span><span class="string">channel</span><span class="string">\&quot;</span><span class="string"> tag&quot;</span>
-			       x</span>)</span></span>)</span></span>)</span>
-	   <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren6">(<span class="default">not channel-y</span>)</span>
-	       <span class="paren6">(<span class="default">abort <span class="paren1">(<span class="default">sprintf <span class="string">&quot;Object #2 ~a does not have the </span><span class="string">\&quot;</span><span class="string">channel</span><span class="string">\&quot;</span><span class="string"> tag&quot;</span>
-			       y</span>)</span></span>)</span></span>)</span>
-</span></span></span></span></span></span></span></span></pre></td></tr>
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;halfring-frequency
+		    <span class="string">&quot;halfring_frequency_map&quot;</span>
+		    <span class="string">&quot;halfring_frequency_cl&quot;</span>
+		    <span class="string">&quot;Frequency map, halfring differences&quot;</span></span>)</span>
+
+</pre></td></tr>
 <tr id="section-10">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>Sort the entries according to their channel</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><h2>The "Single survey single channel" page</h2>
 </td>
 <td class="code">
-<pre class="highlight">	   <span class="paren1">(<span class="default">string&lt;? channel-x channel-y</span>)</span>))))
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;surv-rad
+		    <span class="string">&quot;surveydiff_single_ch_map&quot;</span>
+		    <span class="string">&quot;surveydiff_single_ch_cl&quot;</span>
+		    <span class="string">&quot;Single channel, survey differences&quot;</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-11">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><h2>The "Half rings" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;surv-pair
+		    <span class="string">&quot;surveydiff_detset_map&quot;</span>
+		    <span class="string">&quot;surveydiff_detset_cl&quot;</span>
+		    <span class="string">&quot;Coupled horn, survey differences&quot;</span></span>)</span>
+
 </pre></td></tr>
 <tr id="section-12">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>(write-html
- 'halfring-frequency
- (lambda (file)
-   (let* ((cur-dict (filter-on-filetype "halfring<em>frequency"))
-       (fits-file-paths (map (lambda (x)
-                               (assq-ref 'file</em>name x))
-                             cur-dict)))</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
 </td>
 <td class="code">
-<pre class="highlight"></pre></td></tr></table></div></body></html>
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;surv-frequency
+		    <span class="string">&quot;surveydiff_frequency_map&quot;</span>
+		    <span class="string">&quot;surveydiff_frequency_cl&quot;</span>
+		    <span class="string">&quot;Frequency map, survey differences&quot;</span></span>)</span>
+</pre></td></tr></table></div></body></html>

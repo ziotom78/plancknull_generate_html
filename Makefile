@@ -18,8 +18,7 @@ generator: generator.scm \
 	user-settings.scm \
 	json-utils.scm \
 	file-utils.scm \
-	html-gen-utils.scm \
-	single-surv-coupled-horn.scm
+	html-gen-utils.scm
 	$(CHICKEN_CSC) $< -o $@
 
 deploy: $(DEPLOY_DIR)/generator
