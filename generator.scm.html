@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+<title>generator.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>generator.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div><h1>Null test HTML report generator</h1>
+
+<p>Generate a HTML page containing the results of a set of null tests.</p>
+
+<p>Author: Maurizio Tomasi</p>
+
+<p>Start date: August 13th, 2012</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-2">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><h1>Initialization</h1>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>We need the <code>json</code> egg in order to load the database of null test
+results written by the Python script. The <code>html-tags</code> and
+<code>html-utils</code> eggs are very useful to generate HTML from code, much
+in the same way as described in Paul Graham's 16th chapter of <a href="http://www.paulgraham.com/acl.html">ANSI
+Common LISP</a>. The <code>shell</code> egg
+is used to call <code>map2gif</code>. The eggs <code>filepath</code> and
+<code>directory-utils</code> are used respectively to manipulate file paths
+and to create/modify the directory structure of a file system (we
+are going to use it to create the tree of directories that will
+contain the HTML report). SRFI-19 implements a set of functions to
+deal with date and times. We use it to put timestamps in the
+report.</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">require-extension json
+		   html-tags
+		   html-utils
+		   shell
+		   filepath
+		   directory-utils
+		   srfi-19</span>)</span>
+
+<span class="paren1">(<span class="default">include <span class="string">&quot;user-settings.scm&quot;</span></span>)</span>   <span class="paren1">(<span class="default">import user-settings</span>)</span>
+<span class="paren1">(<span class="default">include <span class="string">&quot;json-utils.scm&quot;</span></span>)</span> <span class="paren1">(<span class="default">import json-utils</span>)</span>
+<span class="paren1">(<span class="default">include <span class="string">&quot;file-utils.scm&quot;</span></span>)</span> <span class="paren1">(<span class="default">import file-utils</span>)</span>
+<span class="paren1">(<span class="default">include <span class="string">&quot;html-gen-utils.scm&quot;</span></span>)</span> <span class="paren1">(<span class="default">import html-gen-utils</span>)</span>
+
+
+<span class="paren1">(<span class="default">format #t <span class="string">&quot;Report will be created under the following path: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
+        <span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
+<span class="paren1">(<span class="default">format #t <span class="string">&quot;Directory where to look for JSON files: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
+        <span class="paren2">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span>
+
+<span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> json-dictionary <span class="paren2">(<span class="default">read-json-dictionary <span class="paren3">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-4">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><h1>Report generation</h1>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>We copy the content of a number of directories into the destination
+path using <code>dir-copy</code> (defined in <code>file-utils.scm</code>). Currently only
+<code>css</code> is copied, but a separate directory <code>js</code> for JavaScript files
+might be needed in the future).</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">source-dir <span class="paren4">(<span class="default">filepath:take-directory <span class="paren5">(<span class="default">car <span class="paren6">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+  <span class="paren2">(<span class="default">for-each
+   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">dir-name</span>)</span>
+     <span class="paren4">(<span class="default">dir-copy <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list source-dir dir-name</span>)</span></span>)</span>
+               <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+                                         dir-name</span>)</span></span>)</span></span>)</span></span>)</span>
+   <span class="paren3">(<span class="default">list <span class="string">&quot;css&quot;</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-6">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><h2>The "information" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-7">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>Write the HTML file. Function <code>call-with-output-file</code> will call the
+<code>lambda</code> function passing as parameter a stream (the <code>file</code>
+parameter) that can be used for writing. At the end of the
+execution of the <code>lambda</code> function, the file will be automatically
+closed (much like Python's <code>with</code> statement).</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">write-html
+ &#x27;information
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">file</span>)</span>
+   <span class="paren3">(<span class="default">display <span class="paren4">(<span class="default">wrap-html &#x27;information
+                       <span class="string">&quot;General information about this release&quot;</span>
+                       <span class="paren5">(<span class="default">&lt;p&gt; <span class="paren6">(<span class="default">format #f #&lt;&lt;EOF
+This data release of <i><span class="symbol">the</span></i> null tests contains ~a
+objects. It was generated on &lt;i&gt;~a&lt;/i&gt; by user &lt;b&gt;~a&lt;/b&gt;.
+
+EOF
+                                    <span class="paren1">(<span class="default">length json-dictionary</span>)</span>
+                                    <span class="paren1">(<span class="default">date-&gt;string <span class="paren2">(<span class="default">current-date</span>)</span>
+                                                  <span class="string">&quot;~A ~e ~B ~Y, at ~H:~M:~S&quot;</span></span>)</span>
+                                    <span class="paren1">(<span class="default">get-environment-variable <span class="string">&quot;USER&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+            file</span>)</span>
+   <span class="paren3">(<span class="default">newline file</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-8">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><h2>The "Halfring coupled horn" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;halfring-pair
+		    <span class="string">&quot;halfring_detset_map&quot;</span>
+		    <span class="string">&quot;halfring_detset_cl&quot;</span>
+		    <span class="string">&quot;Coupled horn, halfring differences&quot;</span></span>)</span>
+
+
+</pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><h2>The "Halfring frequency" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;halfring-frequency
+		    <span class="string">&quot;halfring_frequency_map&quot;</span>
+		    <span class="string">&quot;halfring_frequency_cl&quot;</span>
+		    <span class="string">&quot;Frequency map, halfring differences&quot;</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><h2>The "Single survey single channel" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;surv-rad
+		    <span class="string">&quot;surveydiff_single_ch_map&quot;</span>
+		    <span class="string">&quot;surveydiff_single_ch_cl&quot;</span>
+		    <span class="string">&quot;Single channel, survey differences&quot;</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-11">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;surv-pair
+		    <span class="string">&quot;surveydiff_detset_map&quot;</span>
+		    <span class="string">&quot;surveydiff_detset_cl&quot;</span>
+		    <span class="string">&quot;Coupled horn, survey differences&quot;</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-12">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">write-results-page json-dictionary
+		    &#x27;surv-frequency
+		    <span class="string">&quot;surveydiff_frequency_map&quot;</span>
+		    <span class="string">&quot;surveydiff_frequency_cl&quot;</span>
+		    <span class="string">&quot;Frequency map, survey differences&quot;</span></span>)</span>
+</pre></td></tr></table></div></body></html>

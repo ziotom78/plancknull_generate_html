@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+<title>scheme-help.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>scheme-help.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div><h1>Appendix: a very short introduction to Scheme</h1>
+
+<p>To help the reader who has never read Scheme code, I am summarizing
+here the main characteristics of the language. This is not a Scheme
+tutorial, just a general introduction written for people that are
+already proficient with some other language (in the text there are
+many references to Python). If you are not interested in reading
+the source code of this program, you can skip this section.</p>
+
+<p>Chicken Scheme implements the
+<a href="http://www.schemers.org/Documents/Standards/R5RS/">R5RS</a> standard
+of Scheme, a language derived from LISP. Scheme is a really simple
+language (the language and the standard library are described
+together by a 50-page document: compare this with Python 2.7, which
+needs 127 A4 pages for the language plus 1366 pages for the
+standard library). This simplicity derives from three facts:</p>
+
+<ol>
+<li>The syntax is extremely simple: apart from letters and numbers,
+the only symbols which have special meaning for the compiler are
+<code>(</code>, <code>)</code>, quote, backtick, comma (rarely used) and whitespaces
+(plus <code>;</code>, which starts a comment).</li>
+<li>The standard library is quite small. Clearly this is not an
+advantage, but Chicken Scheme provides a broad selection of
+extensions, called "eggs", that mitigate this problem.</li>
+<li>No complex features of high-end languages are specified by the
+standard. For instance, a typical Python program uses OOP
+techniques, which are grounded on many non-trivial concepts (object
+encapsulation, inheritance, abstract methods, static methods...).
+You can easily <a href="http://community.schemewiki.org/?object-systems">extend Scheme to support
+OOP</a> through its
+powerful macro system, but we won't do this in this program.</li>
+</ol>
+
+<p>Scheme is based on the concept of list, which is a series of
+elements separated by spaces and enclosed within parentheses, like
+<code>(1 2 3)</code>. Function calls are lists where the first element is the
+function and the others are the parameters. E.g., to calculate the
+sinus of 0.1 you write <code>(sin 0.2)</code>, to print a string you write
+<code>(print "Hello, world!")</code>. By default, a list is always interpreted
+as a function call, unless there is a <code>'</code> before the open
+parenthesis. So <code>(sin 0.1)</code> calculates the sinus of 0.1, but <code>'(sin
+0.1)</code> is a list of two elements: the first is the <code>sin</code> function,
+the second is the number 0.1. Therefore, in Scheme program and data
+share the same representation, and you can easily convert one into
+another (using e.g. <code>eval</code>: <code>(eval '(sin 0.1))</code> is the same as
+<code>(sin 0.1)</code>, but in the first case you can build your list
+programatically).</p>
+
+<p>The parenthesis syntax is used everywhere, also in mathematical
+expressions ("infix notation", sometimes known as "reverse Polish
+notation"). To calculate <code>5 * (1 + 2 + 3)</code> you write <code>(* 5 (+ 1 2
+3))</code>. (Note that both <code>*</code> and <code>+</code> are used like any other function
+call.)</p>
+
+<p>Function and variable definition share the same syntax: you have to
+use <code>define</code>. For instance, <code>(define x 1)</code> creates a new variable
+which contains the integer 1, while <code>(define (f x) (* 2 x))</code>
+defines a function <code>f</code> which accepts one parameter <code>x</code> and which
+returns <code>x</code> doubled.</p>
+
+<p>Similarly to Python, anonymous functions can be defined using
+<code>lambda</code>. Unlike Python, Scheme's <code>lambda</code> expressions can contain
+any sequence of instructions.</p>
+
+<p>Loops can be implemented using either recursion (a "functional"
+construct) or <code>do</code> (an "imperative" construct). However, for simple
+programs like the one we are describing here, we only rely on
+functions like <code>map</code> and <code>filter</code>, which are analogous to Python's
+counterparts.</p>
+
+<p>To end with an example, consider this quite idiomatic Python code:</p>
+
+<pre><code>print ", ".join([x.upper() for x in ("a", "b", "c")])
+</code></pre>
+
+<p>which prints "A, B, C". It can be translated in Chicken Scheme:</p>
+
+<pre><code>(string-intersperse (map string-upcase
+                         '("a" "b" "c"))
+                    ", ")
+</code></pre>
+
+<p>While Python uses many different syntactic elements (dot,
+parentheses, brackets, the <code>for</code> and <code>in</code> keyword, explicit naming
+of the <code>x</code> variable), everything in this Scheme snipped follows the
+same idea of using parentheses to indicate both function calls and
+lists.</p>
+
+<p>(In Scheme you usually use much more newlines than in imperative
+programs. This helps in visualizing which arguments are parts of
+which list, as it is easy to get confused by nested parentheses. In
+the following of this document, you can highlight parentheses on
+the code on the right by moving the mouse over it.)</p>
+
+<p>Scheme's syntax can look weird at first, but it is grounded on two
+very simple elements: parentheses (which group elements) and white
+spaces (which separate elements within parentheses). Compare this
+with e.g. Python, where there are many symbols to be used in a
+program: <code>()</code> identifies a tuple (or the parameters in a function
+call), <code>[]</code> a list, <code>{}</code> a dictionary, <code>:</code> introduces a sub-loop or
+a definition, <code>;</code> separates statements in the same line, etc. And
+there are some strange quirks in the language, e.g. you have to
+remember that a one-element list can be written as <code>[1]</code>, but for a
+one-element tuple you must append a comma: <code>(1,)</code>.</p>
+
+<h2>HTML generation and Scheme</h2>
+
+<p>Thanks to its powerful macro system, Scheme (and LISP languages in
+general) is very good in handling HTML, see e.g. Paul Graham's 16th
+chapter of <a href="http://www.paulgraham.com/acl.html">ANSI Common LISP</a>.
+The Chicken's library
+<a href="http://wiki.call-cc.org/eggref/4/html-tags"><code>html-tags</code></a>
+implements HTML-like commands in Scheme, which are converted into
+strings. (A more sophisticated approach would use one of the many
+Chicken's <a href="http://en.wikipedia.org/wiki/SXML">SXML</a> libraries.) The
+idea is that every time you have some HTML tag in the form
+<code>&lt;tag&gt;...&lt;/tag&gt;</code>, you write it as the Scheme command <code>(&lt;tag&gt; ...)</code>,
+where parentheses are used to delimit the tag. This command is
+converted into a string, that can then be printed on screen. Here
+is an example:</p>
+
+<pre><code>(require-extension html-tags)
+(print (&lt;h1&gt; (format #f "The result of the sum is ~a" (+ 3 6))))
+</code></pre>
+
+<p>Note that we can call Scheme functions like <code>format</code> and <code>+</code> within
+the HTML tags. This program will print</p>
+
+<pre><code>&lt;h1&gt;The result of the sum is 9&lt;/h1&gt;
+</code></pre>
+
+<p>This differs substantially from the typical approach of using a
+template library like Python's <a href="http://jinja.pocoo.org/docs">Jinja2
+library</a> or
+<a href="https://www.djangoproject.com">Django</a>: in that case, you write a
+HTML template interspersed with Jinja2's <a href="http://jinja.pocoo.org/docs/templates/#expressions">internal
+language</a>
+(which, although similar, is <em>not</em> Python: see e.g. the use of the
+<code>|</code> operator) - the same <a href="https://docs.djangoproject.com/en/1.4/topics/templates/">applies to Django as
+well</a>.
+Thus, you have to learn a new language (other than Python and HTML)
+to use it. With Scheme, we're using it for everything!</p>
+</td>
+<td class="code">
+<pre class="highlight"></pre></td></tr></table></div></body></html>

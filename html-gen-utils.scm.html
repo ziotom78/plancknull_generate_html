@@ -1,0 +1,305 @@
+<!doctype html>
+<html>
+<head>
+<title>html-gen-utils.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>html-gen-utils.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">module html-gen-utils
+  <span class="paren2">(<span class="default">html:++
+   wrap-html
+   write-html
+   emit-HTML-index-entry-for-object
+   emit-HTML-for-map-object
+   emit-HTML-for-object
+   write-results-page</span>)</span>
+
+  <span class="paren2">(<span class="default">import chicken
+	  scheme
+	  extras
+	  srfi-13
+	  data-structures
+	  json-utils
+	  file-utils
+	  user-settings</span>)</span>
+
+  <span class="paren2">(<span class="default">require-extension directory-utils
+		     filepath
+		     html-tags
+		     html-utils</span>)</span>
+
+</span></span></pre></td></tr>
+<tr id="section-2">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>We're going to concatenate a number of HTML statements, so it is
+nicer to have a shorthand for the Scheme function
+<code>string-concatenate</code>. (Also, our shorthand does not require a
+list but a variable number of parameters.) Note that Scheme
+identifiers can include symbols as well, not only letters and
+numbers.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">html:++ . args</span>)</span>
+    <span class="paren2">(<span class="default">string-concatenate args</span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>We keep the names of the HTML files to be created in a alist for
+avoiding repetitions in the code (they must be used when creating
+the files and when producing the <code>&lt;a&gt;</code> links in the side menu). The
+function <code>get-html-file-name</code> is the only access function we need
+for this alist, so we make <code>html-file-name</code> a local definition.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">get-html-file-name label</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">html-file-names
+	   &#x27;<span class="paren5">(<span class="default"><span class="paren6">(<span class="default">information . <span class="string">&quot;index.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">halfring-pair . <span class="string">&quot;halfring_pair.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">halfring-frequency . <span class="string">&quot;halfring_freq.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">surv-rad . <span class="string">&quot;surv_radiometer.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">surv-horn . <span class="string">&quot;surv_horn.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">surv-pair . <span class="string">&quot;surv_pair.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">surv-frequency . <span class="string">&quot;surv_freq.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">surv-cross-freq . <span class="string">&quot;surv_cross.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">full-pair . <span class="string">&quot;full_pair.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">full-frequency . <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">full-cross-freq . <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
+	     <span class="paren6">(<span class="default">table-of-contents . <span class="string">&quot;toc.html&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-4">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This is the name of the data release. <em>TODO</em>: make the release name
+specifiable from the command line/configuration file</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> test-release-name <span class="string">&quot;DX9&quot;</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>The function <code>make-title-for-report</code> makes up the title for the
+overall report, which is going to be repeated at the beginning of
+each HTML page. It does so by prepending the name of the data
+release to the title itself (in the parameter <code>string</code>). We want to
+put the name of the release (e.g. <code>DX9</code>) at the beginning, so it
+will be shown by tabbed browsers like Chrome even when a lot of
+tabs are opened.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">make-title-for-report</span>)</span>
+    <span class="paren2">(<span class="default">format #f <span class="string">&quot;~a null tests&quot;</span> test-release-name</span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-6">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>Each HTML page contains a menu on the left, whose look is specified
+by the CSS file <code>css/menu.css</code>. Function <code>side-menu</code> is
+responsibile for creating this menu for each HTML page. The
+argument <code>page-tag</code> is one of the symbols recognized by
+<code>get-html-file-name</code> (see above), and specifies for which HTML page
+we are generating this menu. We define a <code>smart-&lt;a&gt;</code> function which
+uses <code>get-html-file-name</code> to retrieve the link to be used in the
+<code>&lt;a&gt;</code> tag, and it also defines the class according to the fact that
+the entry links to its own page or not (the CSS style uses this to
+highlight selected items in bold).</p>
+
+<p>Note how nice is to use the <code>html-tag</code> package: we are producing
+HTML code using commands like <code>&lt;a&gt;</code> just in plain HTML, yet we can
+freely call Scheme functions within it (in this case,
+<code>get-html-file-name</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">side-menu page-tag</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">smart-&lt;a&gt; <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">title tag</span>)</span>
+		       <span class="paren6">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren1">(<span class="default">get-html-file-name tag</span>)</span>
+			    <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? tag page-tag</span>)</span>
+				       <span class="string">&quot;selected&quot;</span>
+				       <span class="string">&quot;unselected&quot;</span></span>)</span>
+			    title</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">&lt;nav&gt; <span class="keyword">id:</span> <span class="string">&quot;nav&quot;</span>
+	     <span class="paren4">(<span class="default">&lt;ul&gt; <span class="keyword">id:</span> <span class="string">&quot;menu&quot;</span>
+		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Information&quot;</span> &#x27;information</span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;1-h tests (half rings) &amp;raquo;&quot;</span>
+			 <span class="paren6">(<span class="default">&lt;ul&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;halfring-pair</span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;ul&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;halfring-frequency</span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Survey tests &amp;raquo;&quot;</span>
+			 <span class="paren6">(<span class="default">&lt;ul&gt;
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single radiometer&quot;</span> &#x27;surv-rad</span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single horn&quot;</span> &#x27;surv-horn</span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;surv-pair</span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;surv-frequency</span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;surv-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Full-mission tests &amp;raquo;&quot;</span>
+			 <span class="paren6">(<span class="default">&lt;ul&gt;
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;full-pair</span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;full-frequency</span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;full-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Table of contents&quot;</span> &#x27;table-of-contents</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-7">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>The function <code>wrap-html</code> takes a string containing some HTML code
+and encloses it in a self-contained HTML structure which
+comprises the side menu. It returns a string.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">wrap-html file-tag page-title body</span>)</span>
+    <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;h1&gt; <span class="paren5">(<span class="default">make-title-for-report</span>)</span></span>)</span>
+			<span class="paren4">(<span class="default">side-menu file-tag</span>)</span>
+			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;body&quot;</span>
+			       <span class="paren5">(<span class="default">&lt;h2&gt; page-title</span>)</span>
+			       body</span>)</span></span>)</span>
+	       <span class="keyword">title:</span> page-title
+	       <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-8">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>We are going to create a number of HTML files, and the creation
+of each of them follows the same rules:</p>
+
+<ol>
+<li>Determine the name of the file using <code>get-html-file-name</code></li>
+<li>Ensure that the directory where this file will be written
+exists</li>
+<li>Inform the user about the pathname of the file we are going to
+write</li>
+<li>Write the file.</li>
+</ol>
+
+<p>Function <code>write-html</code> wraps all of this into one function. The
+parameter <code>file-tag</code> is passed to <code>get-html-file-name</code> as it is,
+while <code>write-function</code> is a function accepting as its unique
+parameter the output stream to be used to write into the file.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-html file-tag write-function</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-file-name <span class="paren5">(<span class="default">filepath:join-path
+			     <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+				   <span class="paren1">(<span class="default">get-html-file-name file-tag</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">create-pathname-directory output-file-name</span>)</span>
+      <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing file ~a...</span><span class="string">\n</span><span class="string">&quot;</span> output-file-name</span>)</span>
+      <span class="paren3">(<span class="default">call-with-output-file output-file-name write-function</span>)</span></span>)</span></span>)</span>
+
+  
+</pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>This function accepts a JSON object and will produce a link to
+the entry. It is meant to be used e.g. with <code>itemize</code> (from the
+<code>html-utils</code> egg), like in the following code:</p>
+
+<pre><code> (itemize (map emit-HTML-index-entry-for-object list-of-objs))
+</code></pre>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-index-entry-for-object obj</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">&lt;ul&gt; <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren5">(<span class="default">html:++ <span class="string">&quot;#&quot;</span> <span class="paren6">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span></span>)</span>
+		 title <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  
+</pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>This function accepts a JSON object and will produce
+HTML code to be put straight into the page.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-for-map-object obj</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">fits-file-name <span class="paren5">(<span class="default">abspath-from-json obj</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">gif-file-name <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing GIF file ~a</span><span class="string">\n</span><span class="string">&quot;</span> gif-file-name</span>)</span>
+      <span class="paren3">(<span class="default">map2gif fits-file-name
+	       <span class="paren4">(<span class="default">filepath:join-path
+		<span class="paren5">(<span class="default">list <span class="paren6">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+		      gif-file-name</span>)</span></span>)</span>
+	       title</span>)</span>
+      <span class="paren3">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-file-name <span class="keyword">alt:</span> title</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-11">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>This function accepts a JSON object and will produce
+HTML code to be put straight into the page.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-for-object map-obj</span>)</span>
+    <span class="paren2">(<span class="default">&lt;div&gt; <span class="keyword">class:</span> <span class="string">&quot;page_section&quot;</span>
+	   <span class="paren3">(<span class="default">&lt;h4&gt; <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">name:</span> <span class="paren5">(<span class="default">json-obj-&gt;HTML-anchor map-obj</span>)</span>
+		      <span class="paren5">(<span class="default">assq-ref &#x27;title map-obj</span>)</span></span>)</span></span>)</span>
+	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
+	   <span class="paren3">(<span class="default">emit-HTML-for-map-object map-obj</span>)</span>
+	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">sort-obj-list obj-list key-tag</span>)</span>
+    <span class="paren2">(<span class="default">sort obj-list
+	  <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x y</span>)</span>
+	    <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">channel-x <span class="paren1">(<span class="default">assq-ref key-tag x</span>)</span></span>)</span>
+		  <span class="paren6">(<span class="default">channel-y <span class="paren1">(<span class="default">assq-ref key-tag y</span>)</span></span>)</span></span>)</span>
+</span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-12">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Sort the entries according to their channel</p>
+</td>
+<td class="code">
+<pre class="highlight">	      <span class="paren1">(<span class="default">string&lt;? channel-x channel-y</span>)</span>))))
+
+</pre></td></tr>
+<tr id="section-13">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>This function generates the main content of a page within a
+number of <div> (one with class "page<em>index" and all the others
+with "page</em>section").</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-results-page obj-list file-tag map-tag cl-tag title</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">sorted-list <span class="paren5">(<span class="default">sort-obj-list <span class="paren6">(<span class="default">filter-on-filetype obj-list
+							  <span class="paren1">(<span class="default">list map-tag
+								cl-tag</span>)</span></span>)</span>
+				      &#x27;channel</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">write-html
+       file-tag
+       <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">file</span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">map-objs <span class="paren2">(<span class="default">filter-on-filetype sorted-list map-tag</span>)</span></span>)</span>
+	       <span class="paren1">(<span class="default">cl-objs  <span class="paren2">(<span class="default">filter-on-filetype sorted-list cl-tag</span>)</span></span>)</span></span>)</span>
+</span></span></span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-14">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>We simply apply <code>emit-HTML-for-object</code> to the whole list
+of objects, and wrap the output into some nice HTML tags
+(using <code>wrap-html</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">	   <span class="paren1">(<span class="default">printf <span class="string">&quot;Including ~a maps and ~a spectra in the page...</span><span class="string">\n</span><span class="string">&quot;</span>
+		   <span class="paren2">(<span class="default">length map-objs</span>)</span>
+		   <span class="paren2">(<span class="default">length cl-objs</span>)</span></span>)</span>
+	   <span class="paren1">(<span class="default">display
+	    <span class="paren2">(<span class="default">wrap-html file-tag
+		       title
+		       <span class="paren3">(<span class="default">html:++
+			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">class:</span> <span class="string">&quot;page_index&quot;</span>
+			       <span class="paren5">(<span class="default">itemize <span class="paren6">(<span class="default">map emit-HTML-index-entry-for-object
+					     map-objs</span>)</span></span>)</span></span>)</span>
+			<span class="paren4">(<span class="default">string-intersperse
+			 <span class="paren5">(<span class="default">map emit-HTML-for-object map-objs</span>)</span>
+			 <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
+	    file</span>)</span>
+	   <span class="paren1">(<span class="default">newline file</span>)</span>))))))
+</pre></td></tr></table></div></body></html>

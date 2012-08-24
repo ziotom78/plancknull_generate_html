@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+<title>file-utils.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>file-utils.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div><h1>File utilities</h1>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-2">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>This module contains a number of general-purpose functions that
+help dealing with the (usually large) amount of files handled by
+the program.</p>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">module file-utils
+  <span class="paren2">(<span class="default">export map2gif fits-name-&gt;gif-name dir-copy</span>)</span>
+
+  <span class="paren2">(<span class="default">import chicken scheme extras files srfi-13</span>)</span>
+  <span class="paren2">(<span class="default">require-extension shell</span>)</span>
+  <span class="paren2">(<span class="default">require-extension filepath</span>)</span>
+  <span class="paren2">(<span class="default">require-extension directory-utils</span>)</span>
+
+</span></span></pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>We need to implement the code that will convert the maps in FITS
+format into GIF images that can be included in the HTML report. We
+assume the availability of the <code>map2gif</code> program bundled with
+<a href="http://healpix.jpl.nasa.gov/">Healpix</a>.</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-4">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>Note that, since <code>map2gif</code> does not overwrite existing GIF files,
+if the file already exists and the flag <code>overwrite?</code> is true we
+first need to delete the file.</p>
+</td>
+<td class="code">
+<pre class="highlight">
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">map2gif input-fits-file-name
+		   output-gif-file-name
+		   title
+		   #!key <span class="paren3">(<span class="default">overwrite? #f</span>)</span></span>)</span> <span class="comment">; If not specified, it is #f
+</span>    <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
+</span>     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">file-exists? output-gif-file-name</span>)</span>
+	   <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> overwrite?
+	       <span class="paren6">(<span class="default">delete-file output-gif-file-name</span>)</span>
+	       <span class="paren6">(<span class="default">return &#x27;<span class="paren1">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
+</span></span></span></span></span></span></pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>Create the directory that will contain the output file,
+if it does not exist</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default">create-pathname-directory output-gif-file-name</span>)</span>
+</pre></td></tr>
+<tr id="section-6">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>Run the program. Note the elegance of "run<em>" (from the "shell"
+egg): we include the command-line switches as if they were
+Scheme symbols! (We put a comma in front of <code>(html:++ ...)</code>
+because we want it to be interpreted as a Scheme expression:
+otherwise it would be put as it is in the arguments to the
+process call.) *Note:</em> <code>run*</code> is defined in the <code>shell</code> egg.
+When multiple commands are specified (in this case, <code>map2tga</code>
+and <code>convert</code>), it returns a set of values. These must be
+interpreted using <code>call-with-values</code>, which is a standard
+Scheme function accepting a "producer" and a "consumer". Refer
+to the <a href="http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features">R5RS
+documentation</a>
+for further details.</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">output-tga-file-name
+	      <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.tga&quot;</span></span>)</span></span>)</span></span>)</span>
+	 <span class="paren2">(<span class="default">call-with-values
+	     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default"></span>)</span>
+	       <span class="paren4">(<span class="default">format #t <span class="string">&quot;Running map2tga and convert on ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
+		       input-fits-file-name</span>)</span>
+	       <span class="paren4">(<span class="default">run* <span class="paren5">(<span class="default">map2tga ,input-fits-file-name
+			      ,output-tga-file-name
+			      -bar
+			      -xsz 512
+			      -title ,<span class="paren6">(<span class="default">string-concatenate <span class="paren1">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
+		     <span class="paren5">(<span class="default">convert ,output-tga-file-name
+			      -transparent white
+			      ,output-gif-file-name</span>)</span></span>)</span></span>)</span>
+	   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">map2tga-return-code convert-return-code</span>)</span>
+	     <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; map2tga-return-code 0</span>)</span>
+		 <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">map2tga</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span>
+	     <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; convert-return-code 0</span>)</span>
+		 <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">convert</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+	 <span class="paren2">(<span class="default">delete-file output-tga-file-name</span>)</span></span>)</span>)))
+
+</pre></td></tr>
+<tr id="section-7">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>This function converts the name of a FITS file containing a map
+into the name of the <code>.gif</code> file that will contain the
+representation of the map shown in the report. It strips the
+directory and extension parts and substitutes them using functions
+from the <code>filepath</code> eggs. Note that we want the GIF file to be in a
+subdirectory of the output directory instead of being in the same
+directory as the input FITS file: in this was the user can run
+<code>tar</code> or <code>zip</code> on it to obtain a self-contained report.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span>
+    <span class="paren2">(<span class="default">filepath:replace-directory
+     <span class="paren3">(<span class="default">filepath:replace-extension fits-name <span class="string">&quot;.gif&quot;</span></span>)</span>
+     <span class="string">&quot;images&quot;</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-8">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>A small set of files (CSS styles, JavaScript files) need to be
+copied to the output directory, in order to make the report
+self-contained. These files should be taken from the directory
+where the executable has been launched.</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>Chicken Scheme does not provide a function to copy whole
+directories. So we implement one using a nice function implemented
+in <code>directory-utils</code>: <code>directory-fold</code>. It takes a function to be
+applied to each file, a user-defined value that is passed to this
+function (we do not use it, so we call it <code>unused</code> and set it to
+<code>#f</code>) and the name of the directory.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">dir-copy source dest</span>)</span>
+    <span class="paren2">(<span class="default">directory-fold
+     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">filename unused</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">output-file <span class="paren1">(<span class="default">filepath:join-path <span class="paren2">(<span class="default">list dest filename</span>)</span></span>)</span></span>)</span></span>)</span>
+	 <span class="paren5">(<span class="default">format #t <span class="string">&quot;Copying file ~a to ~a...</span><span class="string">\n</span><span class="string">&quot;</span> filename dest</span>)</span>
+</span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>Create the destination directory if it does not exist</p>
+</td>
+<td class="code">
+<pre class="highlight">	 <span class="paren1">(<span class="default">create-pathname-directory output-file</span>)</span>
+</pre></td></tr>
+<tr id="section-11">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>Copy the file. <code>file_copy</code> is part of Chicken Scheme</p>
+</td>
+<td class="code">
+<pre class="highlight">	 <span class="paren1">(<span class="default">file-copy <span class="paren2">(<span class="default">filepath:join-path <span class="paren3">(<span class="default">list source filename</span>)</span></span>)</span>
+		    output-file
+		    &#x27;overwrite</span>)</span>))
+     #f <span class="comment">; This is our value for `unused`
+</span>     source)))
+
+
+</pre></td></tr></table></div></body></html>
