@@ -23,7 +23,6 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 all: generator documentation
 
 generator: $(INPUT_FILES)
-	@echo "Current date:" $(CUR_DATE)
 	$(CHICKEN_CSC) $< -o $@
 
 deploy: $(DEPLOY_DIR)/generator
