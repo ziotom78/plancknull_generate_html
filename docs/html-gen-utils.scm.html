@@ -56,28 +56,45 @@ numbers.</p>
 </pre></td></tr>
 <tr id="section-3">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>We keep the names of the HTML files to be created in a alist for
-avoiding repetitions in the code (they must be used when creating
-the files and when producing the <code>&lt;a&gt;</code> links in the side menu). The
-function <code>get-html-file-name</code> is the only access function we need
-for this alist, so we make <code>html-file-name</code> a local definition.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>This function returns the name of the HTML file to create given a
+variable <code>label</code> that uniquely identifies it. Such variable can
+either be a symbol or a pair, where the first element (<code>car</code>) is
+a symbol and the second element is some other type whose meaning
+depends on the <code>car</code>. The pair must be unique, but neither its
+<code>car</code> nor its <code>cdr</code> have to.</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">get-html-file-name label</span>)</span>
-    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">html-file-names
-	   &#x27;<span class="paren5">(<span class="default"><span class="paren6">(<span class="default">information . <span class="string">&quot;index.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">halfring-pair . <span class="string">&quot;halfring_pair.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">halfring-frequency . <span class="string">&quot;halfring_freq.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">surv-rad . <span class="string">&quot;surv_radiometer.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">surv-horn . <span class="string">&quot;surv_horn.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">surv-pair . <span class="string">&quot;surv_pair.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">surv-frequency . <span class="string">&quot;surv_freq.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">surv-cross-freq . <span class="string">&quot;surv_cross.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">full-pair . <span class="string">&quot;full_pair.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">full-frequency . <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">full-cross-freq . <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
-	     <span class="paren6">(<span class="default">table-of-contents . <span class="string">&quot;toc.html&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">assq-ref label html-file-names</span>)</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">cond</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;information</span>)</span> <span class="string">&quot;index.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;halfring-pair</span>)</span> <span class="string">&quot;halfring_pair.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;surv-horn</span>)</span> <span class="string">&quot;surv_horn.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;surv-cross-freq</span>)</span> <span class="string">&quot;surv_cross.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;full-pair</span>)</span> <span class="string">&quot;full_pair.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;full-frequency</span>)</span> <span class="string">&quot;full_freq.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;full-cross-freq</span>)</span> <span class="string">&quot;full_cross.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">eq? label &#x27;table-of-contents</span>)</span> <span class="string">&quot;toc.html&quot;</span></span>)</span>
+	  <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">pair? label</span>)</span>
+	   <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">label-car <span class="paren1">(<span class="default">car label</span>)</span></span>)</span></span>)</span>
+	     <span class="paren5">(<span class="default"><i><span class="symbol">cond</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">eq? label-car &#x27;halfring-frequency</span>)</span>
+		    <span class="paren1">(<span class="default">sprintf <span class="string">&quot;halfring_frequency_~a.html&quot;</span>
+			     <span class="paren2">(<span class="default">cdr label</span>)</span></span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">eq? label-car &#x27;surv-rad</span>)</span>
+		    <span class="paren1">(<span class="default">sprintf <span class="string">&quot;surv_radiometer_~a.html&quot;</span>
+			     <span class="paren2">(<span class="default">cdr label</span>)</span></span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">eq? label-car &#x27;surv-pair</span>)</span>
+		    <span class="paren1">(<span class="default">sprintf <span class="string">&quot;surv_pair_~a.html&quot;</span>
+			     <span class="paren2">(<span class="default">cdr label</span>)</span></span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">eq? label-car &#x27;surv-frequency</span>)</span>
+		    <span class="paren1">(<span class="default">sprintf <span class="string">&quot;surv_freq_~a.html&quot;</span>
+			     <span class="paren2">(<span class="default">cdr label</span>)</span></span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">eq? label-car &#x27;full-pair</span>)</span>
+		    <span class="paren1">(<span class="default">sprintf <span class="string">&quot;full_pair_~a.html&quot;</span>
+			     <span class="paren2">(<span class="default">cdr label</span>)</span></span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">eq? label-car &#x27;full-frequency</span>)</span>
+		    <span class="paren1">(<span class="default">sprintf <span class="string">&quot;full_freq_~a.html&quot;</span>
+			     <span class="paren2">(<span class="default">cdr label</span>)</span></span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default">else <span class="paren1">(<span class="default">abort <span class="string">&quot;Unknown pair in get-html-file-name&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+	  <span class="paren3">(<span class="default">else <span class="paren4">(<span class="default">abort <span class="string">&quot;Unknown label in get-html-file-name&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-4">
@@ -126,29 +143,62 @@ freely call Scheme functions within it (in this case,
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">side-menu page-tag</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">smart-&lt;a&gt; <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">title tag</span>)</span>
 		       <span class="paren6">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren1">(<span class="default">get-html-file-name tag</span>)</span>
-			    <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? tag page-tag</span>)</span>
+			    <span class="keyword">class:</span> <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">equal? tag page-tag</span>)</span>
 				       <span class="string">&quot;selected&quot;</span>
 				       <span class="string">&quot;unselected&quot;</span></span>)</span>
 			    title</span>)</span></span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">&lt;nav&gt; <span class="keyword">id:</span> <span class="string">&quot;nav&quot;</span>
-	     <span class="paren4">(<span class="default">&lt;ul&gt; <span class="keyword">id:</span> <span class="string">&quot;menu&quot;</span>
-		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Information&quot;</span> &#x27;information</span>)</span></span>)</span>
-		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;1-h tests (half rings) &amp;raquo;&quot;</span>
-			 <span class="paren6">(<span class="default">&lt;ul&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;halfring-pair</span>)</span></span>)</span>
-			 <span class="paren6">(<span class="default">&lt;ul&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;halfring-frequency</span>)</span></span>)</span></span>)</span>
-		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Survey tests &amp;raquo;&quot;</span>
-			 <span class="paren6">(<span class="default">&lt;ul&gt;
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single radiometer&quot;</span> &#x27;surv-rad</span>)</span></span>)</span>
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Single horn&quot;</span> &#x27;surv-horn</span>)</span></span>)</span>
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;surv-pair</span>)</span></span>)</span>
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;surv-frequency</span>)</span></span>)</span>
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;surv-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
-		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="string">&quot;Full-mission tests &amp;raquo;&quot;</span>
-			 <span class="paren6">(<span class="default">&lt;ul&gt;
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;full-pair</span>)</span></span>)</span>
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;full-frequency</span>)</span></span>)</span>
-			  <span class="paren1">(<span class="default">&lt;li&gt; <span class="paren2">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;full-cross-freq</span>)</span></span>)</span></span>)</span></span>)</span>
-		   <span class="paren5">(<span class="default">&lt;li&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Table of contents&quot;</span> &#x27;table-of-contents</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">&lt;nav&gt;
+	     <span class="paren4">(<span class="default">&lt;h1&gt; <span class="paren5">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Information&quot;</span> &#x27;information</span>)</span> <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span>
+	     <span class="paren4">(<span class="default">&lt;h1&gt; <span class="string">&quot;1-h tests (half rings) &amp;raquo;&quot;</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;halfring-pair</span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="string">&quot;Frequency &amp;raquo;&quot;</span> <span class="character">#\newline</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;30 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;halfring-frequency 30</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;44 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;halfring-frequency 44</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;70 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;halfring-frequency 70</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+	     <span class="paren4">(<span class="default">&lt;h1&gt; <span class="string">&quot;Survey tests &amp;raquo;&quot;</span> <span class="character">#\newline</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="string">&quot;Single radiometer &amp;raquo&quot;</span> <span class="character">#\newline</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI18M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI18M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI18S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI18S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI19M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI19M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI19S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI19S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI20M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI20M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI20S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI20S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI21M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI21M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI21S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI21S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI22M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI22M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI22S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI22S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI23M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI23M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI23S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI23S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI24M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI24M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI24S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI24S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI25M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI25M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI25S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI25S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI26M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI26M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI26S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI26S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI27M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI27M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI27S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI27S</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI28M&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI28M</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;LFI28S&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-rad &#x27;LFI28S</span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="string">&quot;Horn pair &amp;raquo;&quot;</span> <span class="character">#\newline</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;#18-#23&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-pair <span class="string">&quot;18-23&quot;</span></span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;#19-#22&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-pair <span class="string">&quot;19-22&quot;</span></span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;#20-#21&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-pair <span class="string">&quot;20-21&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="string">&quot;Frequency &amp;raquo;&quot;</span> <span class="character">#\newline</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;30 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-frequency 30</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;44 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-frequency 44</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;70 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;surv-frequency 70</span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;surv-cross-freq</span>)</span></span>)</span></span>)</span>
+	     <span class="paren4">(<span class="default">&lt;h1&gt; <span class="string">&quot;Full-mission tests &amp;raquo;&quot;</span> <span class="character">#\newline</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Horn pair&quot;</span> &#x27;full-pair</span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;#18-#23&quot;</span> <span class="paren2">(<span class="default">cons &#x27;full-pair <span class="string">&quot;18_23&quot;</span></span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;#19-#22&quot;</span> <span class="paren2">(<span class="default">cons &#x27;full-pair <span class="string">&quot;19_22&quot;</span></span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;#20-#21&quot;</span> <span class="paren2">(<span class="default">cons &#x27;full-pair <span class="string">&quot;20_21&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Frequency&quot;</span> &#x27;full-frequency</span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;30 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;full-frequency 30</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;44 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;full-frequency 44</span>)</span></span>)</span></span>)</span>
+			 <span class="paren6">(<span class="default">&lt;h3&gt; <span class="paren1">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;70 GHz&quot;</span> <span class="paren2">(<span class="default">cons &#x27;full-frequency 70</span>)</span></span>)</span></span>)</span></span>)</span>
+		   <span class="paren5">(<span class="default">&lt;h2&gt; <span class="paren6">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Cross-frequency&quot;</span> &#x27;full-cross-freq</span>)</span></span>)</span></span>)</span>
+	     <span class="paren4">(<span class="default">&lt;h1&gt; <span class="paren5">(<span class="default">smart-&lt;a&gt; <span class="string">&quot;Table of contents&quot;</span> &#x27;table-of-contents</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-7">
@@ -159,9 +209,9 @@ comprises the side menu. It returns a string.</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">wrap-html file-tag page-title body</span>)</span>
-    <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;h1&gt; <span class="paren5">(<span class="default">make-title-for-report</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;h1&gt; <span class="keyword">id:</span> <span class="string">&quot;main_title&quot;</span> <span class="paren5">(<span class="default">make-title-for-report</span>)</span></span>)</span>
 			<span class="paren4">(<span class="default">side-menu file-tag</span>)</span>
-			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;body&quot;</span>
+			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;page_body&quot;</span>
 			       <span class="paren5">(<span class="default">&lt;h2&gt; page-title</span>)</span>
 			       body</span>)</span></span>)</span>
 	       <span class="keyword">title:</span> page-title
@@ -248,41 +298,59 @@ HTML code to be put straight into the page.</p>
 	   <span class="paren3">(<span class="default">emit-HTML-for-map-object map-obj</span>)</span>
 	   <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span>
 
-  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">sort-obj-list obj-list key-tag</span>)</span>
+</pre></td></tr>
+<tr id="section-12">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Sort a list of JSON objects according to the tag <code>key-tag</code>,
+which should be a string. If the two elements are equal and
+<code>fallback-comparison</code> is defined to be a function of two
+parameters, this will be used for the comparison.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">sort-obj-list obj-list key-tag #!key <span class="paren3">(<span class="default">fallback-comparison #f</span>)</span></span>)</span>
     <span class="paren2">(<span class="default">sort obj-list
 	  <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x y</span>)</span>
 	    <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">channel-x <span class="paren1">(<span class="default">assq-ref key-tag x</span>)</span></span>)</span>
 		  <span class="paren6">(<span class="default">channel-y <span class="paren1">(<span class="default">assq-ref key-tag y</span>)</span></span>)</span></span>)</span>
-</span></span></span></span></span></span></span></span></pre></td></tr>
-<tr id="section-12">
-<td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Sort the entries according to their channel</p>
-</td>
-<td class="code">
-<pre class="highlight">	      <span class="paren1">(<span class="default">string&lt;? channel-x channel-y</span>)</span>))))
-
-</pre></td></tr>
+	      <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren6">(<span class="default">and <span class="paren1">(<span class="default">equal? channel-x channel-y</span>)</span>
+		       fallback-comparison</span>)</span>
+		  <span class="paren6">(<span class="default">fallback-comparison x y</span>)</span>
+</span></span></span></span></span></span></span></span></span></span></pre></td></tr>
 <tr id="section-13">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>This function generates the main content of a page within a
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>Sort the entries according to their channel</p>
+</td>
+<td class="code">
+<pre class="highlight">		  <span class="paren1">(<span class="default">string&lt;? channel-x channel-y</span>)</span>)))))
+
+</pre></td></tr>
+<tr id="section-14">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>This function generates the main content of a page within a
 number of <div> (one with class "page<em>index" and all the others
 with "page</em>section").</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-results-page obj-list file-tag map-tag cl-tag title</span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-results-page obj-list
+			      file-tag
+			      map-tag
+			      cl-tag
+			      title
+			      #!key <span class="paren3">(<span class="default">fallback-comparison #f</span>)</span></span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">sorted-list <span class="paren5">(<span class="default">sort-obj-list <span class="paren6">(<span class="default">filter-on-filetype obj-list
 							  <span class="paren1">(<span class="default">list map-tag
 								cl-tag</span>)</span></span>)</span>
-				      &#x27;channel</span>)</span></span>)</span></span>)</span>
+				      &#x27;channel
+				      <span class="keyword">fallback-comparison:</span> fallback-comparison</span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">write-html
        file-tag
        <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">file</span>)</span>
 	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">map-objs <span class="paren2">(<span class="default">filter-on-filetype sorted-list map-tag</span>)</span></span>)</span>
 	       <span class="paren1">(<span class="default">cl-objs  <span class="paren2">(<span class="default">filter-on-filetype sorted-list cl-tag</span>)</span></span>)</span></span>)</span>
 </span></span></span></span></span></span></span></span></span></span></pre></td></tr>
-<tr id="section-14">
+<tr id="section-15">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>We simply apply <code>emit-HTML-for-object</code> to the whole list
+<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><p>We simply apply <code>emit-HTML-for-object</code> to the whole list
 of objects, and wrap the output into some nice HTML tags
 (using <code>wrap-html</code>).</p>
 </td>
@@ -294,12 +362,13 @@ of objects, and wrap the output into some nice HTML tags
 	    <span class="paren2">(<span class="default">wrap-html file-tag
 		       title
 		       <span class="paren3">(<span class="default">html:++
-			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">class:</span> <span class="string">&quot;page_index&quot;</span>
-			       <span class="paren5">(<span class="default">itemize <span class="paren6">(<span class="default">map emit-HTML-index-entry-for-object
-					     map-objs</span>)</span></span>)</span></span>)</span>
-			<span class="paren4">(<span class="default">string-intersperse
-			 <span class="paren5">(<span class="default">map emit-HTML-for-object map-objs</span>)</span>
-			 <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
+			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;results&quot;</span>
+			       <span class="paren5">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;page_index&quot;</span>
+				      <span class="paren6">(<span class="default">itemize <span class="paren1">(<span class="default">map emit-HTML-index-entry-for-object
+						    map-objs</span>)</span></span>)</span></span>)</span>
+			       <span class="paren5">(<span class="default">string-intersperse
+				<span class="paren6">(<span class="default">map emit-HTML-for-object map-objs</span>)</span>
+				<span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 	    file</span>)</span>
 	   <span class="paren1">(<span class="default">newline file</span>)</span>))))))
 </pre></td></tr></table></div></body></html>

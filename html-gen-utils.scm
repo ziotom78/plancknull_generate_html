@@ -30,26 +30,43 @@
   (define (html:++ . args)
     (string-concatenate args))
 
-  ;; We keep the names of the HTML files to be created in a alist for
-  ;; avoiding repetitions in the code (they must be used when creating
-  ;; the files and when producing the `<a>` links in the side menu). The
-  ;; function `get-html-file-name` is the only access function we need
-  ;; for this alist, so we make `html-file-name` a local definition.
+  ;; This function returns the name of the HTML file to create given a
+  ;; variable `label` that uniquely identifies it. Such variable can
+  ;; either be a symbol or a pair, where the first element (`car`) is
+  ;; a symbol and the second element is some other type whose meaning
+  ;; depends on the `car`. The pair must be unique, but neither its
+  ;; `car` nor its `cdr` have to.
   (define (get-html-file-name label)
-    (let ((html-file-names
-	   '((information . "index.html")
-	     (halfring-pair . "halfring_pair.html")
-	     (halfring-frequency . "halfring_freq.html")
-	     (surv-rad . "surv_radiometer.html")
-	     (surv-horn . "surv_horn.html")
-	     (surv-pair . "surv_pair.html")
-	     (surv-frequency . "surv_freq.html")
-	     (surv-cross-freq . "surv_cross.html")
-	     (full-pair . "full_pair.html")
-	     (full-frequency . "full_freq.html")
-	     (full-cross-freq . "full_cross.html")
-	     (table-of-contents . "toc.html"))))
-      (assq-ref label html-file-names)))
+    (cond ((eq? label 'information) "index.html")
+	  ((eq? label 'halfring-pair) "halfring_pair.html")
+	  ((eq? label 'surv-horn) "surv_horn.html")
+	  ((eq? label 'surv-cross-freq) "surv_cross.html")
+	  ((eq? label 'full-pair) "full_pair.html")
+	  ((eq? label 'full-frequency) "full_freq.html")
+	  ((eq? label 'full-cross-freq) "full_cross.html")
+	  ((eq? label 'table-of-contents) "toc.html")
+	  ((pair? label)
+	   (let ((label-car (car label)))
+	     (cond ((eq? label-car 'halfring-frequency)
+		    (sprintf "halfring_frequency_~a.html"
+			     (cdr label)))
+		   ((eq? label-car 'surv-rad)
+		    (sprintf "surv_radiometer_~a.html"
+			     (cdr label)))
+		   ((eq? label-car 'surv-pair)
+		    (sprintf "surv_pair_~a.html"
+			     (cdr label)))
+		   ((eq? label-car 'surv-frequency)
+		    (sprintf "surv_freq_~a.html"
+			     (cdr label)))
+		   ((eq? label-car 'full-pair)
+		    (sprintf "full_pair_~a.html"
+			     (cdr label)))
+		   ((eq? label-car 'full-frequency)
+		    (sprintf "full_freq_~a.html"
+			     (cdr label)))
+		   (else (abort "Unknown pair in get-html-file-name")))))
+	  (else (abort "Unknown label in get-html-file-name"))))
 
   ;; This is the name of the data release. *TODO*: make the release name
   ;; specifiable from the command line/configuration file
@@ -83,37 +100,71 @@
   (define (side-menu page-tag)
     (let ((smart-<a> (lambda (title tag)
 		       (<a> href: (get-html-file-name tag)
-			    class: (if (eq? tag page-tag)
+			    class: (if (equal? tag page-tag)
 				       "selected"
 				       "unselected")
 			    title))))
-      (<nav> id: "nav"
-	     (<ul> id: "menu"
-		   (<li> (smart-<a> "Information" 'information))
-		   (<li> "1-h tests (half rings) &raquo;"
-			 (<ul> (smart-<a> "Horn pair" 'halfring-pair))
-			 (<ul> (smart-<a> "Frequency" 'halfring-frequency)))
-		   (<li> "Survey tests &raquo;"
-			 (<ul>
-			  (<li> (smart-<a> "Single radiometer" 'surv-rad))
-			  (<li> (smart-<a> "Single horn" 'surv-horn))
-			  (<li> (smart-<a> "Horn pair" 'surv-pair))
-			  (<li> (smart-<a> "Frequency" 'surv-frequency))
-			  (<li> (smart-<a> "Cross-frequency" 'surv-cross-freq))))
-		   (<li> "Full-mission tests &raquo;"
-			 (<ul>
-			  (<li> (smart-<a> "Horn pair" 'full-pair))
-			  (<li> (smart-<a> "Frequency" 'full-frequency))
-			  (<li> (smart-<a> "Cross-frequency" 'full-cross-freq))))
-		   (<li> (smart-<a> "Table of contents" 'table-of-contents))))))
+      (<nav>
+	     (<h1> (smart-<a> "Information" 'information) "\n")
+	     (<h1> "1-h tests (half rings) &raquo;"
+		   (<h2> (smart-<a> "Horn pair" 'halfring-pair))
+		   (<h2> "Frequency &raquo;" #\newline
+			 (<h3> (smart-<a> "30 GHz" (cons 'halfring-frequency 30)))
+			 (<h3> (smart-<a> "44 GHz" (cons 'halfring-frequency 44)))
+			 (<h3> (smart-<a> "70 GHz" (cons 'halfring-frequency 70)))))
+	     (<h1> "Survey tests &raquo;" #\newline
+		   (<h2> "Single radiometer &raquo" #\newline
+			 (<h3> (smart-<a> "LFI18M" (cons 'surv-rad 'LFI18M)))
+			 (<h3> (smart-<a> "LFI18S" (cons 'surv-rad 'LFI18S)))
+			 (<h3> (smart-<a> "LFI19M" (cons 'surv-rad 'LFI19M)))
+			 (<h3> (smart-<a> "LFI19S" (cons 'surv-rad 'LFI19S)))
+			 (<h3> (smart-<a> "LFI20M" (cons 'surv-rad 'LFI20M)))
+			 (<h3> (smart-<a> "LFI20S" (cons 'surv-rad 'LFI20S)))
+			 (<h3> (smart-<a> "LFI21M" (cons 'surv-rad 'LFI21M)))
+			 (<h3> (smart-<a> "LFI21S" (cons 'surv-rad 'LFI21S)))
+			 (<h3> (smart-<a> "LFI22M" (cons 'surv-rad 'LFI22M)))
+			 (<h3> (smart-<a> "LFI22S" (cons 'surv-rad 'LFI22S)))
+			 (<h3> (smart-<a> "LFI23M" (cons 'surv-rad 'LFI23M)))
+			 (<h3> (smart-<a> "LFI23S" (cons 'surv-rad 'LFI23S)))
+			 (<h3> (smart-<a> "LFI24M" (cons 'surv-rad 'LFI24M)))
+			 (<h3> (smart-<a> "LFI24S" (cons 'surv-rad 'LFI24S)))
+			 (<h3> (smart-<a> "LFI25M" (cons 'surv-rad 'LFI25M)))
+			 (<h3> (smart-<a> "LFI25S" (cons 'surv-rad 'LFI25S)))
+			 (<h3> (smart-<a> "LFI26M" (cons 'surv-rad 'LFI26M)))
+			 (<h3> (smart-<a> "LFI26S" (cons 'surv-rad 'LFI26S)))
+			 (<h3> (smart-<a> "LFI27M" (cons 'surv-rad 'LFI27M)))
+			 (<h3> (smart-<a> "LFI27S" (cons 'surv-rad 'LFI27S)))
+			 (<h3> (smart-<a> "LFI28M" (cons 'surv-rad 'LFI28M)))
+			 (<h3> (smart-<a> "LFI28S" (cons 'surv-rad 'LFI28S))))
+		   ;(<h2> (smart-<a> "Single horn" 'surv-horn))
+		   (<h2> "Horn pair &raquo;" #\newline
+			 (<h3> (smart-<a> "#18-#23" (cons 'surv-pair "18-23")))
+			 (<h3> (smart-<a> "#19-#22" (cons 'surv-pair "19-22")))
+			 (<h3> (smart-<a> "#20-#21" (cons 'surv-pair "20-21"))))
+		   (<h2> "Frequency &raquo;" #\newline
+			 (<h3> (smart-<a> "30 GHz" (cons 'surv-frequency 30)))
+			 (<h3> (smart-<a> "44 GHz" (cons 'surv-frequency 44)))
+			 (<h3> (smart-<a> "70 GHz" (cons 'surv-frequency 70))))
+		   (<h2> (smart-<a> "Cross-frequency" 'surv-cross-freq)))
+	     (<h1> "Full-mission tests &raquo;" #\newline
+		   (<h2> (smart-<a> "Horn pair" 'full-pair)
+			 (<h3> (smart-<a> "#18-#23" (cons 'full-pair "18_23")))
+			 (<h3> (smart-<a> "#19-#22" (cons 'full-pair "19_22")))
+			 (<h3> (smart-<a> "#20-#21" (cons 'full-pair "20_21"))))
+		   (<h2> (smart-<a> "Frequency" 'full-frequency)
+			 (<h3> (smart-<a> "30 GHz" (cons 'full-frequency 30)))
+			 (<h3> (smart-<a> "44 GHz" (cons 'full-frequency 44)))
+			 (<h3> (smart-<a> "70 GHz" (cons 'full-frequency 70))))
+		   (<h2> (smart-<a> "Cross-frequency" 'full-cross-freq)))
+	     (<h1> (smart-<a> "Table of contents" 'table-of-contents)))))
 
   ;; The function `wrap-html` takes a string containing some HTML code
   ;; and encloses it in a self-contained HTML structure which
   ;; comprises the side menu. It returns a string.
   (define (wrap-html file-tag page-title body)
-    (html-page (html:++ (<h1> (make-title-for-report))
+    (html-page (html:++ (<h1> id: "main_title" (make-title-for-report))
 			(side-menu file-tag)
-			(<div> id: "body"
+			(<div> id: "page_body"
 			       (<h2> page-title)
 			       body))
 	       title: page-title
@@ -178,22 +229,35 @@
 	   (emit-HTML-for-map-object map-obj)
 	   "\n"))
 
-  (define (sort-obj-list obj-list key-tag)
+  ;; Sort a list of JSON objects according to the tag `key-tag`,
+  ;; which should be a string. If the two elements are equal and
+  ;; `fallback-comparison` is defined to be a function of two
+  ;; parameters, this will be used for the comparison.
+  (define (sort-obj-list obj-list key-tag #!key (fallback-comparison #f))
     (sort obj-list
 	  (lambda (x y)
 	    (let ((channel-x (assq-ref key-tag x))
 		  (channel-y (assq-ref key-tag y)))
-	      ;; Sort the entries according to their channel
-	      (string<? channel-x channel-y)))))
+	      (if (and (equal? channel-x channel-y)
+		       fallback-comparison)
+		  (fallback-comparison x y)
+		  ;; Sort the entries according to their channel
+		  (string<? channel-x channel-y))))))
 
   ;; This function generates the main content of a page within a
   ;; number of <div> (one with class "page_index" and all the others
   ;; with "page_section").
-  (define (write-results-page obj-list file-tag map-tag cl-tag title)
+  (define (write-results-page obj-list
+			      file-tag
+			      map-tag
+			      cl-tag
+			      title
+			      #!key (fallback-comparison #f))
     (let ((sorted-list (sort-obj-list (filter-on-filetype obj-list
 							  (list map-tag
 								cl-tag))
-				      'channel)))
+				      'channel
+				      fallback-comparison: fallback-comparison)))
       (write-html
        file-tag
        (lambda (file)
@@ -209,11 +273,12 @@
 	    (wrap-html file-tag
 		       title
 		       (html:++
-			(<div> class: "page_index"
-			       (itemize (map emit-HTML-index-entry-for-object
-					     map-objs)))
-			(string-intersperse
-			 (map emit-HTML-for-object map-objs)
-			 "\n")))
+			(<div> id: "results"
+			       (<div> id: "page_index"
+				      (itemize (map emit-HTML-index-entry-for-object
+						    map-objs)))
+			       (string-intersperse
+				(map emit-HTML-for-object map-objs)
+				"\n"))))
 	    file)
 	   (newline file)))))))

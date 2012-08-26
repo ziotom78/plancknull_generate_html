@@ -147,11 +147,21 @@ EOF
 </td>
 <td class="code">
 <pre class="highlight">
-<span class="paren1">(<span class="default">write-results-page json-dictionary
-		    &#x27;halfring-frequency
-		    <span class="string">&quot;halfring_frequency_map&quot;</span>
-		    <span class="string">&quot;halfring_frequency_cl&quot;</span>
-		    <span class="string">&quot;Frequency map, halfring differences&quot;</span></span>)</span>
+<span class="paren1">(<span class="default">for-each
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">freq</span>)</span>
+   <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">freq-string <span class="paren6">(<span class="default">-&gt;string freq</span>)</span></span>)</span>
+	  <span class="paren5">(<span class="default">sub-dictionary <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">obj</span>)</span>
+				    <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;channel obj</span>)</span>
+					    freq-string</span>)</span></span>)</span>
+				  json-dictionary</span>)</span></span>)</span></span>)</span>
+     <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> sub-dictionary
+	 <span class="paren5">(<span class="default">write-results-page sub-dictionary
+			     <span class="paren6">(<span class="default">cons &#x27;halfring-frequency freq</span>)</span>
+			     <span class="string">&quot;halfring_frequency_map&quot;</span>
+			     <span class="string">&quot;halfring_frequency_cl&quot;</span>
+			     <span class="paren6">(<span class="default">sprintf <span class="string">&quot;~a GHz map, halfring differences&quot;</span>
+				      freq</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+ <span class="paren2">(<span class="default">list 30 44 70</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-10">
@@ -160,35 +170,118 @@ EOF
 </td>
 <td class="code">
 <pre class="highlight">
-<span class="paren1">(<span class="default">write-results-page json-dictionary
-		    &#x27;surv-rad
-		    <span class="string">&quot;surveydiff_single_ch_map&quot;</span>
-		    <span class="string">&quot;surveydiff_single_ch_cl&quot;</span>
-		    <span class="string">&quot;Single channel, survey differences&quot;</span></span>)</span>
-
 </pre></td></tr>
 <tr id="section-11">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>This is the trickiest of the tests, as there are <em>lots</em> of plots to
+show. We split the plots according to the radiometer, as this is
+the most useful representation. First we need some way to sort the
+results according to the survey. Since this null test deal with
+survey differences, each FITS file has <em>two</em> surveys associated
+with it (e.g. the JSON tag is <code>"surveys": [5, 4]</code>, which means that
+in this test SS4 map was subtracted from SS4 map). Unfortunately,
+the two surveys are not listed in ascending order. The code for
+<code>compare-surveys</code> does these things: (1) orders the two surveys for
+both objects <code>obj1</code> and <code>obj2</code> (by mean of the functions <code>min</code> and
+<code>max</code>: this works because we only have two surveys), (2) compares
+the first (smallest) index of the survey for <code>obj1</code> and <code>obj2</code>: if
+they're different, use this as the sorting criterion, otherwise use
+the second (greatest) index of the survey.</p>
 </td>
 <td class="code">
-<pre class="highlight">
-<span class="paren1">(<span class="default">write-results-page json-dictionary
-		    &#x27;surv-pair
-		    <span class="string">&quot;surveydiff_detset_map&quot;</span>
-		    <span class="string">&quot;surveydiff_detset_cl&quot;</span>
-		    <span class="string">&quot;Coupled horn, survey differences&quot;</span></span>)</span>
+<pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">compare-surveys obj1 obj2</span>)</span>
+  <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">ss1-pair1 <span class="paren5">(<span class="default">apply min <span class="paren6">(<span class="default">assq-ref &#x27;surveys obj1</span>)</span></span>)</span></span>)</span>
+	<span class="paren4">(<span class="default">ss2-pair1 <span class="paren5">(<span class="default">apply max <span class="paren6">(<span class="default">assq-ref &#x27;surveys obj1</span>)</span></span>)</span></span>)</span>
+	<span class="paren4">(<span class="default">ss1-pair2 <span class="paren5">(<span class="default">apply min <span class="paren6">(<span class="default">assq-ref &#x27;surveys obj2</span>)</span></span>)</span></span>)</span>
+	<span class="paren4">(<span class="default">ss2-pair2 <span class="paren5">(<span class="default">apply max <span class="paren6">(<span class="default">assq-ref &#x27;surveys obj2</span>)</span></span>)</span></span>)</span></span>)</span>
+    <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren4">(<span class="default">eq? ss1-pair1 ss1-pair2</span>)</span>
+	<span class="paren4">(<span class="default">&lt; ss2-pair1 ss2-pair2</span>)</span>
+	<span class="paren4">(<span class="default">&lt; ss1-pair1 ss1-pair2</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-12">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Now we call <code>write-results-page</code> repeatedly. We use the keyword
+<code>fallback-comparison:</code> as this allows us to specify a general
+function to be used to sort the objects in the report.</p>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">for-each
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">rad-symbol</span>)</span>
+   <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">rad-string <span class="paren6">(<span class="default">symbol-&gt;string rad-symbol</span>)</span></span>)</span>
+	  <span class="paren5">(<span class="default">sub-dictionary <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">obj</span>)</span>
+				    <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;channel obj</span>)</span>
+					    rad-string</span>)</span></span>)</span>
+				  json-dictionary</span>)</span></span>)</span></span>)</span>
+     <span class="paren4">(<span class="default">write-results-page sub-dictionary
+			 <span class="paren5">(<span class="default">cons &#x27;surv-rad rad-symbol</span>)</span>
+			 <span class="string">&quot;surveydiff_single_ch_map&quot;</span>
+			 <span class="string">&quot;surveydiff_single_ch_cl&quot;</span>
+			 <span class="paren5">(<span class="default">sprintf <span class="string">&quot;~a, survey differences&quot;</span>
+				  <span class="paren6">(<span class="default">symbol-&gt;string rad-symbol</span>)</span></span>)</span>
+			 <span class="keyword">fallback-comparison:</span> compare-surveys</span>)</span></span>)</span></span>)</span>
+</span></span></pre></td></tr>
+<tr id="section-13">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>Using SRFI-1's <code>iota</code> and some clever use of <code>map</code> we might avoid
+listing all the radiometers here. But it would be less readable.</p>
+</td>
+<td class="code">
+<pre class="highlight"> <span class="paren1">(<span class="default">list &#x27;LFI18M &#x27;LFI18S
+       &#x27;LFI19M &#x27;LFI19S
+       &#x27;LFI20M &#x27;LFI20S
+       &#x27;LFI21M &#x27;LFI21S
+       &#x27;LFI22M &#x27;LFI22S
+       &#x27;LFI23M &#x27;LFI23S
+       &#x27;LFI24M &#x27;LFI24S
+       &#x27;LFI25M &#x27;LFI25S
+       &#x27;LFI26M &#x27;LFI26S
+       &#x27;LFI27M &#x27;LFI27S
+       &#x27;LFI28M &#x27;LFI28S</span>)</span>)
+
+</pre></td></tr>
+<tr id="section-14">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><h2>The "Single survey coupled horn" page</h2>
 </td>
 <td class="code">
 <pre class="highlight">
-<span class="paren1">(<span class="default">write-results-page json-dictionary
-		    &#x27;surv-frequency
-		    <span class="string">&quot;surveydiff_frequency_map&quot;</span>
-		    <span class="string">&quot;surveydiff_frequency_cl&quot;</span>
-		    <span class="string">&quot;Frequency map, survey differences&quot;</span></span>)</span>
+<span class="paren1">(<span class="default">for-each
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">horn-pair</span>)</span>
+   <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">sub-dictionary <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">obj</span>)</span>
+				   <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;channel obj</span>)</span>
+					   horn-pair</span>)</span></span>)</span>
+				 json-dictionary</span>)</span></span>)</span></span>)</span>
+     <span class="paren4">(<span class="default">write-results-page sub-dictionary
+			 <span class="paren5">(<span class="default">cons &#x27;surv-pair horn-pair</span>)</span>
+			 <span class="string">&quot;surveydiff_detset_map&quot;</span>
+			 <span class="string">&quot;surveydiff_detset_cl&quot;</span>
+			 <span class="paren5">(<span class="default">sprintf <span class="string">&quot;Horns ~a, survey differences&quot;</span>
+				  horn-pair</span>)</span>
+			 <span class="keyword">fallback-comparison:</span> compare-surveys</span>)</span></span>)</span></span>)</span>
+ <span class="paren2">(<span class="default">list <span class="string">&quot;18_23&quot;</span> <span class="string">&quot;19_22&quot;</span> <span class="string">&quot;20_21&quot;</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-15">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><h2>The "Single survey frequency map" page</h2>
+</td>
+<td class="code">
+<pre class="highlight">
+<span class="paren1">(<span class="default">for-each
+ <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">freq</span>)</span>
+   <span class="paren3">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">freq-string <span class="paren6">(<span class="default">-&gt;string freq</span>)</span></span>)</span>
+	  <span class="paren5">(<span class="default">sub-dictionary <span class="paren6">(<span class="default">filter <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default">obj</span>)</span>
+				    <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;channel obj</span>)</span>
+					    freq-string</span>)</span></span>)</span>
+				  json-dictionary</span>)</span></span>)</span></span>)</span>
+     <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> sub-dictionary
+	 <span class="paren5">(<span class="default">write-results-page sub-dictionary
+			     <span class="paren6">(<span class="default">cons &#x27;surv-frequency freq</span>)</span>
+			     <span class="string">&quot;surveydiff_frequency_map&quot;</span>
+			     <span class="string">&quot;surveydiff_frequency_cl&quot;</span>
+			     <span class="paren6">(<span class="default">sprintf <span class="string">&quot;~a GHz map, halfring differences&quot;</span>
+				      freq</span>)</span>
+			     <span class="keyword">fallback-comparison:</span> compare-surveys</span>)</span></span>)</span></span>)</span></span>)</span>
+ <span class="paren2">(<span class="default">list 30 44 70</span>)</span></span>)</span>
 </pre></td></tr></table></div></body></html>

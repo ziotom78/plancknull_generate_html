@@ -2,29 +2,46 @@
  * http://www.red-team-design.com/css3-animated-dropdown-menu
  */
 
-#menu, #menu ul {
-    list-style: none;
-}
-
-#menu {
+nav {
     margin: 0;
     padding: 14px;
     width: 220px;
     position: absolute;
     background-color: #ccc;
+    color: #225;
     z-index: 1;
     font-size: 90%;
 }
 
-#menu .unselected {
+nav h1, h2, h3, h4 {
+    font-size: 90%;
+}
+
+nav h1 {
+    margin: 0 0 0 0;
+}
+
+nav h2 {
+    margin: 0 0 0 15px;
+}
+
+nav h3 {
+    margin: 0 0 0 30px;
+}
+
+nav h4 {
+    margin: 0 0 0 45px;
+}
+
+nav .unselected {
     text-decoration: none;
 }
 
-#menu a:hover {
+nav a:hover {
     text-decoration: underline;
 }
 
-#menu .selected {
+nav .selected {
     font-weight: bold;
     color: black;
     text-decoration: underline;

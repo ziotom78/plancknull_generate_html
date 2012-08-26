@@ -98,35 +98,113 @@ EOF
 ;; The "Halfring frequency" page
 ;; -------------------------------------
 
-(write-results-page json-dictionary
-		    'halfring-frequency
-		    "halfring_frequency_map"
-		    "halfring_frequency_cl"
-		    "Frequency map, halfring differences")
+(for-each
+ (lambda (freq)
+   (let* ((freq-string (->string freq))
+	  (sub-dictionary (filter (lambda (obj)
+				    (equal? (assq-ref 'channel obj)
+					    freq-string))
+				  json-dictionary)))
+     (if sub-dictionary
+	 (write-results-page sub-dictionary
+			     (cons 'halfring-frequency freq)
+			     "halfring_frequency_map"
+			     "halfring_frequency_cl"
+			     (sprintf "~a GHz map, halfring differences"
+				      freq)))))
+ (list 30 44 70))
 
 ;; The "Single survey single channel" page
 ;; -------------------------------------
 
-(write-results-page json-dictionary
-		    'surv-rad
-		    "surveydiff_single_ch_map"
-		    "surveydiff_single_ch_cl"
-		    "Single channel, survey differences")
+;; This is the trickiest of the tests, as there are _lots_ of plots to
+;; show. We split the plots according to the radiometer, as this is
+;; the most useful representation. First we need some way to sort the
+;; results according to the survey. Since this null test deal with
+;; survey differences, each FITS file has _two_ surveys associated
+;; with it (e.g. the JSON tag is `"surveys": [5, 4]`, which means that
+;; in this test SS4 map was subtracted from SS4 map). Unfortunately,
+;; the two surveys are not listed in ascending order. The code for
+;; `compare-surveys` does these things: (1) orders the two surveys for
+;; both objects `obj1` and `obj2` (by mean of the functions `min` and
+;; `max`: this works because we only have two surveys), (2) compares
+;; the first (smallest) index of the survey for `obj1` and `obj2`: if
+;; they're different, use this as the sorting criterion, otherwise use
+;; the second (greatest) index of the survey.
+(define (compare-surveys obj1 obj2)
+  (let ((ss1-pair1 (apply min (assq-ref 'surveys obj1)))
+	(ss2-pair1 (apply max (assq-ref 'surveys obj1)))
+	(ss1-pair2 (apply min (assq-ref 'surveys obj2)))
+	(ss2-pair2 (apply max (assq-ref 'surveys obj2))))
+    (if (eq? ss1-pair1 ss1-pair2)
+	(< ss2-pair1 ss2-pair2)
+	(< ss1-pair1 ss1-pair2))))
+
+;; Now we call `write-results-page` repeatedly. We use the keyword
+;; `fallback-comparison:` as this allows us to specify a general
+;; function to be used to sort the objects in the report.
+(for-each
+ (lambda (rad-symbol)
+   (let* ((rad-string (symbol->string rad-symbol))
+	  (sub-dictionary (filter (lambda (obj)
+				    (equal? (assq-ref 'channel obj)
+					    rad-string))
+				  json-dictionary)))
+     (write-results-page sub-dictionary
+			 (cons 'surv-rad rad-symbol)
+			 "surveydiff_single_ch_map"
+			 "surveydiff_single_ch_cl"
+			 (sprintf "~a, survey differences"
+				  (symbol->string rad-symbol))
+			 fallback-comparison: compare-surveys)))
+ ;; Using SRFI-1's `iota` and some clever use of `map` we might avoid
+ ;; listing all the radiometers here. But it would be less readable.
+ (list 'LFI18M 'LFI18S
+       'LFI19M 'LFI19S
+       'LFI20M 'LFI20S
+       'LFI21M 'LFI21S
+       'LFI22M 'LFI22S
+       'LFI23M 'LFI23S
+       'LFI24M 'LFI24S
+       'LFI25M 'LFI25S
+       'LFI26M 'LFI26S
+       'LFI27M 'LFI27S
+       'LFI28M 'LFI28S))
 
 ;; The "Single survey coupled horn" page
 ;; -------------------------------------
 
-(write-results-page json-dictionary
-		    'surv-pair
-		    "surveydiff_detset_map"
-		    "surveydiff_detset_cl"
-		    "Coupled horn, survey differences")
+(for-each
+ (lambda (horn-pair)
+   (let ((sub-dictionary (filter (lambda (obj)
+				   (equal? (assq-ref 'channel obj)
+					   horn-pair))
+				 json-dictionary)))
+     (write-results-page sub-dictionary
+			 (cons 'surv-pair horn-pair)
+			 "surveydiff_detset_map"
+			 "surveydiff_detset_cl"
+			 (sprintf "Horns ~a, survey differences"
+				  horn-pair)
+			 fallback-comparison: compare-surveys)))
+ (list "18_23" "19_22" "20_21"))
 
-;; The "Single survey coupled horn" page
+;; The "Single survey frequency map" page
 ;; -------------------------------------
 
-(write-results-page json-dictionary
-		    'surv-frequency
-		    "surveydiff_frequency_map"
-		    "surveydiff_frequency_cl"
-		    "Frequency map, survey differences")
+(for-each
+ (lambda (freq)
+   (let* ((freq-string (->string freq))
+	  (sub-dictionary (filter (lambda (obj)
+				    (equal? (assq-ref 'channel obj)
+					    freq-string))
+				  json-dictionary)))
+     (if sub-dictionary
+	 (write-results-page sub-dictionary
+			     (cons 'surv-frequency freq)
+			     "surveydiff_frequency_map"
+			     "surveydiff_frequency_cl"
+			     (sprintf "~a GHz map, halfring differences"
+				      freq)
+			     fallback-comparison: compare-surveys))))
+ (list 30 44 70))

@@ -8,6 +8,7 @@
   ;; List of exported symbols
   (json->alist
    assq-ref
+   assoc-ref
    extract-alists-from-json-file
    read-json-dictionary
    abspath-from-json
@@ -51,6 +52,14 @@
 	  (cdr field)
 	  #f)))
 
+  ;; The same applies for `assoc` (which uses `equal?` instead of
+  ;; `eq?`).
+  (define (assoc-ref entry a-list) 
+    (let ((field (assoc entry a-list)))
+      (if field
+	  (cdr field)
+	  #f)))
+
   ;; Parse a file and return a list of associative lists suitable for
   ;; being used with functions like `assq` and `assv`. Note that, unlike
   ;; `json-read`, this function returns a list even if the JSON file
@@ -61,7 +70,6 @@
     (let ((entries (call-with-input-file file-name json-read)))
       (map json->alist (if (list? entries) entries (list entries)))))
 
-  
   ;; Find all the files in the null test directory and read their
   ;; contents, then assemble all the objects (a-lists) into a list
   ;; (using `extract-alists-from-json-file`). Note that `append` is
@@ -102,7 +110,9 @@
 			  file-types))
 		dict)))
 
-    (define (json-obj->HTML-anchor obj)
-      (string-substitute "/" "_"
-			 (assq-ref 'base_file_name obj)
-			 'every-match)))
+  ;; Given a JSON object, this produces a valid HTML anchor for the
+  ;; object.
+  (define (json-obj->HTML-anchor obj)
+    (string-substitute "/" "_"
+		       (assq-ref 'base_file_name obj)
+		       'every-match)))
