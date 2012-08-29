@@ -2,6 +2,7 @@ LOADLIBES=-lm
 CUR_DATE := $(shell date +"%Y_%m_%d")
 DEPLOY_DIR=$(PWD)/plancknull_generate_html_$(CUR_DATE)
 DEPLOY_FILE=$(PWD)/plancknull_generate_html_$(CUR_DATE).zip
+CFITSIO ?= -lcfitsio
 ADDITIONAL_LIBRARIES=-lz -lpthread
 
 INPUT_FILES=generator.scm \
@@ -26,7 +27,7 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 all: generator documentation
 
 generator: $(INPUT_FILES)
-	$(CHICKEN_CSC) $< -o $@ -lcfitsio $(ADDITIONAL_LIBRARIES)
+	$(CHICKEN_CSC) $< -o $@ $(CFITSIO) $(ADDITIONAL_LIBRARIES)
 
 deploy: $(DEPLOY_DIR)/generator
 
@@ -37,7 +38,7 @@ install_eggs:
 
 $(DEPLOY_DIR)/generator: $(INPUT_FILES)
 	mkdir -p $(DEPLOY_DIR)
-	csc -deploy -o $(DEPLOY_DIR) $<
+	csc -deploy -o $(DEPLOY_DIR) $< $(CFITSIO) $(ADDITIONAL_LIBRARIES)
 	@for chicken_module in $(CHICKEN_EGGS_TO_DEPLOY); do \
 		$(CHICKEN_INSTALL) -deploy -p $(DEPLOY_DIR) $$chicken_module; \
 	done
