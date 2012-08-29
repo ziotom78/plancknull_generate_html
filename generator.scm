@@ -30,7 +30,9 @@
 		   directory-utils
 		   srfi-19)
 
-(include "user-settings.scm")   (import user-settings)
+(include "fitsio.scm") (import fitsio)
+(include "healpix.scm") (import healpix)
+(include "user-settings.scm") (import user-settings)
 (include "json-utils.scm") (import json-utils)
 (include "file-utils.scm") (import file-utils)
 (include "html-gen-utils.scm") (import html-gen-utils)

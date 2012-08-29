@@ -2,12 +2,15 @@ LOADLIBES=-lm
 CUR_DATE := $(shell date +"%Y_%m_%d")
 DEPLOY_DIR=$(PWD)/plancknull_generate_html_$(CUR_DATE)
 DEPLOY_FILE=$(PWD)/plancknull_generate_html_$(CUR_DATE).zip
+ADDITIONAL_LIBRARIES=-lz -lpthread
 
 INPUT_FILES=generator.scm \
-	    user-settings.scm \
-	    json-utils.scm \
-	    file-utils.scm \
-	    html-gen-utils.scm
+	user-settings.scm \
+	json-utils.scm \
+	file-utils.scm \
+	html-gen-utils.scm \
+	fitsio.scm \
+	healpix.scm
 
 CHICKEN_INSTALL=chicken-install
 CHICKEN_CSC=csc
@@ -23,7 +26,7 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 all: generator documentation
 
 generator: $(INPUT_FILES)
-	$(CHICKEN_CSC) $< -o $@
+	$(CHICKEN_CSC) $< -o $@ -lcfitsio $(ADDITIONAL_LIBRARIES)
 
 deploy: $(DEPLOY_DIR)/generator
 

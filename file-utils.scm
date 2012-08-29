@@ -6,9 +6,16 @@
 ;; the program.
 
 (module file-utils
-  (export map2gif fits-name->gif-name dir-copy)
+  (map2gif
+   fits-name->gif-name
+   dir-copy)
 
-  (import chicken scheme extras files srfi-13)
+  (import chicken
+	  scheme
+	  extras
+	  files
+	  healpix
+	  srfi-13)
   (require-extension shell)
   (require-extension filepath)
   (require-extension directory-utils)
@@ -18,56 +25,117 @@
   ;; assume the availability of the `map2gif` program bundled with
   ;; [Healpix](http://healpix.jpl.nasa.gov/).
 
-  ;; Note that, since `map2gif` does not overwrite existing GIF files,
-  ;; if the file already exists and the flag `overwrite?` is true we
-  ;; first need to delete the file.
+  ;; First we define a simple function that uses `map2tga` and
+  ;; ImageMagick's `convert` to produce a GIF file with the map
+  ;; (`map2gif` has a
+  ;; [bug](http://sourceforge.net/tracker/?func=detail&aid=3559308&group_id=130539&atid=718128)
+  ;; that prevents it from creating valid GIF images, at least in
+  ;; Healpix 2.20a).
+  (define (create-1-gif input-fits-file-name
+			output-gif-file-name
+			title
+			width
+			component-number)
+       ;; Run `map2tga` and `convert`. Note the elegance of "run*"
+       ;; (from the "shell" egg): we include the command-line switches
+       ;; as if they were Scheme symbols! (We put a comma in front of
+       ;; `(html:++ ...)` because we want it to be interpreted as a
+       ;; Scheme expression: otherwise it would be put as it is in the
+       ;; arguments to the process call.) *Note:* `run*` is defined in
+       ;; the `shell` egg. When multiple commands are specified (in
+       ;; this case, `map2tga` and `convert`), it returns a set of
+       ;; values. These must be interpreted using `call-with-values`,
+       ;; which is a standard Scheme function accepting a "producer"
+       ;; and a "consumer". Refer to the [R5RS
+       ;; documentation](http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features)
+       ;; for further details.
+    (let ((output-tga-file-name
+	   (filepath:replace-extension output-gif-file-name ".tga")))
+      (call-with-values
+	  (lambda ()
+	    (format #t "Running map2tga and convert on ~a...\n"
+		    input-fits-file-name)
+	    (run* (map2tga ,input-fits-file-name
+			   ,output-tga-file-name
+			   -bar
+			   -xsz ,width
+			   -sig ,component-number
+			   -title ,(string-concatenate (list "\"" title "\"")))
+		  (convert ,output-tga-file-name
+			   -transparent white
+			   ,output-gif-file-name)))
+	(lambda (map2tga-return-code convert-return-code)
+	  (if (> map2tga-return-code 0)
+	      (abort "Error when executing \"map2tga\""))
+	  (if (> convert-return-code 0)
+	      (abort "Error when executing \"convert\""))))
+      (delete-file output-tga-file-name)))
+    
+  ;; This function is used with maps that contain 3 components (I, Q,
+  ;; U). It uses the `map2gif` function defined below and the
+  ;; `montage` program from the ImageMagick suite to create one GIF
+  ;; file containing the three maps.
+  (define (create-3-gifs-and-combine-them input-fits-file-name
+					  output-gif-file-name
+					  title
+					  width)
+    (let ((temp-dir (create-temporary-directory)))
+      (printf "Creating 3 temporary GIF files in ~a...\n"
+	      temp-dir)
+      (let ((I-file-name (filepath:join-path (list temp-dir "I.gif")))
+	    (Q-file-name (filepath:join-path (list temp-dir "Q.gif")))
+	    (U-file-name (filepath:join-path (list temp-dir "U.gif"))))
+	(for-each (lambda (file-name component-number component-name)
+		    (create-1-gif input-fits-file-name
+				  file-name
+				  (sprintf "~a (~a component)"
+					   title component-name)
+				  width
+				  component-number))
+		  (list I-file-name Q-file-name U-file-name)
+		  (list 1           2           3)
+		  (list "I"         "Q"         "U"))
+	(display "Running 'montage' on the three GIF images...\n")
+	(run (montage -tile "1x3"
+		      -geometry ,width
+		      ,I-file-name
+		      ,Q-file-name
+		      ,U-file-name
+		      ,output-gif-file-name)))))
 
+  ;; This function is simply a nice wrapper for `create-1-gif` and
+  ;; `create-3-gif-and-combine-them`.
   (define (map2gif input-fits-file-name
 		   output-gif-file-name
 		   title
-		   #!key (overwrite? #f)) ; If not specified, it is #f
+		   #!key (width 512) (overwrite? #f))
     (call/cc ; Chicken's shortcut for call-with-current-continuation
      (lambda (return)
+       ;; Note that, since `map2gif` does not overwrite existing GIF files,
+       ;; if the file already exists and the flag `overwrite?` is true we
+       ;; first need to delete the file.
        (if (file-exists? output-gif-file-name)
 	   (if overwrite?
 	       (delete-file output-gif-file-name)
 	       (return '())))
+
        ;; Create the directory that will contain the output file,
        ;; if it does not exist
        (create-pathname-directory output-gif-file-name)
-       ;; Run the program. Note the elegance of "run*" (from the "shell"
-       ;; egg): we include the command-line switches as if they were
-       ;; Scheme symbols! (We put a comma in front of `(html:++ ...)`
-       ;; because we want it to be interpreted as a Scheme expression:
-       ;; otherwise it would be put as it is in the arguments to the
-       ;; process call.) *Note:* `run*` is defined in the `shell` egg.
-       ;; When multiple commands are specified (in this case, `map2tga`
-       ;; and `convert`), it returns a set of values. These must be
-       ;; interpreted using `call-with-values`, which is a standard
-       ;; Scheme function accepting a "producer" and a "consumer". Refer
-       ;; to the [R5RS
-       ;; documentation](http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features)
-       ;; for further details.
-       (let ((output-tga-file-name
-	      (filepath:replace-extension output-gif-file-name ".tga")))
-	 (call-with-values
-	     (lambda ()
-	       (format #t "Running map2tga and convert on ~a...\n"
-		       input-fits-file-name)
-	       (run* (map2tga ,input-fits-file-name
-			      ,output-tga-file-name
-			      -bar
-			      -xsz 512
-			      -title ,(string-concatenate (list "\"" title "\"")))
-		     (convert ,output-tga-file-name
-			      -transparent white
-			      ,output-gif-file-name)))
-	   (lambda (map2tga-return-code convert-return-code)
-	     (if (> map2tga-return-code 0)
-		 (abort "Error when executing \"map2tga\""))
-	     (if (> convert-return-code 0)
-		 (abort "Error when executing \"convert\""))))
-	 (delete-file output-tga-file-name)))))
+
+       ;; If the map contains three components (I, Q, U) we need to
+       ;; create three GIF files and then combine them into one.
+       (if (eq? (healpix:num-of-components-in-map input-fits-file-name)
+		1)
+	   (create-1-gif input-fits-file-name
+			 output-gif-file-name
+			 title
+			 width
+			 1)
+	   (create-3-gifs-and-combine-them input-fits-file-name
+					   output-gif-file-name
+					   title
+					   width)))))
 
   ;; This function converts the name of a FITS file containing a map
   ;; into the name of the `.gif` file that will contain the

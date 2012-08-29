@@ -27,7 +27,11 @@
    fits:read-entire-long-column
    fits:read-entire-ulong-column
    fits:read-entire-float-column
-   fits:read-entire-double-column)
+   fits:read-entire-double-column
+   fits:with-input-file
+   fits:with-input-table
+   fits:with-input-image
+   fits:with-input-data)
 
   (import chicken
 	  scheme
@@ -199,4 +203,19 @@
   (def-read-entire-col-fn fits:read-entire-long-column   fits:read-long-column)
   (def-read-entire-col-fn fits:read-entire-ulong-column  fits:read-ulong-column)
   (def-read-entire-col-fn fits:read-entire-float-column  fits:read-float-column)
-  (def-read-entire-col-fn fits:read-entire-double-column fits:read-double-column))
+  (def-read-entire-col-fn fits:read-entire-double-column fits:read-double-column)
+
+  (define-syntax def-with-input-???
+    (syntax-rules ()
+      ((_ <def-name> <read-function>)
+       (define (<def-name> file-name function)
+	 (let ((fptr #f))
+	   (dynamic-wind
+	     (lambda () (set! fptr (<read-function> file-name)))
+	     (lambda () (function fptr))
+	     (lambda () (fits:close-file fptr))))))))
+
+  (def-with-input-??? fits:with-input-file  fits:open-file-for-read)
+  (def-with-input-??? fits:with-input-table fits:open-table-for-read)
+  (def-with-input-??? fits:with-input-image fits:open-image-for-read)
+  (def-with-input-??? fits:with-input-data  fits:open-data-for-read))
