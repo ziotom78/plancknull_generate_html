@@ -169,17 +169,26 @@
 			 output-gif-file-name
 			 title
 			 #!key (width 512) (overwrite? #f))
-    (let ((csv-file-name
-	   (filepath:replace-extension output-gif-file-name ".csv")))
-      ;; First step: convert the FITS file into a CSV file (placed
-      ;; alongside the GIF image under the destination directory)
-      (spectrum->csv input-fits-file-name csv-file-name)
-      ;; Now open a output pipe to `gnuplot` and send the appropriate
-      ;; commands to plot the spectrum/spectra.
-      (with-output-to-pipe
-       "gnuplot"
-       (lambda ()
-	 (printf #<<EOF
+    (call/cc ; Chicken's shortcut for call-with-current-continuation
+     (lambda (return)
+       ;; Note that, since `map2tga` does not overwrite existing GIF files,
+       ;; if the file already exists and the flag `overwrite?` is true we
+       ;; first need to delete the file.
+       (if (file-exists? output-gif-file-name)
+	   (if overwrite?
+	       (delete-file output-gif-file-name)
+	       (return '())))
+       (let ((csv-file-name
+	      (filepath:replace-extension output-gif-file-name ".csv")))
+	 ;; First step: convert the FITS file into a CSV file (placed
+	 ;; alongside the GIF image under the destination directory)
+	 (spectrum->csv input-fits-file-name csv-file-name)
+	 ;; Now open a output pipe to `gnuplot` and send the appropriate
+	 ;; commands to plot the spectrum/spectra.
+	 (with-output-to-pipe
+	  "gnuplot"
+	  (lambda ()
+	    (printf #<<EOF
 set terminal gif transparent enhanced size ~a, ~a
 set output '~a'
 set logscale y
@@ -188,18 +197,18 @@ set ylabel 'C_l'
 set title '~a'
 
 EOF
-                 width
-		 (inexact->exact (round (/ width 1.4)))
-                 output-gif-file-name
-		 title)
-	 (if (eq? (healpix:num-of-components-in-spectrum input-fits-file-name)
-		  1)
-	     ;; `then` part
-	     (printf "plot '~a' using 1:2 with linespoints title ''"
-		     csv-file-name)
-	     ;; `else` part
-	     (begin
-	       (printf #<<EOF
+                    width
+		    (inexact->exact (round (/ width 1.4)))
+		    output-gif-file-name
+		    title)
+	    (if (eq? (healpix:num-of-components-in-spectrum input-fits-file-name)
+		     1)
+		;; `then` part
+		(printf "plot '~a' using 1:2 with linespoints title ''"
+			csv-file-name)
+		;; `else` part
+		(begin
+		  (printf #<<EOF
 plot '~a' using 1:2 with lines title 'TT', \
      '~a' using 1:3 with lines title 'EE', \
      '~a' using 1:4 with lines title 'BB', \
@@ -208,12 +217,12 @@ plot '~a' using 1:2 with lines title 'TT', \
      '~a' using 1:3 with lines title 'EB' \
 
 EOF
-                      csv-file-name
-		      csv-file-name
-                      csv-file-name
-		      csv-file-name
-                      csv-file-name
-		      csv-file-name)))))))
+                          csv-file-name
+			  csv-file-name
+			  csv-file-name
+			  csv-file-name
+			  csv-file-name
+			  csv-file-name)))))))))
 
   ;; This function converts the name of a FITS file containing a map
   ;; into the name of the `.gif` file that will contain the

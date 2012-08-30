@@ -12,6 +12,11 @@ h1#main_title {
     font-size: 190%;
 }
 
+#page_index ul, #page_index li {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
 #page_body h1, #page_body h2, #page_body h3, #page_body h4 {
     text-align: left;
     color: #225;
@@ -37,12 +42,6 @@ h1#main_title {
 
 p, table {
     font-size: 14px;
-}
-
-table {
-    border-spacing: 10px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 #selector tr {
@@ -88,6 +87,6 @@ td {
     position: absolute;
     z-index: 0;
     width: 93.9%;
-    margin-left: 16em;
+    margin-left: 11em;
     padding-left: 25px;
 }

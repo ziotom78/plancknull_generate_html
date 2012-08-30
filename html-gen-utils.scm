@@ -240,7 +240,7 @@
 		      (assq-ref 'title map-obj)))
 	   "\n"
 	   (<table>
-	    (<tr> valign: "top"
+	    (<tr> valign: "top" align: "left"
 	     (<td> (emit-HTML-for-map-object map-obj) "\n")
 	     (<td> (emit-HTML-for-spectrum-object spectrum-obj) "\n")
 	   "\n"))))
