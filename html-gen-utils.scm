@@ -204,7 +204,6 @@
       (<ul> (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
 		 title "\n"))))
 
-  
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
   (define (emit-HTML-for-map-object obj)
@@ -212,22 +211,39 @@
 	   (fits-file-name (abspath-from-json obj))
 	   (gif-file-name (fits-name->gif-name fits-file-name)))
       (format #t "Writing GIF file ~a\n" gif-file-name)
-      (map2gif fits-file-name
-	       (filepath:join-path
-		(list (assq-ref 'output-dir user-args)
-		      gif-file-name))
-	       title)
+      (map->gif fits-file-name
+                (filepath:join-path
+                 (list (assq-ref 'output-dir user-args)
+                       gif-file-name))
+                title)
       (<img> src: gif-file-name alt: title)))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
-  (define (emit-HTML-for-object map-obj)
+  (define (emit-HTML-for-spectrum-object obj)
+    (let* ((title (assq-ref 'title obj))
+	   (fits-file-name (abspath-from-json obj))
+	   (gif-file-name (fits-name->gif-name fits-file-name)))
+      (format #t "Writing GIF file ~a\n" gif-file-name)
+      (spectrum->gif fits-file-name
+		     (filepath:join-path
+		      (list (assq-ref 'output-dir user-args)
+			    gif-file-name))
+		     title)
+      (<img> src: gif-file-name alt: title)))
+
+  ;; This function accepts a JSON object and will produce
+  ;; HTML code to be put straight into the page.
+  (define (emit-HTML-for-object map-obj spectrum-obj)
     (<div> class: "page_section"
 	   (<h4> (<a> name: (json-obj->HTML-anchor map-obj)
 		      (assq-ref 'title map-obj)))
 	   "\n"
-	   (emit-HTML-for-map-object map-obj)
-	   "\n"))
+	   (<table>
+	    (<tr> valign: "top"
+	     (<td> (emit-HTML-for-map-object map-obj) "\n")
+	     (<td> (emit-HTML-for-spectrum-object spectrum-obj) "\n")
+	   "\n"))))
 
   ;; Sort a list of JSON objects according to the tag `key-tag`,
   ;; which should be a string. If the two elements are equal and
@@ -278,7 +294,7 @@
 				      (itemize (map emit-HTML-index-entry-for-object
 						    map-objs)))
 			       (string-intersperse
-				(map emit-HTML-for-object map-objs)
+				(map emit-HTML-for-object map-objs cl-objs)
 				"\n"))))
 	    file)
 	   (newline file)))))))

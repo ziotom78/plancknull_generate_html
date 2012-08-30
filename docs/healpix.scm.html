@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+<head>
+<title>healpix.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>healpix.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">module healpix
+  <span class="paren2">(<span class="default">healpix:nside-&gt;npix
+   healpix:npix-&gt;nside
+   healpix:num-of-components-in-map
+   healpix:num-of-components-in-spectrum
+   healpix:read-spectrum</span>)</span>
+  
+  <span class="paren2">(<span class="default">import chicken
+	  scheme
+	  srfi-1
+	  srfi-18
+	  fitsio</span>)</span>
+
+  <span class="paren2">(<span class="default">use srfi-1</span>)</span>
+
+  <span class="paren2">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren3">(<span class="default">healpix:nside-&gt;npix nside</span>)</span>
+    <span class="paren3">(<span class="default">* 12 nside nside</span>)</span></span>)</span>
+
+  <span class="paren2">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren3">(<span class="default">healpix:npix-&gt;nside npix</span>)</span>
+    <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">nside-float <span class="paren6">(<span class="default">sqrt <span class="paren1">(<span class="default">/ npix 12.0</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">not <span class="paren6">(<span class="default">eq? <span class="paren1">(<span class="default">inexact-&gt;exact <span class="paren2">(<span class="default">floor <span class="paren3">(<span class="default">healpix:nside-&gt;npix nside-float</span>)</span></span>)</span></span>)</span>
+		    npix</span>)</span></span>)</span>
+	  <span class="paren5">(<span class="default">raise <span class="paren6">(<span class="default">sprintf <span class="string">&quot;Invalid value (~a) for NPIX in call to npix-&gt;nside&quot;</span>
+			  npix</span>)</span></span>)</span>
+	  <span class="paren5">(<span class="default">inexact-&gt;exact nside-float</span>)</span></span>)</span></span>)</span></span>)</span>
+
+</span></span></pre></td></tr>
+<tr id="section-2">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>This function would work both with maps and power spectra, but
+for the sake of clarity we define it twice.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:num-of-components-in-map fits-file-name</span>)</span>
+    <span class="paren2">(<span class="default">fits:with-input-table fits-file-name
+			   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">fptr</span>)</span>
+			     <span class="paren4">(<span class="default">fits:get-num-of-columns fptr</span>)</span></span>)</span></span>)</span></span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> healpix:num-of-components-in-spectrum
+    healpix:num-of-components-in-map</span>)</span>
+
+</pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>This function returns all the spectra in <code>fits-file-name</code> as a
+list of <code>f64vector</code> elements (one per component).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:read-spectrum fits-file-name</span>)</span>
+    <span class="paren2">(<span class="default">fits:with-input-table
+     fits-file-name
+     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">fptr</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">num-of-components <span class="paren1">(<span class="default">fits:get-num-of-columns fptr</span>)</span></span>)</span></span>)</span>
+	 <span class="paren5">(<span class="default">map <span class="paren6">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren1">(<span class="default">comp</span>)</span>
+		<span class="paren1">(<span class="default">fits:read-entire-double-column fptr comp 0.0</span>)</span></span>)</span>
+	      <span class="paren6">(<span class="default">iota num-of-components 1</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+)
+</pre></td></tr></table></div></body></html>

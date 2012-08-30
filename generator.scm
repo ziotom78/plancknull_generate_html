@@ -15,13 +15,13 @@
 ;; `html-utils` eggs are very useful to generate HTML from code, much
 ;; in the same way as described in Paul Graham's 16th chapter of [ANSI
 ;; Common LISP](http://www.paulgraham.com/acl.html). The `shell` egg
-;; is used to call `map2gif`. The eggs `filepath` and
-;; `directory-utils` are used respectively to manipulate file paths
-;; and to create/modify the directory structure of a file system (we
-;; are going to use it to create the tree of directories that will
-;; contain the HTML report). SRFI-19 implements a set of functions to
-;; deal with date and times. We use it to put timestamps in the
-;; report.
+;; is used to call command-line programs like `map2tga`. The eggs
+;; `filepath` and `directory-utils` are used respectively to
+;; manipulate file paths and to create/modify the directory structure
+;; of a file system (we are going to use it to create the tree of
+;; directories that will contain the HTML report). SRFI-19 implements
+;; a set of functions to deal with date and times. We use it to put
+;; timestamps in the report.
 (require-extension json
 		   html-tags
 		   html-utils

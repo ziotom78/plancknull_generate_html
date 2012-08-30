@@ -100,15 +100,17 @@ the makefile.
 
 ## How to run the program
 
-To run the program, you must have
-[`map2tga`](http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm) and
-`convert` (part of
+To run the program, you must have the following programs available in
+your `PATH`:
+* [`map2tga`](http://healpix.jpl.nasa.gov/html/facilitiesnode9.htm),
+which is provided by [Healpix](http://healpix.jpl.nasa.gov/): if you
+work with Planck/LFI, you surely have it. (Note that it is already
+installed at the LFI DPC.)
+* `convert` and `montage`, which are part of
 [ImageMagick](http://www.imagemagick.org/script/index.php) &mdash; its
 fork [GraphicsMagick](http://www.graphicsmagick.org/) should be ok as
-well) in your path. `map2tga` is provided by
-[Healpix](http://healpix.jpl.nasa.gov/): if you work with Planck/LFI,
-you surely have it. (Note that it is already installed at the LFI
-DPC.)
+well) in your path.
+* [`gnuplot`](http://www.gnuplot.info/).
 
 The program needs as input one or more JSON files containing
 information about the products of the null tests. Typically, these are

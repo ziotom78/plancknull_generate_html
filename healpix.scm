@@ -2,8 +2,8 @@
   (healpix:nside->npix
    healpix:npix->nside
    healpix:num-of-components-in-map
-   healpix:num-of-components-in-power-spectrum
-   healpix:read-power-spectrum)
+   healpix:num-of-components-in-spectrum
+   healpix:read-spectrum)
   
   (import chicken
 	  scheme
@@ -30,12 +30,12 @@
     (fits:with-input-table fits-file-name
 			   (lambda (fptr)
 			     (fits:get-num-of-columns fptr))))
-  (define healpix:num-of-components-in-power-spectrum
+  (define healpix:num-of-components-in-spectrum
     healpix:num-of-components-in-map)
 
   ;; This function returns all the spectra in `fits-file-name` as a
   ;; list of `f64vector` elements (one per component).
-  (define (healpix:read-power-spectrum fits-file-name)
+  (define (healpix:read-spectrum fits-file-name)
     (fits:with-input-table
      fits-file-name
      (lambda (fptr)

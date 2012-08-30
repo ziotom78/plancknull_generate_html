@@ -49,7 +49,9 @@ documentation: \
 	docs/user-settings.scm.html \
 	docs/json-utils.scm.html \
 	docs/file-utils.scm.html \
-	docs/html-gen-utils.scm.html
+	docs/html-gen-utils.scm.html \
+	docs/fitsio.scm.html \
+	docs/healpix.scm.html
 
 docs/%.scm.html: %.scm
 	schematic -f markdown --directory docs $<
