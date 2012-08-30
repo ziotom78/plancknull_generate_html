@@ -204,7 +204,7 @@ EOF
 	    (if (eq? (healpix:num-of-components-in-spectrum input-fits-file-name)
 		     1)
 		;; `then` part
-		(printf "plot '~a' using 1:2 with linespoints title ''"
+		(printf "plot '~a' using 1:2 with lines title ''"
 			csv-file-name)
 		;; `else` part
 		(begin
