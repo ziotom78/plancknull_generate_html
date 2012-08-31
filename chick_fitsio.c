@@ -80,6 +80,20 @@ char * get_string_key(fitsfile * fptr, char * key_name)
     return strdup(buffer);
 }
 
+long get_repeat_count_for_column(fitsfile * fptr, int column_num)
+{
+    long repeat_count;
+
+    fits_get_bcolparms(fptr, column_num,
+		       NULL, NULL, /* ttype, tunit */
+		       NULL, /* typechar */
+		       &repeat_count,
+		       NULL, NULL, /* scale, zero */
+		       NULL, NULL, /* nulval, disp */
+		       &fitsio_status);
+    return repeat_count;
+}
+
 long get_num_of_rows(fitsfile * fptr)
 {
     long result = 0;
@@ -112,3 +126,33 @@ DEFINE_READ_COLUMN(read_long_col, long, fits_read_col_lng, TLONG)
 DEFINE_READ_COLUMN(read_ulong_col, unsigned long, fits_read_col_ulng, TULONG)
 DEFINE_READ_COLUMN(read_float_col, float, fits_read_col_flt, TFLOAT)
 DEFINE_READ_COLUMN(read_double_col, double, fits_read_col_dbl, TDOUBLE)
+
+/******************************************************************************/
+/* Column reading routines */
+
+#define DEFINE_READ_FULL_COLUMN(name, c_type, fitsio_fn, fitsio_type)	\
+    void name(fitsfile * fptr, int colnum, long elements_per_row,       \
+	      long num_of_rows, c_type nulval, c_type * destination)	\
+    {									\
+        int row_idx;							\
+	for(row_idx = 0; row_idx < num_of_rows; ++row_idx)		\
+	{								\
+	    if(fitsio_fn(fptr, colnum, row_idx + 1, 1, elements_per_row, \
+			 nulval, &(destination[row_idx*elements_per_row]), \
+			 NULL, &fitsio_status))				\
+		return;							\
+	}								\
+    }
+
+DEFINE_READ_FULL_COLUMN(read_full_short_col, short,
+			fits_read_col_sht, TSHORT)
+DEFINE_READ_FULL_COLUMN(read_full_ushort_col, unsigned short,
+			fits_read_col_usht, TUSHORT)
+DEFINE_READ_FULL_COLUMN(read_full_long_col, long,
+			fits_read_col_lng, TLONG)
+DEFINE_READ_FULL_COLUMN(read_full_ulong_col, unsigned long,
+			fits_read_col_ulng, TULONG)
+DEFINE_READ_FULL_COLUMN(read_full_float_col, float,
+			fits_read_col_flt, TFLOAT)
+DEFINE_READ_FULL_COLUMN(read_full_double_col, double,
+			fits_read_col_dbl, TDOUBLE)

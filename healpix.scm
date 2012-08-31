@@ -3,6 +3,12 @@
    healpix:npix->nside
    healpix:num-of-components-in-map
    healpix:num-of-components-in-spectrum
+   healpix:read-map-as-shorts
+   healpix:read-map-as-ushorts
+   healpix:read-map-as-longs
+   healpix:read-map-as-ulongs
+   healpix:read-map-as-floats
+   healpix:read-map-as-doubles
    healpix:read-spectrum)
   
   (import chicken
@@ -33,6 +39,31 @@
   (define healpix:num-of-components-in-spectrum
     healpix:num-of-components-in-map)
 
+  (define-syntax def-read-map-as-???
+    (syntax-rules ()
+      ((_ <dfn-name> <column-read-fn> <null>)
+       (define (<dfn-name> fits-file-name
+			   #!optional (fields (list 1)))
+	 (fits:with-input-table
+	  fits-file-name
+	  (lambda (fptr)
+	    (map (lambda (column)
+		   (<column-read-fn> fptr column <null>))
+		 fields)))))))
+
+  (def-read-map-as-??? healpix:read-map-as-shorts
+    fits:read-full-short-column 0)
+  (def-read-map-as-??? healpix:read-map-as-ushorts
+    fits:read-full-ushort-column 0)
+  (def-read-map-as-??? healpix:read-map-as-longs
+    fits:read-full-long-column 0)
+  (def-read-map-as-??? healpix:read-map-as-ulongs
+    fits:read-full-ulong-column 0)
+  (def-read-map-as-??? healpix:read-map-as-floats
+    fits:read-full-float-column +nan.0)
+  (def-read-map-as-??? healpix:read-map-as-doubles
+    fits:read-full-double-column +nan.0)
+	 
   ;; This function returns all the spectra in `fits-file-name` as a
   ;; list of `f64vector` elements (one per component).
   (define (healpix:read-spectrum fits-file-name)
@@ -41,6 +72,6 @@
      (lambda (fptr)
        (let ((num-of-components (fits:get-num-of-columns fptr)))
 	 (map (lambda (comp)
-		(fits:read-entire-double-column fptr comp 0.0))
+		(fits:read-full-double-column fptr comp 0.0))
 	      (iota num-of-components 1))))))
 )

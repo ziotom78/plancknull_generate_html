@@ -12,6 +12,7 @@
    fits:get-float-key
    fits:get-double-key
    fits:get-string-key
+   fits:get-repeat-count-for-column
    fits:move-to-hdu-absolute
    fits:move-to-hdu-relative
    fits:get-num-of-rows
@@ -22,12 +23,12 @@
    fits:read-ulong-column
    fits:read-float-column
    fits:read-double-column
-   fits:read-entire-short-column
-   fits:read-entire-ushort-column
-   fits:read-entire-long-column
-   fits:read-entire-ulong-column
-   fits:read-entire-float-column
-   fits:read-entire-double-column
+   fits:read-full-short-column
+   fits:read-full-ushort-column
+   fits:read-full-long-column
+   fits:read-full-ulong-column
+   fits:read-full-float-column
+   fits:read-full-double-column
    fits:with-input-file
    fits:with-input-table
    fits:with-input-image
@@ -120,6 +121,11 @@
     file-ptr key-name)
 
   (define-fitsio-fn
+    fits:get-repeat-count-for-column
+    (foreign-lambda long "get_repeat_count_for_column" fits-file int)
+    file-ptr column-num)
+
+  (define-fitsio-fn
     fits:move-to-hdu-absolute
     (foreign-lambda bool "move_to_hdu_abs" fits-file int)
     file-name abs-position)
@@ -190,20 +196,53 @@
   (def-read-fn fits:read-float-column  make-f32vector read-float-column)
   (def-read-fn fits:read-double-column make-f64vector read-double-column)
 
-  ;; TODO: make this work even when repcount > 1 (use fits_get_bcolparmsll)
-  (define-syntax def-read-entire-col-fn
+  (define-syntax def-lowl-read-full-fn
     (syntax-rules ()
-      ((_ <dfn-name> <read-fn>)
-       (define (<dfn-name> fptr column-num null-value)
-	 (let ((num-of-elements (fits:get-num-of-rows fptr)))
-	   (<read-fn> fptr column-num 1 1 num-of-elements null-value))))))
+      ((_ <dfn-name> <c-name> <type> <vector-type>)
+       (define-fitsio-fn
+	 <dfn-name>
+	 (foreign-lambda void <c-name>
+			 fits-file int long long <type> <vector-type>)
+	 ;; Param list
+	 fptr column-num elements-per-row num-of-rows
+	 null-value destination))))
 
-  (def-read-entire-col-fn fits:read-entire-short-column  fits:read-short-column)
-  (def-read-entire-col-fn fits:read-entire-ushort-column fits:read-ushort-column)
-  (def-read-entire-col-fn fits:read-entire-long-column   fits:read-long-column)
-  (def-read-entire-col-fn fits:read-entire-ulong-column  fits:read-ulong-column)
-  (def-read-entire-col-fn fits:read-entire-float-column  fits:read-float-column)
-  (def-read-entire-col-fn fits:read-entire-double-column fits:read-double-column)
+  (def-lowl-read-full-fn read-full-short-column
+    "read_full_short_col" short s16vector)
+  (def-lowl-read-full-fn read-full-ushort-column
+    "read_full_ushort_col" unsigned-short u16vector)
+  (def-lowl-read-full-fn read-full-long-column
+    "read_full_long_col" long s32vector)
+  (def-lowl-read-full-fn read-full-ulong-column
+    "read_full_ulong_col" unsigned-long u32vector)
+  (def-lowl-read-full-fn read-full-float-column
+    "read_full_float_col" float f32vector)
+  (def-lowl-read-full-fn read-full-double-column
+    "read_full_double_col" double f64vector)
+
+  (define-syntax def-read-full-col-fn
+    (syntax-rules ()
+      ((_ <dfn-name> <make-vector> <low-level-fn>)
+       (define (<dfn-name> fptr
+			   column-num
+			   null-value)
+	 (let* ((elements-per-row (fits:get-repeat-count-for-column fptr column-num))
+		(num-of-rows (fits:get-int-key fptr "NAXIS2"))
+		(vect (<make-vector> (* elements-per-row num-of-rows))))
+	   (<low-level-fn> fptr
+			   column-num
+			   elements-per-row
+			   num-of-rows
+			   null-value
+			   vect)
+	   vect)))))
+
+  (def-read-full-col-fn fits:read-full-short-column  make-s16vector read-full-short-column)
+  (def-read-full-col-fn fits:read-full-ushort-column make-u16vector read-full-ushort-column)
+  (def-read-full-col-fn fits:read-full-long-column   make-s32vector read-full-long-column)
+  (def-read-full-col-fn fits:read-full-ulong-column  make-u32vector read-full-ulong-column)
+  (def-read-full-col-fn fits:read-full-float-column  make-f32vector read-full-float-column)
+  (def-read-full-col-fn fits:read-full-double-column make-f64vector read-full-double-column)
 
   (define-syntax def-with-input-???
     (syntax-rules ()
