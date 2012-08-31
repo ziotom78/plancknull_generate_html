@@ -63,6 +63,9 @@
 	    (run* (map2tga ,input-fits-file-name
 			   ,output-tga-file-name
 			   -bar
+			   -mul 1.0e6
+			   -min -50
+			   -max +50
 			   -xsz ,width
 			   -sig ,component-number
 			   -title ,(string-concatenate (list "\"" title "\"")))

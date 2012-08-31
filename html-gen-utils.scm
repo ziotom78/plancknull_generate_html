@@ -138,24 +138,14 @@
 			 (<h3> (smart-<a> "LFI28S" (cons 'surv-rad 'LFI28S))))
 		   ;(<h2> (smart-<a> "Single horn" 'surv-horn))
 		   (<h2> "Horn pair &raquo;" #\newline
-			 (<h3> (smart-<a> "#18-#23" (cons 'surv-pair "18-23")))
-			 (<h3> (smart-<a> "#19-#22" (cons 'surv-pair "19-22")))
-			 (<h3> (smart-<a> "#20-#21" (cons 'surv-pair "20-21"))))
+			 (<h3> (smart-<a> "#18-#23" (cons 'surv-pair "18_23")))
+			 (<h3> (smart-<a> "#19-#22" (cons 'surv-pair "19_22")))
+			 (<h3> (smart-<a> "#20-#21" (cons 'surv-pair "20_21"))))
 		   (<h2> "Frequency &raquo;" #\newline
 			 (<h3> (smart-<a> "30 GHz" (cons 'surv-frequency 30)))
 			 (<h3> (smart-<a> "44 GHz" (cons 'surv-frequency 44)))
 			 (<h3> (smart-<a> "70 GHz" (cons 'surv-frequency 70))))
 		   (<h2> (smart-<a> "Cross-frequency" 'surv-cross-freq)))
-	     (<h1> "Full-mission tests &raquo;" #\newline
-		   (<h2> (smart-<a> "Horn pair" 'full-pair)
-			 (<h3> (smart-<a> "#18-#23" (cons 'full-pair "18_23")))
-			 (<h3> (smart-<a> "#19-#22" (cons 'full-pair "19_22")))
-			 (<h3> (smart-<a> "#20-#21" (cons 'full-pair "20_21"))))
-		   (<h2> (smart-<a> "Frequency" 'full-frequency)
-			 (<h3> (smart-<a> "30 GHz" (cons 'full-frequency 30)))
-			 (<h3> (smart-<a> "44 GHz" (cons 'full-frequency 44)))
-			 (<h3> (smart-<a> "70 GHz" (cons 'full-frequency 70))))
-		   (<h2> (smart-<a> "Cross-frequency" 'full-cross-freq)))
 	     (<h1> (smart-<a> "Table of contents" 'table-of-contents)))))
 
   ;; The function `wrap-html` takes a string containing some HTML code
