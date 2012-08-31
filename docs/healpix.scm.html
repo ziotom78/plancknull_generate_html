@@ -31,11 +31,16 @@
   
   <span class="paren2">(<span class="default">import chicken
 	  scheme
+	  foreign
 	  srfi-1
+	  srfi-13
 	  srfi-18
 	  fitsio</span>)</span>
 
   <span class="paren2">(<span class="default">use srfi-1</span>)</span>
+  <span class="paren2">(<span class="default">use srfi-13</span>)</span>
+
+  <span class="paren2">(<span class="default">foreign-declare <span class="string">&quot;#include </span><span class="string">\&quot;</span><span class="string">chick_healpix.c</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span>
 
   <span class="paren2">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren3">(<span class="default">healpix:nside-&gt;npix nside</span>)</span>
     <span class="paren3">(<span class="default">* 12 nside nside</span>)</span></span>)</span>
@@ -62,17 +67,37 @@ for the sake of clarity we define it twice.</p>
   <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> healpix:num-of-components-in-spectrum
     healpix:num-of-components-in-map</span>)</span>
 
-  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-read-map-as-???</span></i>
+</pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>This syntax implements functions that read a FITS file containing
+a map and return two values: (1) an a-list containing metadata
+for the map, and (2) a list of SRFI-4 vectors, one vector for
+each component in the map. The caller can specify which
+components to load by using the optional argument (which defaults
+to <code>#f</code>, that is, "read everything is in the map").</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-read-map-as-???</span></i>
     <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
       <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;dfn-name&gt; &lt;column-read-fn&gt; &lt;null&gt;</span>)</span>
        <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;dfn-name&gt; fits-file-name
-			   #!optional <span class="paren6">(<span class="default">fields <span class="paren1">(<span class="default">list 1</span>)</span></span>)</span></span>)</span>
+			   #!optional <span class="paren6">(<span class="default">fields #f</span>)</span></span>)</span>
 	 <span class="paren5">(<span class="default">fits:with-input-table
 	  fits-file-name
 	  <span class="paren6">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren1">(<span class="default">fptr</span>)</span>
-	    <span class="paren1">(<span class="default">map <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">column</span>)</span>
-		   <span class="paren3">(<span class="default">&lt;column-read-fn&gt; fptr column &lt;null&gt;</span>)</span></span>)</span>
-		 fields</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+	    <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">fields-to-read <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> fields
+				      fields
+				      <span class="paren5">(<span class="default">iota <span class="paren6">(<span class="default">fits:get-num-of-columns fptr</span>)</span>
+					    1</span>)</span></span>)</span></span>)</span></span>)</span>
+	      <span class="paren2">(<span class="default">values <span class="paren3">(<span class="default">list
+		       <span class="paren4">(<span class="default">cons &#x27;nside <span class="paren5">(<span class="default">fits:get-int-key fptr <span class="string">&quot;NSIDE&quot;</span></span>)</span></span>)</span>
+		       <span class="paren4">(<span class="default">cons &#x27;ordering <span class="paren5">(<span class="default">string-&gt;symbol
+					<span class="paren6">(<span class="default">string-downcase
+					 <span class="paren1">(<span class="default">fits:get-string-key fptr <span class="string">&quot;ORDERING&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+		      <span class="paren3">(<span class="default">map <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">column</span>)</span>
+			   <span class="paren5">(<span class="default">&lt;column-read-fn&gt; fptr column &lt;null&gt;</span>)</span></span>)</span>
+			   fields-to-read</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
   <span class="paren1">(<span class="default"><i><span class="symbol">def-read-map-as-???</span></i> healpix:read-map-as-shorts
     fits:read-full-short-column 0</span>)</span>
@@ -88,9 +113,9 @@ for the sake of clarity we define it twice.</p>
     fits:read-full-double-column +nan.0</span>)</span>
 	 
 </pre></td></tr>
-<tr id="section-3">
+<tr id="section-4">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>This function returns all the spectra in <code>fits-file-name</code> as a
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This function returns all the spectra in <code>fits-file-name</code> as a
 list of <code>f64vector</code> elements (one per component).</p>
 </td>
 <td class="code">

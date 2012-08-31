@@ -13,11 +13,16 @@
   
   (import chicken
 	  scheme
+	  foreign
 	  srfi-1
+	  srfi-13
 	  srfi-18
 	  fitsio)
 
   (use srfi-1)
+  (use srfi-13)
+
+  (foreign-declare "#include \"chick_healpix.c\"")
 
   (define (healpix:nside->npix nside)
     (* 12 nside nside))
@@ -39,17 +44,32 @@
   (define healpix:num-of-components-in-spectrum
     healpix:num-of-components-in-map)
 
+  ;; This syntax implements functions that read a FITS file containing
+  ;; a map and return two values: (1) an a-list containing metadata
+  ;; for the map, and (2) a list of SRFI-4 vectors, one vector for
+  ;; each component in the map. The caller can specify which
+  ;; components to load by using the optional argument (which defaults
+  ;; to `#f`, that is, "read everything is in the map").
   (define-syntax def-read-map-as-???
     (syntax-rules ()
       ((_ <dfn-name> <column-read-fn> <null>)
        (define (<dfn-name> fits-file-name
-			   #!optional (fields (list 1)))
+			   #!optional (fields #f))
 	 (fits:with-input-table
 	  fits-file-name
 	  (lambda (fptr)
-	    (map (lambda (column)
-		   (<column-read-fn> fptr column <null>))
-		 fields)))))))
+	    (let ((fields-to-read (if fields
+				      fields
+				      (iota (fits:get-num-of-columns fptr)
+					    1))))
+	      (values (list
+		       (cons 'nside (fits:get-int-key fptr "NSIDE"))
+		       (cons 'ordering (string->symbol
+					(string-downcase
+					 (fits:get-string-key fptr "ORDERING")))))
+		      (map (lambda (column)
+			   (<column-read-fn> fptr column <null>))
+			   fields-to-read)))))))))
 
   (def-read-map-as-??? healpix:read-map-as-shorts
     fits:read-full-short-column 0)
