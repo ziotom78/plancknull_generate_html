@@ -206,7 +206,9 @@
                  (list (assq-ref 'output-dir user-args)
                        gif-file-name))
                 title)
-      (<img> src: gif-file-name alt: title)))
+      (<img> src: gif-file-name
+	     alt: title
+	     title: (assq-ref 'file_name obj))))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
