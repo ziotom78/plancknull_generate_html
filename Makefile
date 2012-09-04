@@ -13,6 +13,8 @@ INPUT_FILES=generator.scm \
 	fitsio.scm \
 	healpix.scm
 
+C_FILES=chick_fitsio.c chick_healpix.c
+
 CHICKEN_INSTALL=chicken-install
 CHICKEN_CSC=csc
 CHICKEN_EGGS_TO_DEPLOY=json packrat html-tags html-utils matchable \
@@ -26,7 +28,7 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 all: generator documentation
 
-generator: $(INPUT_FILES)
+generator: $(INPUT_FILES) $(C_FILES)
 	$(CHICKEN_CSC) $< -o $@ $(CFITSIO) $(ADDITIONAL_LIBRARIES)
 
 deploy: $(DEPLOY_DIR)/generator
