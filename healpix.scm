@@ -18,12 +18,7 @@
    healpix:read-map-as-floats
    healpix:read-map-as-doubles
    healpix:read-spectrum
-   healpix:short-map->bitmap
-   healpix:ushort-map->bitmap
-   healpix:long-map->bitmap
-   healpix:ulong-map->bitmap
-   healpix:float-map->bitmap
-   healpix:double-map->bitmap
+   healpix:map->bitmap
    healpix:get-float-map-extrema
    healpix:plot-bitmap-to-cairo-surface
    healpix:plot-gradient-bar
@@ -111,7 +106,7 @@
     (syntax-rules ()
       ((_ <dfn-name> <column-read-fn> <null>)
        (define (<dfn-name> fits-file-name
-			   #!optional (fields #f))
+			   #!key (fields #f))
 	 (fits:with-input-table
 	  fits-file-name
 	  (lambda (fptr)
@@ -178,18 +173,27 @@
 		     points)
 	   points)))))
 
-  (def-map->bitmap healpix:short-map->bitmap "plot_short_map"
+  (def-map->bitmap short-map->bitmap "plot_short_map"
     nonnull-s16vector make-s16vector)
-  (def-map->bitmap healpix:ushort-map->bitmap "plot_ushort_map"
+  (def-map->bitmap ushort-map->bitmap "plot_ushort_map"
     nonnull-u16vector make-u16vector)
-  (def-map->bitmap healpix:long-map->bitmap "plot_long_map"
+  (def-map->bitmap long-map->bitmap "plot_long_map"
     nonnull-s32vector make-s32vector)
-  (def-map->bitmap healpix:ulong-map->bitmap "plot_ulong_map"
+  (def-map->bitmap ulong-map->bitmap "plot_ulong_map"
     nonnull-u32vector make-u32vector)
-  (def-map->bitmap healpix:float-map->bitmap "plot_float_map"
+  (def-map->bitmap float-map->bitmap "plot_float_map"
     nonnull-f32vector make-f32vector)
-  (def-map->bitmap healpix:double-map->bitmap "plot_double_map"
+  (def-map->bitmap double-map->bitmap "plot_double_map"
     nonnull-f64vector make-f64vector)
+
+  (define (healpix:map->bitmap map width height #!optional (comp 1))
+    (let ((vector (healpix:map-component map comp)))
+      (cond ((s16vector? vector) (short-map->bitmap map width height comp))
+	    ((u16vector? vector) (ushort-map->bitmap map width height comp))
+	    ((s32vector? vector) (long-map->bitmap map width height comp))
+	    ((u32vector? vector) (ulong-map->bitmap map width height comp))
+	    ((f32vector? vector) (float-map->bitmap map width height comp))
+	    ((f64vector? vector) (double-map->bitmap map width height comp)))))
 
   (define (healpix:get-float-map-extrema map #!optional (component 1))
     (let ((get-map-extrema (foreign-lambda void "get_map_extrema"
@@ -234,7 +238,7 @@
 				     size
 				     map-extrema
 				     measure-unit-string
-				     vertical?)
+				     #!optional (vertical? #f))
     (let ((c_fn (foreign-lambda void "plot_gradient_bar"
 				c-pointer
 				double
@@ -254,7 +258,7 @@
 
   (define (healpix:map->png map file-name
 			    bmp-width bmp-height #!optional (component 1))
-    (let* ((bitmap (healpix:float-map->bitmap map bmp-width bmp-height))
+    (let* ((bitmap (healpix:map->bitmap map bmp-width bmp-height))
 	   (map-extrema (healpix:get-float-map-extrema map component))
 	   (cairo-surface (cairo-image-surface-create CAIRO_FORMAT_RGB24
 						      bmp-width

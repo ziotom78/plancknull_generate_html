@@ -29,7 +29,7 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 all: generator documentation
 
 generator: $(INPUT_FILES) $(C_FILES)
-	$(CHICKEN_CSC) $< -o $@ $(CFITSIO) $(ADDITIONAL_LIBRARIES)
+	$(CHICKEN_CSC) $< -o $@ $(CFITSIO) $(ADDITIONAL_LIBRARIES) `pkg-config --cflags --libs cairo`
 
 deploy: $(DEPLOY_DIR)/generator
 

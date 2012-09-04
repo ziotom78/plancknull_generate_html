@@ -316,6 +316,7 @@ plot_gradient_bar(cairo_t * cairo_context,
     double bar_origin_x, bar_origin_y;
     double bar_size_x, bar_size_y;
     const double text_margin_factor = 1.1;
+    const double tick_height = 6.0;
 
     if(measure_unit_str != NULL
        && measure_unit_str[0] != '\0')
@@ -335,6 +336,18 @@ plot_gradient_bar(cairo_t * cairo_context,
     bar_size_x = size_x;
     bar_size_y = size_y;
 
+    /* If zero is within the range, plot a small thick around it */
+    if(max_value > 0.0 && min_value < 0.0)
+    {
+	double zero_pos = 
+	    origin_x + size_x * (0.0 - min_value) / (max_value - min_value);
+	cairo_move_to(cairo_context, zero_pos, origin_y);
+	cairo_line_to(cairo_context, zero_pos, origin_y + size_y);
+	cairo_set_source_rgb(cairo_context, 0.0, 0.0, 0.0);
+	cairo_stroke(cairo_context);
+    }
+
+    /* Now plot the gradient */
     if(vertical_flag)
     {
 	size_x -= MAX(min_te.width, max_te.width) * text_margin_factor; 
@@ -358,8 +371,8 @@ plot_gradient_bar(cairo_t * cairo_context,
     }
 
     cairo_rectangle(cairo_context,
-		    bar_origin_x, bar_origin_y,
-		    bar_size_x, bar_size_y);
+		    bar_origin_x, bar_origin_y + tick_height,
+		    bar_size_x, bar_size_y - 2 * tick_height);
 
     /* Draw the gradient */
     cairo_set_source(cairo_context, linear);
@@ -408,13 +421,7 @@ plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
 
     unsigned int cur_y;
 
-    cairo_rectangle(cairo_context,
-		    origin_x, origin_y,
-		    size_x, size_y);
-    cairo_set_source_rgb(cairo_context, 1.0, 1.0, 1.0);
-    cairo_fill(cairo_context);
-
-    for(cur_y = 0; cur_y < bitmap_height; ++cur_y)
+    for(cur_y = bitmap_height; cur_y > 0; --cur_y)
     {
 	unsigned int cur_x;
 	for(cur_x = 0; cur_x < bitmap_width; ++cur_x)
@@ -433,8 +440,8 @@ plot_bitmap_to_cairo_surface(cairo_t * cairo_context,
 	    }
 
 	    cairo_rectangle(cairo_context,
-			    origin_x + cur_x,
-			    bitmap_height - (origin_y + cur_y),
+			    origin_x + (cur_x * size_x) / bitmap_width,
+			    origin_y + (cur_y * size_y) / bitmap_height,
 			    pixel_width,
 			    pixel_height);
 	    cairo_set_source_rgb(cairo_context,

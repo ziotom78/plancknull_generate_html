@@ -20,64 +20,135 @@
 	  healpix
 	  srfi-1
 	  srfi-4
-	  srfi-13)
+	  srfi-13
+	  srfi-18)
+
   (require-extension shell)
   (require-extension filepath)
   (require-extension directory-utils)
+  (require-extension cairo)
+  (require-extension blas)
 
   ;; We need to implement the code that will convert the maps in FITS
-  ;; format into GIF images that can be included in the HTML report. We
-  ;; assume the availability of the `map2tga` program bundled with
-  ;; [Healpix](http://healpix.jpl.nasa.gov/).
+  ;; format into GIF images that can be included in the HTML report.
 
-  ;; First we define a simple function that uses `map2tga` and
-  ;; ImageMagick's `convert` to produce a GIF file with the map
-  ;; (`map2gif` has a
-  ;; [bug](http://sourceforge.net/tracker/?func=detail&aid=3559308&group_id=130539&atid=718128)
-  ;; that prevents it from creating valid GIF images, at least in
-  ;; Healpix 2.20a).
+  ;; This function uses the facilities provided by `healpix.scm` to
+  ;; draw a map with a title and a color bar on a cairo context, which
+  ;; is then saved into a 24-bit PNG file.
+  (define (map->png map
+		    file-name
+		    bmp-width bmp-height
+		    title
+		    #!key
+		    (component 1)
+		    (color-extrema #f) ; If not `#f`, this should be a pair
+		    (title-height 20)
+		    (gradient-bar-height 30))
+    (let* ((map-bitmap-height (- bmp-height title-height gradient-bar-height))
+	   (bitmap (healpix:map->bitmap map
+					bmp-width
+					map-bitmap-height
+					component))
+	   (map-extrema (if color-extrema
+			    color-extrema
+			    (healpix:get-float-map-extrema map component)))
+	   (cairo-surface (cairo-image-surface-create CAIRO_FORMAT_RGB24
+						      bmp-width
+						      bmp-height))
+	   (cairo-context (cairo-create cairo-surface)))
+
+      ;; This code fills the background of the image with white
+      (cairo-rectangle cairo-context
+		       0.0 0.0
+		       bmp-width bmp-height)
+      (cairo-set-source-rgb cairo-context
+			    1.0 1.0 1.0)
+      (cairo-fill cairo-context)
+
+      ;; This code paints the title. It uses `cairo-text-extents` to
+      ;; determine its width, in order to correctly center it
+      ;; horizontally.
+      (let ((title-font-size (* 0.9 title-height)))
+	(cairo-set-font-size cairo-context
+			     title-font-size)
+	(let ((title-te (make-cairo-text-extents-type)))
+	  (cairo-text-extents cairo-context
+			      title
+			      title-te)
+	  (cairo-move-to cairo-context
+			 (* (- bmp-width (cairo-text-extents-width title-te))
+			    0.5)
+			 title-font-size)
+	  (cairo-set-source-rgb cairo-context
+				0.0 0.0 0.0)
+	  (cairo-show-text cairo-context
+			   title)))
+
+      ;; Now we plot the map. The first two `cons` specify the region
+      ;; in the cairo context (i.e. the drawing area), while the last
+      ;; `cons` specifies the number of rows and columns in `bitmap`
+      ;; (bidimensional array of floating point values).
+      (healpix:plot-bitmap-to-cairo-surface cairo-context
+					    (cons 0.0 title-height)
+					    (cons bmp-width map-bitmap-height)
+					    map-extrema
+					    bitmap
+					    (cons bmp-width map-bitmap-height))
+
+      ;; Now comes the gradient bar
+      (cairo-set-font-size cairo-context 16)
+      (healpix:plot-gradient-bar cairo-context
+				 (cons 0.0 (+ title-height map-bitmap-height))
+				 (cons bmp-width (- gradient-bar-height 1))
+				 map-extrema
+				 ; `\u03BC` is the greek letter "mu" in Unicode
+				 "\u03BCK")
+      ;; Finally, save the drawing area in a 24-bit PNG file
+      (if (not (eq? CAIRO_STATUS_SUCCESS
+		    (cairo-surface-write-to-png cairo-surface file-name)))
+	  (raise (sprintf "Unable to write file ~a" file-name)))))
+
+  (define (scale-map-to-muK! map)
+    (for-each (lambda (vec)
+		(unsafe-sscal! (f32vector-length vec)
+			       1.0e+6
+			       vec))
+	      (cdr map)))
+
+  ;; First we define a simple function that uses `map->png` and
+  ;; ImageMagick's `convert` to produce a GIF file with the map.
   (define (create-1-gif input-fits-file-name
 			output-gif-file-name
 			title
 			width
 			component-number)
-       ;; Run `map2tga` and `convert`. Note the elegance of "run*"
-       ;; (from the "shell" egg): we include the command-line switches
-       ;; as if they were Scheme symbols! (We put a comma in front of
-       ;; `(html:++ ...)` because we want it to be interpreted as a
-       ;; Scheme expression: otherwise it would be put as it is in the
-       ;; arguments to the process call.) *Note:* `run*` is defined in
-       ;; the `shell` egg. When multiple commands are specified (in
-       ;; this case, `map2tga` and `convert`), it returns a set of
-       ;; values. These must be interpreted using `call-with-values`,
-       ;; which is a standard Scheme function accepting a "producer"
-       ;; and a "consumer". Refer to the [R5RS
-       ;; documentation](http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features)
-       ;; for further details.
-    (let ((output-tga-file-name
-	   (filepath:replace-extension output-gif-file-name ".tga")))
+    (let ((output-png-file-name
+	   (filepath:replace-extension output-gif-file-name ".png"))
+	  (input-map (healpix:read-map-as-floats input-fits-file-name)))
+      (printf "Creating a bitmap (PNG format, 24 bit) from ~a...\n"
+	      input-fits-file-name)
+      (scale-map-to-muK! input-map)
+      (map->png input-map
+		output-png-file-name
+		width (+ 50 (/ width 2))
+		title
+		#:component component-number
+		#:color-extrema (cons -100 +100))
+       ;; Run `convert`. Note the elegance of "run*" (from the "shell"
+       ;; egg): we include the command-line switches as if they were
+       ;; Scheme symbols! (We put a comma in front of variable names
+       ;; like `,output-png-file-name` because we want them to be
+       ;; interpreted as a Scheme expression: otherwise they would be
+       ;; put as they are in the arguments to the process call.)
       (call-with-values
 	  (lambda ()
-	    (format #t "Running map2tga and convert on ~a...\n"
-		    input-fits-file-name)
-	    (run* (map2tga ,input-fits-file-name
-			   ,output-tga-file-name
-			   -bar
-			   -mul 1.0e6
-			   -min -50
-			   -max +50
-			   -xsz ,width
-			   -sig ,component-number
-			   -title ,(string-concatenate (list "\"" title "\"")))
-		  (convert ,output-tga-file-name
+	    (run* (convert ,output-png-file-name
 			   -transparent white
 			   ,output-gif-file-name)))
-	(lambda (map2tga-return-code convert-return-code)
-	  (if (> map2tga-return-code 0)
-	      (abort "Error when executing \"map2tga\""))
+	(lambda (convert-return-code)
 	  (if (> convert-return-code 0)
 	      (abort "Error when executing \"convert\""))))
-      (delete-file output-tga-file-name)))
+      (delete-file output-png-file-name)))
 
   ;; This function is used with maps that contain 3 components (I, Q,
   ;; U). It uses the `map->gif` function defined below and the

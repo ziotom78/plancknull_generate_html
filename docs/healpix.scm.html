@@ -19,26 +19,41 @@
 <pre class="highlight"><span class="paren1">(<span class="default">module healpix
   <span class="paren2">(<span class="default">healpix:nside-&gt;npix
    healpix:npix-&gt;nside
+   healpix:map-metadata
+   healpix:map-components
+   healpix:map-nside
+   healpix:map-ordering
+   healpix:map-component
    healpix:num-of-components-in-map
    healpix:num-of-components-in-spectrum
+   healpix:angle-&gt;pixel-ring
+   healpix:angle-&gt;pixel-nest
+   healpix:angle-&gt;pixel
    healpix:read-map-as-shorts
    healpix:read-map-as-ushorts
    healpix:read-map-as-longs
    healpix:read-map-as-ulongs
    healpix:read-map-as-floats
    healpix:read-map-as-doubles
-   healpix:read-spectrum</span>)</span>
+   healpix:read-spectrum
+   healpix:map-&gt;bitmap
+   healpix:get-float-map-extrema
+   healpix:plot-bitmap-to-cairo-surface
+   healpix:plot-gradient-bar
+   healpix:map-&gt;png</span>)</span>
   
   <span class="paren2">(<span class="default">import chicken
 	  scheme
 	  foreign
-	  srfi-1
-	  srfi-13
 	  srfi-18
 	  fitsio</span>)</span>
 
   <span class="paren2">(<span class="default">use srfi-1</span>)</span>
+  <span class="paren2">(<span class="default">use srfi-4</span>)</span>
   <span class="paren2">(<span class="default">use srfi-13</span>)</span>
+  <span class="paren2">(<span class="default">use numbers</span>)</span>
+
+  <span class="paren2">(<span class="default">require-extension cairo</span>)</span>
 
   <span class="paren2">(<span class="default">foreign-declare <span class="string">&quot;#include </span><span class="string">\&quot;</span><span class="string">chick_healpix.c</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span>
 
@@ -56,33 +71,80 @@
 </span></span></pre></td></tr>
 <tr id="section-2">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>This function would work both with maps and power spectra, but
-for the sake of clarity we define it twice.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>Return an a-list containing the metadata of the map</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:num-of-components-in-map fits-file-name</span>)</span>
-    <span class="paren2">(<span class="default">fits:with-input-table fits-file-name
-			   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">fptr</span>)</span>
-			     <span class="paren4">(<span class="default">fits:get-num-of-columns fptr</span>)</span></span>)</span></span>)</span></span>)</span>
-  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> healpix:num-of-components-in-spectrum
-    healpix:num-of-components-in-map</span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-metadata map</span>)</span>
+    <span class="paren2">(<span class="default">assert <span class="paren3">(<span class="default">pair? map</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">car map</span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-components map</span>)</span>
+    <span class="paren2">(<span class="default">assert <span class="paren3">(<span class="default">pair? map</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">cdr map</span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-nside map</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">nside-entry <span class="paren5">(<span class="default">assq &#x27;nside <span class="paren6">(<span class="default">healpix:map-metadata map</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">assert nside-entry</span>)</span>
+      <span class="paren3">(<span class="default">cdr nside-entry</span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-ordering map</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">ordering-entry <span class="paren5">(<span class="default">assq &#x27;ordering <span class="paren6">(<span class="default">healpix:map-metadata map</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">assert ordering-entry</span>)</span>
+      <span class="paren3">(<span class="default">cdr ordering-entry</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-3">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>This syntax implements functions that read a FITS file containing
-a map and return two values: (1) an a-list containing metadata
-for the map, and (2) a list of SRFI-4 vectors, one vector for
-each component in the map. The caller can specify which
-components to load by using the optional argument (which defaults
-to <code>#f</code>, that is, "read everything is in the map").</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>Return the nth component of the map, starting from 1 (Healpix convention)</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-component map component</span>)</span>
+    <span class="paren2">(<span class="default">list-ref <span class="paren3">(<span class="default">healpix:map-components map</span>)</span> <span class="paren3">(<span class="default">- component 1</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-4">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This function would work both with maps and power spectra, but
+for the sake of clarity we define it twice.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:num-of-components-in-map map</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">pair? map</span>)</span>
+	<span class="paren3">(<span class="default">length <span class="paren4">(<span class="default">healpix:map-components map</span>)</span></span>)</span>
+	<span class="paren3">(<span class="default">fits:with-input-table map
+			       <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">fptr</span>)</span>
+				 <span class="paren5">(<span class="default">fits:get-num-of-columns fptr</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> healpix:num-of-components-in-spectrum
+    healpix:num-of-components-in-map</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> healpix:angle-&gt;pixel-ring
+    <span class="paren2">(<span class="default">foreign-lambda long <span class="string">&quot;ang2pix_ring&quot;</span> unsigned-int double double</span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> healpix:angle-&gt;pixel-nest
+    <span class="paren2">(<span class="default">foreign-lambda long <span class="string">&quot;ang2pix_nest&quot;</span> unsigned-int double double</span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:angle-&gt;pixel nside theta phi #!optional <span class="paren3">(<span class="default">ordering &#x27;ring</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">fn <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren6">(<span class="default">eq? ordering &#x27;ring</span>)</span>
+		  healpix:angle-&gt;pixel-ring
+		  healpix:angle-&gt;pixel-nest</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">fn nside theta phi</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>This syntax implements functions that read a FITS file containing
+a map and return a pair, where the <code>car</code> is an a-list containing
+metadata for the map, and the <code>cdr</code> is a list of SRFI-4 vectors
+(one vector for each component in the map). The caller can specify
+which components to load by using the optional argument (which
+defaults to <code>#f</code>, that is, "read everything is in the map").</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-read-map-as-???</span></i>
     <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
       <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;dfn-name&gt; &lt;column-read-fn&gt; &lt;null&gt;</span>)</span>
        <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;dfn-name&gt; fits-file-name
-			   #!optional <span class="paren6">(<span class="default">fields #f</span>)</span></span>)</span>
+			   #!key <span class="paren6">(<span class="default">fields #f</span>)</span></span>)</span>
 	 <span class="paren5">(<span class="default">fits:with-input-table
 	  fits-file-name
 	  <span class="paren6">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren1">(<span class="default">fptr</span>)</span>
@@ -90,14 +152,14 @@ to <code>#f</code>, that is, "read everything is in the map").</p>
 				      fields
 				      <span class="paren5">(<span class="default">iota <span class="paren6">(<span class="default">fits:get-num-of-columns fptr</span>)</span>
 					    1</span>)</span></span>)</span></span>)</span></span>)</span>
-	      <span class="paren2">(<span class="default">values <span class="paren3">(<span class="default">list
-		       <span class="paren4">(<span class="default">cons &#x27;nside <span class="paren5">(<span class="default">fits:get-int-key fptr <span class="string">&quot;NSIDE&quot;</span></span>)</span></span>)</span>
-		       <span class="paren4">(<span class="default">cons &#x27;ordering <span class="paren5">(<span class="default">string-&gt;symbol
-					<span class="paren6">(<span class="default">string-downcase
-					 <span class="paren1">(<span class="default">fits:get-string-key fptr <span class="string">&quot;ORDERING&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
-		      <span class="paren3">(<span class="default">map <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">column</span>)</span>
+	      <span class="paren2">(<span class="default">cons <span class="paren3">(<span class="default">list
+		     <span class="paren4">(<span class="default">cons &#x27;nside <span class="paren5">(<span class="default">fits:get-int-key fptr <span class="string">&quot;NSIDE&quot;</span></span>)</span></span>)</span>
+		     <span class="paren4">(<span class="default">cons &#x27;ordering <span class="paren5">(<span class="default">string-&gt;symbol
+				      <span class="paren6">(<span class="default">string-downcase
+				       <span class="paren1">(<span class="default">fits:get-string-key fptr <span class="string">&quot;ORDERING&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+		    <span class="paren3">(<span class="default">map <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">column</span>)</span>
 			   <span class="paren5">(<span class="default">&lt;column-read-fn&gt; fptr column &lt;null&gt;</span>)</span></span>)</span>
-			   fields-to-read</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+			 fields-to-read</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
   <span class="paren1">(<span class="default"><i><span class="symbol">def-read-map-as-???</span></i> healpix:read-map-as-shorts
     fits:read-full-short-column 0</span>)</span>
@@ -113,9 +175,9 @@ to <code>#f</code>, that is, "read everything is in the map").</p>
     fits:read-full-double-column +nan.0</span>)</span>
 	 
 </pre></td></tr>
-<tr id="section-4">
+<tr id="section-6">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This function returns all the spectra in <code>fits-file-name</code> as a
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>This function returns all the spectra in <code>fits-file-name</code> as a
 list of <code>f64vector</code> elements (one per component).</p>
 </td>
 <td class="code">
@@ -127,5 +189,137 @@ list of <code>f64vector</code> elements (one per component).</p>
 	 <span class="paren5">(<span class="default">map <span class="paren6">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren1">(<span class="default">comp</span>)</span>
 		<span class="paren1">(<span class="default">fits:read-full-double-column fptr comp 0.0</span>)</span></span>)</span>
 	      <span class="paren6">(<span class="default">iota num-of-components 1</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-7">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>This function produces a bitmapped representation of the map
+using a rectangular area of <code>width</code> times <code>height</code> screen points.
+Each point is a 32-bit floating point number which can be (1)
+<code>inf</code> (the point is outside the map), (2) <code>nan</code> (the point is
+marked as <code>UNSEEN</code>), (3) any other floating-point value.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-map-&gt;bitmap</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;fn-name&gt; &lt;c-fn-name&gt; &lt;vector-type&gt; &lt;make-vector-fn&gt;</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;fn-name&gt; map width height #!optional <span class="paren6">(<span class="default">component 1</span>)</span></span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">points <span class="paren2">(<span class="default">&lt;make-vector-fn&gt; <span class="paren3">(<span class="default">* width height</span>)</span></span>)</span></span>)</span>
+	       <span class="paren1">(<span class="default">plot-map <span class="paren2">(<span class="default">foreign-lambda void
+					 &lt;c-fn-name&gt;
+					 &lt;vector-type&gt; <span class="comment">; map pixels
+</span>					 unsigned-int <span class="comment">; nside
+</span>					 unsigned-int <span class="comment">; width
+</span>					 unsigned-int <span class="comment">; height
+</span>					 bool <span class="comment">; ring-ordering?
+</span>					 &lt;vector-type&gt;</span>)</span></span>)</span></span>)</span>
+	   <span class="paren6">(<span class="default">plot-map <span class="paren1">(<span class="default">healpix:map-component map component</span>)</span>
+		     <span class="paren1">(<span class="default">healpix:map-nside map</span>)</span>
+		     width
+		     height
+		     <span class="paren1">(<span class="default">eq? <span class="paren2">(<span class="default">healpix:map-ordering map</span>)</span> &#x27;ring</span>)</span>
+		     points</span>)</span>
+	   points</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-map-&gt;bitmap</span></i> short-map-&gt;bitmap <span class="string">&quot;plot_short_map&quot;</span>
+    nonnull-s16vector make-s16vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-map-&gt;bitmap</span></i> ushort-map-&gt;bitmap <span class="string">&quot;plot_ushort_map&quot;</span>
+    nonnull-u16vector make-u16vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-map-&gt;bitmap</span></i> long-map-&gt;bitmap <span class="string">&quot;plot_long_map&quot;</span>
+    nonnull-s32vector make-s32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-map-&gt;bitmap</span></i> ulong-map-&gt;bitmap <span class="string">&quot;plot_ulong_map&quot;</span>
+    nonnull-u32vector make-u32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-map-&gt;bitmap</span></i> float-map-&gt;bitmap <span class="string">&quot;plot_float_map&quot;</span>
+    nonnull-f32vector make-f32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-map-&gt;bitmap</span></i> double-map-&gt;bitmap <span class="string">&quot;plot_double_map&quot;</span>
+    nonnull-f64vector make-f64vector</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-&gt;bitmap map width height #!optional <span class="paren3">(<span class="default">comp 1</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">vector <span class="paren5">(<span class="default">healpix:map-component map comp</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default"><i><span class="symbol">cond</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">s16vector? vector</span>)</span> <span class="paren5">(<span class="default">short-map-&gt;bitmap map width height comp</span>)</span></span>)</span>
+	    <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">u16vector? vector</span>)</span> <span class="paren5">(<span class="default">ushort-map-&gt;bitmap map width height comp</span>)</span></span>)</span>
+	    <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">s32vector? vector</span>)</span> <span class="paren5">(<span class="default">long-map-&gt;bitmap map width height comp</span>)</span></span>)</span>
+	    <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">u32vector? vector</span>)</span> <span class="paren5">(<span class="default">ulong-map-&gt;bitmap map width height comp</span>)</span></span>)</span>
+	    <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">f32vector? vector</span>)</span> <span class="paren5">(<span class="default">float-map-&gt;bitmap map width height comp</span>)</span></span>)</span>
+	    <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">f64vector? vector</span>)</span> <span class="paren5">(<span class="default">double-map-&gt;bitmap map width height comp</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:get-float-map-extrema map #!optional <span class="paren3">(<span class="default">component 1</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">get-map-extrema <span class="paren5">(<span class="default">foreign-lambda void <span class="string">&quot;get_map_extrema&quot;</span>
+					   nonnull-f32vector
+					   unsigned-int
+					   <span class="paren6">(<span class="default">c-pointer float</span>)</span>
+					   <span class="paren6">(<span class="default">c-pointer float</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">let-location <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">min float</span>)</span>
+		     <span class="paren5">(<span class="default">max float</span>)</span></span>)</span>
+		    <span class="paren4">(<span class="default">get-map-extrema <span class="paren5">(<span class="default">healpix:map-component map component</span>)</span>
+				     <span class="paren5">(<span class="default">healpix:map-nside map</span>)</span>
+				     <span class="paren5">(<span class="default">location min</span>)</span>
+				     <span class="paren5">(<span class="default">location max</span>)</span></span>)</span>
+		    <span class="paren4">(<span class="default">cons min max</span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:plot-bitmap-to-cairo-surface cairo-context
+						origin
+						size
+						map-extrema
+						bitmap
+						bmp-size</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">c_fn <span class="paren5">(<span class="default">foreign-lambda void <span class="string">&quot;plot_bitmap_to_cairo_surface&quot;</span>
+				c-pointer
+				double
+				double
+				double
+				double
+				double
+				double
+				nonnull-f32vector
+				unsigned-int
+				unsigned-int</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">c_fn cairo-context
+	    <span class="paren4">(<span class="default">car origin</span>)</span> <span class="paren4">(<span class="default">cdr origin</span>)</span>
+	    <span class="paren4">(<span class="default">car size</span>)</span> <span class="paren4">(<span class="default">cdr size</span>)</span>
+	    <span class="paren4">(<span class="default">car map-extrema</span>)</span> <span class="paren4">(<span class="default">cdr map-extrema</span>)</span>
+	    bitmap
+	    <span class="paren4">(<span class="default">car bmp-size</span>)</span> <span class="paren4">(<span class="default">cdr bmp-size</span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:plot-gradient-bar cairo-context
+				     origin
+				     size
+				     map-extrema
+				     measure-unit-string
+				     #!optional <span class="paren3">(<span class="default">vertical? #f</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">c_fn <span class="paren5">(<span class="default">foreign-lambda void <span class="string">&quot;plot_gradient_bar&quot;</span>
+				c-pointer
+				double
+				double
+				double
+				double
+				double
+				double
+				c-string
+				bool</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">c_fn cairo-context
+	    <span class="paren4">(<span class="default">car origin</span>)</span> <span class="paren4">(<span class="default">cdr origin</span>)</span>
+	    <span class="paren4">(<span class="default">car size</span>)</span> <span class="paren4">(<span class="default">cdr size</span>)</span>
+	    <span class="paren4">(<span class="default">car map-extrema</span>)</span> <span class="paren4">(<span class="default">cdr map-extrema</span>)</span>
+	    measure-unit-string
+	    vertical?</span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">healpix:map-&gt;png map file-name
+			    bmp-width bmp-height #!optional <span class="paren3">(<span class="default">component 1</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">bitmap <span class="paren5">(<span class="default">healpix:map-&gt;bitmap map bmp-width bmp-height</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">map-extrema <span class="paren5">(<span class="default">healpix:get-float-map-extrema map component</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">cairo-surface <span class="paren5">(<span class="default">cairo-image-surface-create CAIRO_FORMAT_RGB24
+						      bmp-width
+						      bmp-height</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">cairo-context <span class="paren5">(<span class="default">cairo-create cairo-surface</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">healpix:plot-bitmap-to-cairo-surface cairo-context
+					    <span class="paren4">(<span class="default">cons 0.0 0.0</span>)</span>
+					    <span class="paren4">(<span class="default">cons bmp-width bmp-height</span>)</span>
+					    map-extrema
+					    bitmap
+					    <span class="paren4">(<span class="default">cons bmp-width bmp-height</span>)</span></span>)</span>
+      <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren4">(<span class="default">not <span class="paren5">(<span class="default">eq? CAIRO_STATUS_SUCCESS
+		    <span class="paren6">(<span class="default">cairo-surface-write-to-png cairo-surface file-name</span>)</span></span>)</span></span>)</span>
+	  <span class="paren4">(<span class="default">raise <span class="paren5">(<span class="default">sprintf <span class="string">&quot;Unable to write file ~a&quot;</span> file-name</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 )
 </pre></td></tr></table></div></body></html>
