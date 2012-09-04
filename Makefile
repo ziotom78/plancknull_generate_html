@@ -21,7 +21,7 @@ CHICKEN_EGGS_TO_DEPLOY=json packrat html-tags html-utils matchable \
 	list-utils check-errors stack shell filepath \
 	directory-utils numbers record-variants srfi-29 locale \
 	regex lookup-table posix-utils condition-utils \
-	variable-item srfi-19
+	variable-item srfi-19 silex coops bind blas
 CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 .phony: all deploy install_eggs help documentation
