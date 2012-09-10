@@ -1,0 +1,317 @@
+<!doctype html>
+<html>
+<head>
+<title>fitsio.scm</title>
+<link rel="stylesheet" href="schematic.css" /></head>
+<body>
+<div id="background"></div>
+<div id="container">
+<table cellspacing="0" cellpadding="0">
+<tr>
+<th class="docs">
+<h1>fitsio.scm</h1></th>
+<th class="code"></th></tr>
+<tr id="section-1">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-1">&para;</a></div>
+</td>
+<td class="code">
+<pre class="highlight"><span class="paren1">(<span class="default">module fitsio
+</span></span></pre></td></tr>
+<tr id="section-2">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-2">&para;</a></div><p>List of exported symbols</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default">fits:get-error-string
+   fits:reset-error-status
+   fits:open-file-for-read
+   fits:open-image-for-read
+   fits:open-table-for-read
+   fits:open-table-for-read
+   fits:close-file
+   fits:get-number-of-hdus
+   fits:get-int-key
+   fits:get-float-key
+   fits:get-double-key
+   fits:get-string-key
+   fits:get-repeat-count-for-column
+   fits:move-to-hdu-absolute
+   fits:move-to-hdu-relative
+   fits:get-num-of-rows
+   fits:get-num-of-columns
+   fits:read-short-column
+   fits:read-ushort-column
+   fits:read-long-column
+   fits:read-ulong-column
+   fits:read-float-column
+   fits:read-double-column
+   fits:read-full-short-column
+   fits:read-full-ushort-column
+   fits:read-full-long-column
+   fits:read-full-ulong-column
+   fits:read-full-float-column
+   fits:read-full-double-column
+   fits:with-input-file
+   fits:with-input-table
+   fits:with-input-image
+   fits:with-input-data</span>)</span>
+
+  <span class="paren1">(<span class="default">import chicken
+	  scheme
+	  foreign
+	  srfi-4
+	  srfi-18</span>)</span>
+
+  <span class="paren1">(<span class="default">use srfi-4</span>)</span>
+  <span class="paren1">(<span class="default">foreign-declare <span class="string">&quot;#include </span><span class="string">\&quot;</span><span class="string">fitsio.h</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-3">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>This file contains a set of nice wrappers to CFITSIO routines</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default">foreign-declare <span class="string">&quot;#include </span><span class="string">\&quot;</span><span class="string">chick_fitsio.c</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-foreign-type</span></i> fits-file <span class="paren2">(<span class="default">c-pointer <span class="string">&quot;fitsfile&quot;</span></span>)</span></span>)</span>
+
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> fits:get-error-string
+    <span class="paren2">(<span class="default">foreign-lambda c-string* <span class="string">&quot;get_fitsio_error_message&quot;</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> fits:reset-error-status
+    <span class="paren2">(<span class="default">foreign-lambda void <span class="string">&quot;reset_fitsio_status&quot;</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-4">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This syntax extension defines <code>name</code> to be a call to <code>fn</code>
+(typically, a <code>foreign-lambda</code> statement) which is nicely wrapped
+with some error checking. The <code>abort</code> call is triggered whenever
+the C variable <code>fitsio_status</code> (defined in <code>chick_fitsio.c</code>) is
+nonzero.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">define-fitsio-fn</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;name&gt; &lt;fn&gt; &lt;args&gt; ...</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;name&gt; &lt;args&gt; ...</span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">result <span class="paren2">(<span class="default">&lt;fn&gt; &lt;args&gt; ...</span>)</span></span>)</span></span>)</span>
+	   <span class="paren6">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren1">(<span class="default">not <span class="paren2">(<span class="default">eq? <span class="paren3">(<span class="default">foreign-value <span class="string">&quot;fitsio_status&quot;</span> int</span>)</span> 0</span>)</span></span>)</span>
+	       <span class="paren1">(<span class="default">abort <span class="paren2">(<span class="default">fits:get-error-string</span>)</span></span>)</span>
+	       result</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:open-file-for-read
+    <span class="paren2">(<span class="default">foreign-lambda fits-file <span class="string">&quot;open_file_for_read&quot;</span> nonnull-c-string</span>)</span>
+    file-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:open-image-for-read
+    <span class="paren2">(<span class="default">foreign-lambda fits-file <span class="string">&quot;open_image_for_read&quot;</span> nonnull-c-string</span>)</span>
+    file-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:open-table-for-read
+    <span class="paren2">(<span class="default">foreign-lambda fits-file <span class="string">&quot;open_table_for_read&quot;</span> nonnull-c-string</span>)</span>
+    file-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:open-data-for-read
+    <span class="paren2">(<span class="default">foreign-lambda fits-file <span class="string">&quot;open_data_for_read&quot;</span> nonnull-c-string</span>)</span>
+    file-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:close-file
+    <span class="paren2">(<span class="default">foreign-lambda bool <span class="string">&quot;close_file&quot;</span> fits-file</span>)</span>
+    file-ptr</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-number-of-hdus
+    <span class="paren2">(<span class="default">foreign-lambda int <span class="string">&quot;get_num_of_hdus&quot;</span> fits-file</span>)</span>
+    file-ptr</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-int-key
+    <span class="paren2">(<span class="default">foreign-lambda int <span class="string">&quot;get_int_key&quot;</span> fits-file nonnull-c-string</span>)</span>
+    file-ptr key-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-float-key
+    <span class="paren2">(<span class="default">foreign-lambda float <span class="string">&quot;get_float_key&quot;</span> fits-file nonnull-c-string</span>)</span>
+    file-ptr key-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-double-key
+    <span class="paren2">(<span class="default">foreign-lambda double <span class="string">&quot;get_double_key&quot;</span> fits-file nonnull-c-string</span>)</span>
+    file-ptr key-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-string-key
+    <span class="paren2">(<span class="default">foreign-lambda c-string* <span class="string">&quot;get_string_key&quot;</span> fits-file nonnull-c-string</span>)</span>
+    file-ptr key-name</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-repeat-count-for-column
+    <span class="paren2">(<span class="default">foreign-lambda long <span class="string">&quot;get_repeat_count_for_column&quot;</span> fits-file int</span>)</span>
+    file-ptr column-num</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:move-to-hdu-absolute
+    <span class="paren2">(<span class="default">foreign-lambda bool <span class="string">&quot;move_to_hdu_abs&quot;</span> fits-file int</span>)</span>
+    file-name abs-position</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:move-to-hdu-relative
+    <span class="paren2">(<span class="default">foreign-lambda bool <span class="string">&quot;move_to_hdu_rel&quot;</span> fits-file int</span>)</span>
+    file-ptr rel-position</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-num-of-rows
+    <span class="paren2">(<span class="default">foreign-lambda long <span class="string">&quot;get_num_of_rows&quot;</span> fits-file</span>)</span>
+    file-ptr</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+    fits:get-num-of-columns
+    <span class="paren2">(<span class="default">foreign-lambda int <span class="string">&quot;get_num_of_columns&quot;</span> fits-file</span>)</span>
+    file-ptr</span>)</span>
+
+</pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>Column reading routines</p>
+</td>
+<td class="code">
+<pre class="highlight">
+</pre></td></tr>
+<tr id="section-6">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>Low-level C functions (not exported)</p>
+</td>
+<td class="code">
+<pre class="highlight">
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-lowl-read-fn</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;dfn-name&gt; &lt;c-name&gt; &lt;type&gt; &lt;vector-type&gt;</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+	 &lt;dfn-name&gt;
+	 <span class="paren5">(<span class="default">foreign-lambda void &lt;c-name&gt;
+			 fits-file int long long long &lt;type&gt; &lt;vector-type&gt;</span>)</span>
+</span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-7">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>Param list</p>
+</td>
+<td class="code">
+<pre class="highlight">	 fptr column-num first-row-num first-element-num
+	 num-of-elements null-value destination))))
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-fn</span></i> read-short-column  <span class="string">&quot;read_short_col&quot;</span>  short s16vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-fn</span></i> read-ushort-column <span class="string">&quot;read_ushort_col&quot;</span> unsigned-short u16vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-fn</span></i> read-long-column   <span class="string">&quot;read_long_col&quot;</span>   long s32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-fn</span></i> read-ulong-column  <span class="string">&quot;read_ulong_col&quot;</span>  unsigned-long u32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-fn</span></i> read-float-column  <span class="string">&quot;read_float_col&quot;</span>  float f32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-fn</span></i> read-double-column <span class="string">&quot;read_double_col&quot;</span> double f64vector</span>)</span>
+
+</pre></td></tr>
+<tr id="section-8">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>High-level Scheme functions</p>
+</td>
+<td class="code">
+<pre class="highlight">
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-read-fn</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;dfn-name&gt; &lt;make-vector&gt; &lt;low-level-fn&gt;</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;dfn-name&gt; fptr
+			   column-num
+			   first-row-num
+			   first-element-num
+			   num-of-elements
+			   null-value</span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">vect <span class="paren2">(<span class="default">&lt;make-vector&gt; num-of-elements</span>)</span></span>)</span></span>)</span>
+	   <span class="paren6">(<span class="default">&lt;low-level-fn&gt; fptr
+			   column-num
+			   first-row-num
+			   first-element-num
+			   num-of-elements
+			   null-value
+			   vect</span>)</span>
+	   vect</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-fn</span></i> fits:read-short-column  make-s16vector read-short-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-fn</span></i> fits:read-ushort-column make-u16vector read-ushort-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-fn</span></i> fits:read-long-column   make-s32vector read-long-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-fn</span></i> fits:read-ulong-column  make-u32vector read-ulong-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-fn</span></i> fits:read-float-column  make-f32vector read-float-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-fn</span></i> fits:read-double-column make-f64vector read-double-column</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-lowl-read-full-fn</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;dfn-name&gt; &lt;c-name&gt; &lt;type&gt; &lt;vector-type&gt;</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define-fitsio-fn</span></i>
+	 &lt;dfn-name&gt;
+	 <span class="paren5">(<span class="default">foreign-lambda void &lt;c-name&gt;
+			 fits-file int long long &lt;type&gt; &lt;vector-type&gt;</span>)</span>
+</span></span></span></span></span></span></span></span></pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>Param list</p>
+</td>
+<td class="code">
+<pre class="highlight">	 fptr column-num elements-per-row num-of-rows
+	 null-value destination))))
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-full-fn</span></i> read-full-short-column
+    <span class="string">&quot;read_full_short_col&quot;</span> short s16vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-full-fn</span></i> read-full-ushort-column
+    <span class="string">&quot;read_full_ushort_col&quot;</span> unsigned-short u16vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-full-fn</span></i> read-full-long-column
+    <span class="string">&quot;read_full_long_col&quot;</span> long s32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-full-fn</span></i> read-full-ulong-column
+    <span class="string">&quot;read_full_ulong_col&quot;</span> unsigned-long u32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-full-fn</span></i> read-full-float-column
+    <span class="string">&quot;read_full_float_col&quot;</span> float f32vector</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-lowl-read-full-fn</span></i> read-full-double-column
+    <span class="string">&quot;read_full_double_col&quot;</span> double f64vector</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-read-full-col-fn</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;dfn-name&gt; &lt;make-vector&gt; &lt;low-level-fn&gt;</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;dfn-name&gt; fptr
+			   column-num
+			   null-value</span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">elements-per-row <span class="paren2">(<span class="default">fits:get-repeat-count-for-column fptr column-num</span>)</span></span>)</span>
+		<span class="paren1">(<span class="default">num-of-rows <span class="paren2">(<span class="default">fits:get-int-key fptr <span class="string">&quot;NAXIS2&quot;</span></span>)</span></span>)</span>
+		<span class="paren1">(<span class="default">vect <span class="paren2">(<span class="default">&lt;make-vector&gt; <span class="paren3">(<span class="default">* elements-per-row num-of-rows</span>)</span></span>)</span></span>)</span></span>)</span>
+	   <span class="paren6">(<span class="default">&lt;low-level-fn&gt; fptr
+			   column-num
+			   elements-per-row
+			   num-of-rows
+			   null-value
+			   vect</span>)</span>
+	   vect</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-full-col-fn</span></i> fits:read-full-short-column  make-s16vector read-full-short-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-full-col-fn</span></i> fits:read-full-ushort-column make-u16vector read-full-ushort-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-full-col-fn</span></i> fits:read-full-long-column   make-s32vector read-full-long-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-full-col-fn</span></i> fits:read-full-ulong-column  make-u32vector read-full-ulong-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-full-col-fn</span></i> fits:read-full-float-column  make-f32vector read-full-float-column</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-read-full-col-fn</span></i> fits:read-full-double-column make-f64vector read-full-double-column</span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define-syntax</span></i> <i><span class="symbol">def-with-input-???</span></i>
+    <span class="paren2">(<span class="default">syntax-rules <span class="paren3">(<span class="default"></span>)</span>
+      <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">_ &lt;<i><span class="symbol">def-name&gt;</span></i> &lt;read-function&gt;</span>)</span>
+       <span class="paren4">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren5">(<span class="default">&lt;<i><span class="symbol">def-name&gt;</span></i> file-name <i><span class="symbol">function</span></i></span>)</span>
+	 <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">fptr #f</span>)</span></span>)</span>
+	   <span class="paren6">(<span class="default">dynamic-wind
+	     <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default"></span>)</span> <span class="paren2">(<span class="default">set! fptr <span class="paren3">(<span class="default">&lt;read-function&gt; file-name</span>)</span></span>)</span></span>)</span>
+	     <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default"></span>)</span> <span class="paren2">(<span class="default"><i><span class="symbol">function</span></i> fptr</span>)</span></span>)</span>
+	     <span class="paren1">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren2">(<span class="default"></span>)</span> <span class="paren2">(<span class="default">fits:close-file fptr</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-with-input-???</span></i> fits:with-input-file  fits:open-file-for-read</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-with-input-???</span></i> fits:with-input-table fits:open-table-for-read</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-with-input-???</span></i> fits:with-input-image fits:open-image-for-read</span>)</span>
+  <span class="paren1">(<span class="default"><i><span class="symbol">def-with-input-???</span></i> fits:with-input-data  fits:open-data-for-read</span>)</span>)
+</pre></td></tr></table></div></body></html>

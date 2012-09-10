@@ -10,6 +10,11 @@ The program has been written using
 [Chicken Scheme](http://www.call-cc.org/). Select one of the files
 below to read the commented source code:
 
+* [`fitsio.scm`](./fitsio.scm.html): bindings to
+  [CFITSIO](http://heasarc.gsfc.nasa.gov/fitsio/).
+* [`healpix.scm`](./healpix.scm.html): partial implementation of the
+  Healpix pixelization. It contains the code which loads a FITS map
+  and paint it on a [Cairo](http://www.cairographics.org/) surface.
 * [`file-utils.scm`](./file-utils.scm.html): functions that deal with
   files (e.g. producing a GIF file from a
   [Healpix](http://healpix.jpl.nasa.gov/) map in FITS format).
