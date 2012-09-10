@@ -181,19 +181,24 @@ ImageMagick's <code>convert</code> to produce a GIF file with the map.</p>
 			output-gif-file-name
 			title
 			width
-			component-number</span>)</span>
+			component-number
+			fixed-extrema?</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-png-file-name
 	   <span class="paren5">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.png&quot;</span></span>)</span></span>)</span>
 	  <span class="paren4">(<span class="default">input-map <span class="paren5">(<span class="default">healpix:read-map-as-floats input-fits-file-name</span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">printf <span class="string">&quot;Creating a bitmap (PNG format, 24 bit) from ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
-	      input-fits-file-name</span>)</span>
+      <span class="paren3">(<span class="default">printf <span class="string">&quot;Creating a bitmap (PNG format, 24 bit) from ~a to ~a (fixed-extrema? is ~a)...</span><span class="string">\n</span><span class="string">&quot;</span>
+	      input-fits-file-name
+	      output-gif-file-name
+	      fixed-extrema?</span>)</span>
       <span class="paren3">(<span class="default">scale-map-to-muK! input-map</span>)</span>
       <span class="paren3">(<span class="default">map-&gt;png input-map
 		output-png-file-name
 		width <span class="paren4">(<span class="default">+ 50 <span class="paren5">(<span class="default">/ width 2</span>)</span></span>)</span>
 		title
 		<span class="keyword">#:component</span> component-number
-		<span class="keyword">#:color-extrema</span> <span class="paren4">(<span class="default">cons -100 +100</span>)</span></span>)</span>
+		<span class="keyword">#:color-extrema</span> <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> fixed-extrema?
+				    <span class="paren5">(<span class="default">cons -100 +100</span>)</span>
+				    #f</span>)</span></span>)</span>
 </span></span></span></span></pre></td></tr>
 <tr id="section-11">
 <td class="docs">
@@ -205,7 +210,8 @@ interpreted as a Scheme expression: otherwise they would be
 put as they are in the arguments to the process call.)</p>
 </td>
 <td class="code">
-<pre class="highlight">      <span class="paren1">(<span class="default">call-with-values
+<pre class="highlight">		
+      <span class="paren1">(<span class="default">call-with-values
 	  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default"></span>)</span>
 	    <span class="paren3">(<span class="default">run* <span class="paren4">(<span class="default">convert ,output-png-file-name
 			   -transparent white
@@ -227,7 +233,8 @@ file containing the three maps.</p>
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">create-3-gifs-and-combine-them input-fits-file-name
 					  output-gif-file-name
 					  title
-					  width</span>)</span>
+					  width
+					  fixed-extrema?</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">temp-dir <span class="paren5">(<span class="default">create-temporary-directory</span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">printf <span class="string">&quot;Creating 3 temporary GIF files in ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
 	      temp-dir</span>)</span>
@@ -240,7 +247,8 @@ file containing the three maps.</p>
 				  <span class="paren1">(<span class="default">sprintf <span class="string">&quot;~a (~a component)&quot;</span>
 					   title component-name</span>)</span>
 				  width
-				  component-number</span>)</span></span>)</span>
+				  component-number
+				  fixed-extrema?</span>)</span></span>)</span>
 		  <span class="paren5">(<span class="default">list I-file-name Q-file-name U-file-name</span>)</span>
 		  <span class="paren5">(<span class="default">list 1           2           3</span>)</span>
 		  <span class="paren5">(<span class="default">list <span class="string">&quot;I&quot;</span>         <span class="string">&quot;Q&quot;</span>         <span class="string">&quot;U&quot;</span></span>)</span></span>)</span>
@@ -262,7 +270,7 @@ file containing the three maps.</p>
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">map-&gt;gif input-fits-file-name
 		    output-gif-file-name
 		    title
-		    #!key <span class="paren3">(<span class="default">width 512</span>)</span> <span class="paren3">(<span class="default">overwrite? #f</span>)</span></span>)</span>
+		    #!key <span class="paren3">(<span class="default">width 512</span>)</span> <span class="paren3">(<span class="default">overwrite? #f</span>)</span> <span class="paren3">(<span class="default">fixed-extrema? #t</span>)</span></span>)</span>
     <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
 </span>     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
@@ -300,11 +308,13 @@ create three GIF files and then combine them into one.</p>
 			 output-gif-file-name
 			 title
 			 width
-			 1</span>)</span>
+			 1
+			 fixed-extrema?</span>)</span>
 	   <span class="paren2">(<span class="default">create-3-gifs-and-combine-them input-fits-file-name
 					   output-gif-file-name
 					   title
-					   width</span>)</span></span>)</span>)))
+					   width
+					   fixed-extrema?</span>)</span></span>)</span>)))
 
 </pre></td></tr>
 <tr id="section-17">
@@ -429,16 +439,20 @@ EOF
 <div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p>This function converts the name of a FITS file containing a map
 into the name of the <code>.gif</code> file that will contain the
 representation of the map shown in the report. It strips the
-directory and extension parts and substitutes them using functions
-from the <code>filepath</code> eggs. Note that we want the GIF file to be in a
-subdirectory of the output directory instead of being in the same
-directory as the input FITS file: in this was the user can run
-<code>tar</code> or <code>zip</code> on it to obtain a self-contained report.</p>
+directory and extension parts and substitutes them using
+functions from the <code>filepath</code> eggs. Note that we want the GIF
+file to be in a subdirectory of the output directory instead of
+being in the same directory as the input FITS file: in this was
+the user can run <code>tar</code> or <code>zip</code> on it to obtain a self-contained
+report. The <code>tail</code> parameter specifies an optional string to be
+put just in front of the extension (this is useful when you
+create many GIFs from the same FITS file).</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name #!optional <span class="paren3">(<span class="default">name-tail <span class="string">&quot;&quot;</span></span>)</span></span>)</span>
     <span class="paren2">(<span class="default">filepath:replace-directory
-     <span class="paren3">(<span class="default">filepath:replace-extension fits-name <span class="string">&quot;.gif&quot;</span></span>)</span>
+     <span class="paren3">(<span class="default">filepath:replace-extension fits-name
+				 <span class="paren4">(<span class="default">string-concatenate <span class="paren5">(<span class="default">list name-tail <span class="string">&quot;.gif&quot;</span></span>)</span></span>)</span></span>)</span>
      <span class="string">&quot;images&quot;</span></span>)</span></span>)</span>
 
 </pre></td></tr>
@@ -485,6 +499,4 @@ function (we do not use it, so we call it <code>unused</code> and set it to
 		    &#x27;overwrite</span>)</span>))
      #f <span class="comment">; This is our value for `unused`
 </span>     source)))
-
-
 </pre></td></tr></table></div></body></html>

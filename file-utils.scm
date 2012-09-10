@@ -121,25 +121,31 @@
 			output-gif-file-name
 			title
 			width
-			component-number)
+			component-number
+			fixed-extrema?)
     (let ((output-png-file-name
 	   (filepath:replace-extension output-gif-file-name ".png"))
 	  (input-map (healpix:read-map-as-floats input-fits-file-name)))
-      (printf "Creating a bitmap (PNG format, 24 bit) from ~a...\n"
-	      input-fits-file-name)
+      (printf "Creating a bitmap (PNG format, 24 bit) from ~a to ~a (fixed-extrema? is ~a)...\n"
+	      input-fits-file-name
+	      output-gif-file-name
+	      fixed-extrema?)
       (scale-map-to-muK! input-map)
       (map->png input-map
 		output-png-file-name
 		width (+ 50 (/ width 2))
 		title
 		#:component component-number
-		#:color-extrema (cons -100 +100))
+		#:color-extrema (if fixed-extrema?
+				    (cons -100 +100)
+				    #f))
        ;; Run `convert`. Note the elegance of "run*" (from the "shell"
        ;; egg): we include the command-line switches as if they were
        ;; Scheme symbols! (We put a comma in front of variable names
        ;; like `,output-png-file-name` because we want them to be
        ;; interpreted as a Scheme expression: otherwise they would be
        ;; put as they are in the arguments to the process call.)
+		
       (call-with-values
 	  (lambda ()
 	    (run* (convert ,output-png-file-name
@@ -157,7 +163,8 @@
   (define (create-3-gifs-and-combine-them input-fits-file-name
 					  output-gif-file-name
 					  title
-					  width)
+					  width
+					  fixed-extrema?)
     (let ((temp-dir (create-temporary-directory)))
       (printf "Creating 3 temporary GIF files in ~a...\n"
 	      temp-dir)
@@ -170,7 +177,8 @@
 				  (sprintf "~a (~a component)"
 					   title component-name)
 				  width
-				  component-number))
+				  component-number
+				  fixed-extrema?))
 		  (list I-file-name Q-file-name U-file-name)
 		  (list 1           2           3)
 		  (list "I"         "Q"         "U"))
@@ -187,7 +195,7 @@
   (define (map->gif input-fits-file-name
 		    output-gif-file-name
 		    title
-		    #!key (width 512) (overwrite? #f))
+		    #!key (width 512) (overwrite? #f) (fixed-extrema? #t))
     (call/cc ; Chicken's shortcut for call-with-current-continuation
      (lambda (return)
        ;; Note that, since `map2tga` does not overwrite existing GIF files,
@@ -210,11 +218,13 @@
 			 output-gif-file-name
 			 title
 			 width
-			 1)
+			 1
+			 fixed-extrema?)
 	   (create-3-gifs-and-combine-them input-fits-file-name
 					   output-gif-file-name
 					   title
-					   width)))))
+					   width
+					   fixed-extrema?)))))
 
   ;; This function reads the spectrum/spectra in a FITS file and save
   ;; all the data into a CSV file.
@@ -301,14 +311,18 @@ EOF
   ;; This function converts the name of a FITS file containing a map
   ;; into the name of the `.gif` file that will contain the
   ;; representation of the map shown in the report. It strips the
-  ;; directory and extension parts and substitutes them using functions
-  ;; from the `filepath` eggs. Note that we want the GIF file to be in a
-  ;; subdirectory of the output directory instead of being in the same
-  ;; directory as the input FITS file: in this was the user can run
-  ;; `tar` or `zip` on it to obtain a self-contained report.
-  (define (fits-name->gif-name fits-name)
+  ;; directory and extension parts and substitutes them using
+  ;; functions from the `filepath` eggs. Note that we want the GIF
+  ;; file to be in a subdirectory of the output directory instead of
+  ;; being in the same directory as the input FITS file: in this was
+  ;; the user can run `tar` or `zip` on it to obtain a self-contained
+  ;; report. The `tail` parameter specifies an optional string to be
+  ;; put just in front of the extension (this is useful when you
+  ;; create many GIFs from the same FITS file).
+  (define (fits-name->gif-name fits-name #!optional (name-tail ""))
     (filepath:replace-directory
-     (filepath:replace-extension fits-name ".gif")
+     (filepath:replace-extension fits-name
+				 (string-concatenate (list name-tail ".gif")))
      "images"))
 
   ;; A small set of files (CSS styles, JavaScript files) need to be
@@ -335,5 +349,3 @@ EOF
 		    'overwrite)))
      #f ; This is our value for `unused`
      source)))
-
-

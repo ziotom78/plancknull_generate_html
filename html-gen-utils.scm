@@ -21,6 +21,8 @@
 		     html-tags
 		     html-utils)
 
+  (define gif-exts (cons "100muK" "variable"))
+
   ;; We're going to concatenate a number of HTML statements, so it is
   ;; nicer to have a shorthand for the Scheme function
   ;; `string-concatenate`. (Also, our shorthand does not require a
@@ -152,7 +154,19 @@
   ;; and encloses it in a self-contained HTML structure which
   ;; comprises the side menu. It returns a string.
   (define (wrap-html file-tag page-title body)
-    (html-page (html:++ (<h1> id: "main_title" (make-title-for-report))
+    (html-page (html:++ (<script> type: "text/javascript"
+				  #<<EOF
+function switchMapImages(img, filename1, filename2)
+{
+  if(img.src.indexOf(filename1) == -1)
+    img.src = filename1;
+  else
+    img.src = filename2;
+}
+
+EOF
+)
+			(<h1> id: "main_title" (make-title-for-report))
 			(side-menu file-tag)
 			(<div> id: "page_body"
 			       (<h2> page-title)
@@ -182,7 +196,7 @@
       (format #t "Writing file ~a...\n" output-file-name)
       (call-with-output-file output-file-name write-function)))
 
-  
+
   ;; This function accepts a JSON object and will produce a link to
   ;; the entry. It is meant to be used e.g. with `itemize` (from the
   ;; `html-utils` egg), like in the following code:
@@ -199,15 +213,26 @@
   (define (emit-HTML-for-map-object obj)
     (let* ((title (assq-ref 'title obj))
 	   (fits-file-name (abspath-from-json obj))
-	   (gif-file-name (fits-name->gif-name fits-file-name)))
-      (format #t "Writing GIF file ~a\n" gif-file-name)
-      (map->gif fits-file-name
-                (filepath:join-path
-                 (list (assq-ref 'output-dir user-args)
-                       gif-file-name))
-                title)
-      (<img> src: gif-file-name
+	   (gif-file-names
+	    (list (fits-name->gif-name fits-file-name (car gif-exts))
+		  (fits-name->gif-name fits-file-name (cdr gif-exts)))))
+      (for-each (lambda (gif-file-name fixed-extrema?)
+		  (printf "Writing GIF file ~a (fixed-extrema? is ~a)\n"
+			  gif-file-name
+			  fixed-extrema?)
+		  (map->gif fits-file-name
+			    (filepath:join-path
+			     (list (assq-ref 'output-dir user-args)
+				   gif-file-name))
+			    title
+			    fixed-extrema?: fixed-extrema?))
+		gif-file-names
+		(list #t #f))
+      (<img> src: (car gif-file-names)
 	     alt: title
+	     onclick: (sprintf "switchMapImages(this, \"~a\", \"~a\")"
+			       (car gif-file-names)
+			       (cadr gif-file-names))
 	     title: (assq-ref 'file_name obj))))
 
   ;; This function accepts a JSON object and will produce
@@ -285,6 +310,12 @@
 			       (<div> id: "page_index"
 				      (itemize (map emit-HTML-index-entry-for-object
 						    map-objs)))
+			       (<p> "Clicking on the image of a map switches "
+				    "between a fixed color-scale range (good "
+				    "for comparisons/animations) and a range "
+				    "taylored for the map under question "
+				    "(good for checking the P-P level and for "
+				    "reveal finer details).")
 			       (string-intersperse
 				(map emit-HTML-for-object map-objs cl-objs)
 				"\n"))))
