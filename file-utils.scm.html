@@ -27,111 +27,438 @@ the program.</p>
 <td class="code">
 <pre class="highlight">
 <span class="paren1">(<span class="default">module file-utils
-  <span class="paren2">(<span class="default">export map2gif fits-name-&gt;gif-name dir-copy</span>)</span>
+  <span class="paren2">(<span class="default">map-&gt;gif
+   spectrum-&gt;gif
+   fits-name-&gt;gif-name
+   dir-copy</span>)</span>
 
-  <span class="paren2">(<span class="default">import chicken scheme extras files srfi-13</span>)</span>
+  <span class="paren2">(<span class="default">import chicken
+	  scheme
+	  extras
+	  files
+	  data-structures
+	  posix
+	  healpix
+	  srfi-1
+	  srfi-4
+	  srfi-13
+	  srfi-18</span>)</span>
+
   <span class="paren2">(<span class="default">require-extension shell</span>)</span>
   <span class="paren2">(<span class="default">require-extension filepath</span>)</span>
   <span class="paren2">(<span class="default">require-extension directory-utils</span>)</span>
+  <span class="paren2">(<span class="default">require-extension cairo</span>)</span>
+  <span class="paren2">(<span class="default">require-extension blas</span>)</span>
 
 </span></span></pre></td></tr>
 <tr id="section-3">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-3">&para;</a></div><p>We need to implement the code that will convert the maps in FITS
-format into GIF images that can be included in the HTML report. We
-assume the availability of the <code>map2gif</code> program bundled with
-<a href="http://healpix.jpl.nasa.gov/">Healpix</a>.</p>
+format into GIF images that can be included in the HTML report.</p>
 </td>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
 <tr id="section-4">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>Note that, since <code>map2gif</code> does not overwrite existing GIF files,
-if the file already exists and the flag <code>overwrite?</code> is true we
-first need to delete the file.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This function uses the facilities provided by <code>healpix.scm</code> to
+draw a map with a title and a color bar on a cairo context, which
+is then saved into a 24-bit PNG file.</p>
 </td>
 <td class="code">
-<pre class="highlight">
-  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">map2gif input-fits-file-name
-		   output-gif-file-name
-		   title
-		   #!key <span class="paren3">(<span class="default">overwrite? #f</span>)</span></span>)</span> <span class="comment">; If not specified, it is #f
-</span>    <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
-</span>     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
-       <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">file-exists? output-gif-file-name</span>)</span>
-	   <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> overwrite?
-	       <span class="paren6">(<span class="default">delete-file output-gif-file-name</span>)</span>
-	       <span class="paren6">(<span class="default">return &#x27;<span class="paren1">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
-</span></span></span></span></span></span></pre></td></tr>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">map-&gt;png map
+		    file-name
+		    bmp-width bmp-height
+		    title
+		    #!key
+		    <span class="paren3">(<span class="default">component 1</span>)</span>
+		    <span class="paren3">(<span class="default">color-extrema #f</span>)</span> <span class="comment">; If not `#f`, this should be a pair
+</span>		    <span class="paren3">(<span class="default">title-height 20</span>)</span>
+		    <span class="paren3">(<span class="default">gradient-bar-height 30</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">map-bitmap-height <span class="paren5">(<span class="default">- bmp-height title-height gradient-bar-height</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">bitmap <span class="paren5">(<span class="default">healpix:map-&gt;bitmap map
+					bmp-width
+					map-bitmap-height
+					component</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">map-extrema <span class="paren5">(<span class="default"><i><span class="symbol">if</span></i> color-extrema
+			    color-extrema
+			    <span class="paren6">(<span class="default">healpix:get-float-map-extrema map component</span>)</span></span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">cairo-surface <span class="paren5">(<span class="default">cairo-image-surface-create CAIRO_FORMAT_RGB24
+						      bmp-width
+						      bmp-height</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">cairo-context <span class="paren5">(<span class="default">cairo-create cairo-surface</span>)</span></span>)</span></span>)</span>
+
+</span></span></span></span></pre></td></tr>
 <tr id="section-5">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>Create the directory that will contain the output file,
-if it does not exist</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>This code fills the background of the image with white</p>
 </td>
 <td class="code">
-<pre class="highlight">       <span class="paren1">(<span class="default">create-pathname-directory output-gif-file-name</span>)</span>
+<pre class="highlight">      <span class="paren1">(<span class="default">cairo-rectangle cairo-context
+		       0.0 0.0
+		       bmp-width bmp-height</span>)</span>
+      <span class="paren1">(<span class="default">cairo-set-source-rgb cairo-context
+			    1.0 1.0 1.0</span>)</span>
+      <span class="paren1">(<span class="default">cairo-fill cairo-context</span>)</span>
+
 </pre></td></tr>
 <tr id="section-6">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>Run the program. Note the elegance of "run<em>" (from the "shell"
-egg): we include the command-line switches as if they were
-Scheme symbols! (We put a comma in front of <code>(html:++ ...)</code>
-because we want it to be interpreted as a Scheme expression:
-otherwise it would be put as it is in the arguments to the
-process call.) *Note:</em> <code>run*</code> is defined in the <code>shell</code> egg.
-When multiple commands are specified (in this case, <code>map2tga</code>
-and <code>convert</code>), it returns a set of values. These must be
-interpreted using <code>call-with-values</code>, which is a standard
-Scheme function accepting a "producer" and a "consumer". Refer
-to the <a href="http://wiki.call-cc.org/man/4/The%20R5RS%20standard#control-features">R5RS
-documentation</a>
-for further details.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>This code paints the title. It uses <code>cairo-text-extents</code> to
+determine its width, in order to correctly center it
+horizontally.</p>
 </td>
 <td class="code">
-<pre class="highlight">       <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">output-tga-file-name
-	      <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.tga&quot;</span></span>)</span></span>)</span></span>)</span>
-	 <span class="paren2">(<span class="default">call-with-values
-	     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default"></span>)</span>
-	       <span class="paren4">(<span class="default">format #t <span class="string">&quot;Running map2tga and convert on ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
-		       input-fits-file-name</span>)</span>
-	       <span class="paren4">(<span class="default">run* <span class="paren5">(<span class="default">map2tga ,input-fits-file-name
-			      ,output-tga-file-name
-			      -bar
-			      -xsz 512
-			      -title ,<span class="paren6">(<span class="default">string-concatenate <span class="paren1">(<span class="default">list <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span> title <span class="string">&quot;</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
-		     <span class="paren5">(<span class="default">convert ,output-tga-file-name
-			      -transparent white
-			      ,output-gif-file-name</span>)</span></span>)</span></span>)</span>
-	   <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">map2tga-return-code convert-return-code</span>)</span>
-	     <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; map2tga-return-code 0</span>)</span>
-		 <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">map2tga</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span>
-	     <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">&gt; convert-return-code 0</span>)</span>
-		 <span class="paren5">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">convert</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
-	 <span class="paren2">(<span class="default">delete-file output-tga-file-name</span>)</span></span>)</span>)))
+<pre class="highlight">      <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">title-font-size <span class="paren4">(<span class="default">* 0.9 title-height</span>)</span></span>)</span></span>)</span>
+	<span class="paren2">(<span class="default">cairo-set-font-size cairo-context
+			     title-font-size</span>)</span>
+	<span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title-te <span class="paren5">(<span class="default">make-cairo-text-extents-type</span>)</span></span>)</span></span>)</span>
+	  <span class="paren3">(<span class="default">cairo-text-extents cairo-context
+			      title
+			      title-te</span>)</span>
+	  <span class="paren3">(<span class="default">cairo-move-to cairo-context
+			 <span class="paren4">(<span class="default">* <span class="paren5">(<span class="default">- bmp-width <span class="paren6">(<span class="default">cairo-text-extents-width title-te</span>)</span></span>)</span>
+			    0.5</span>)</span>
+			 title-font-size</span>)</span>
+	  <span class="paren3">(<span class="default">cairo-set-source-rgb cairo-context
+				0.0 0.0 0.0</span>)</span>
+	  <span class="paren3">(<span class="default">cairo-show-text cairo-context
+			   title</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-7">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>This function converts the name of a FITS file containing a map
-into the name of the <code>.gif</code> file that will contain the
-representation of the map shown in the report. It strips the
-directory and extension parts and substitutes them using functions
-from the <code>filepath</code> eggs. Note that we want the GIF file to be in a
-subdirectory of the output directory instead of being in the same
-directory as the input FITS file: in this was the user can run
-<code>tar</code> or <code>zip</code> on it to obtain a self-contained report.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>Now we plot the map. The first two <code>cons</code> specify the region
+in the cairo context (i.e. the drawing area), while the last
+<code>cons</code> specifies the number of rows and columns in <code>bitmap</code>
+(bidimensional array of floating point values).</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name</span>)</span>
-    <span class="paren2">(<span class="default">filepath:replace-directory
-     <span class="paren3">(<span class="default">filepath:replace-extension fits-name <span class="string">&quot;.gif&quot;</span></span>)</span>
-     <span class="string">&quot;images&quot;</span></span>)</span></span>)</span>
+<pre class="highlight">      <span class="paren1">(<span class="default">healpix:plot-bitmap-to-cairo-surface cairo-context
+					    <span class="paren2">(<span class="default">cons 0.0 title-height</span>)</span>
+					    <span class="paren2">(<span class="default">cons bmp-width map-bitmap-height</span>)</span>
+					    map-extrema
+					    bitmap
+					    <span class="paren2">(<span class="default">cons bmp-width map-bitmap-height</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-8">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>A small set of files (CSS styles, JavaScript files) need to be
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>Now comes the gradient bar</p>
+</td>
+<td class="code">
+<pre class="highlight">      <span class="paren1">(<span class="default">cairo-set-font-size cairo-context 16</span>)</span>
+      <span class="paren1">(<span class="default">healpix:plot-gradient-bar cairo-context
+				 <span class="paren2">(<span class="default">cons 0.0 <span class="paren3">(<span class="default">+ title-height map-bitmap-height</span>)</span></span>)</span>
+				 <span class="paren2">(<span class="default">cons bmp-width <span class="paren3">(<span class="default">- gradient-bar-height 1</span>)</span></span>)</span>
+				 map-extrema
+				 <span class="string">&quot;</span><span class="string">\u</span><span class="string">03BCK&quot;</span></span>)</span>
+</pre></td></tr>
+<tr id="section-9">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>Finally, save the drawing area in a 24-bit PNG file</p>
+</td>
+<td class="code">
+<pre class="highlight">      <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">not <span class="paren3">(<span class="default">eq? CAIRO_STATUS_SUCCESS
+		    <span class="paren4">(<span class="default">cairo-surface-write-to-png cairo-surface file-name</span>)</span></span>)</span></span>)</span>
+	  <span class="paren2">(<span class="default">raise <span class="paren3">(<span class="default">sprintf <span class="string">&quot;Unable to write file ~a&quot;</span> file-name</span>)</span></span>)</span></span>)</span>))
+
+  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">scale-map-to-muK! map</span>)</span>
+    <span class="paren2">(<span class="default">for-each <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">vec</span>)</span>
+		<span class="paren4">(<span class="default">unsafe-sscal! <span class="paren5">(<span class="default">f32vector-length vec</span>)</span>
+			       1.0e+6
+			       vec</span>)</span></span>)</span>
+	      <span class="paren3">(<span class="default">cdr map</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>First we define a simple function that uses <code>map-&gt;png</code> and
+ImageMagick's <code>convert</code> to produce a GIF file with the map.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">create-1-gif input-fits-file-name
+			output-gif-file-name
+			title
+			width
+			component-number
+			fixed-extrema?</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">output-png-file-name
+	   <span class="paren5">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.png&quot;</span></span>)</span></span>)</span>
+	  <span class="paren4">(<span class="default">input-map <span class="paren5">(<span class="default">healpix:read-map-as-floats input-fits-file-name</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">printf <span class="string">&quot;Creating a bitmap (PNG format, 24 bit) from ~a to ~a (fixed-extrema? is ~a)...</span><span class="string">\n</span><span class="string">&quot;</span>
+	      input-fits-file-name
+	      output-gif-file-name
+	      fixed-extrema?</span>)</span>
+      <span class="paren3">(<span class="default">scale-map-to-muK! input-map</span>)</span>
+      <span class="paren3">(<span class="default">map-&gt;png input-map
+		output-png-file-name
+		width <span class="paren4">(<span class="default">+ 50 <span class="paren5">(<span class="default">/ width 2</span>)</span></span>)</span>
+		title
+		<span class="keyword">#:component</span> component-number
+		<span class="keyword">#:color-extrema</span> <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> fixed-extrema?
+				    <span class="paren5">(<span class="default">cons -100 +100</span>)</span>
+				    #f</span>)</span></span>)</span>
+</span></span></span></span></pre></td></tr>
+<tr id="section-11">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>Run <code>convert</code>. Note the elegance of "run*" (from the "shell"
+egg): we include the command-line switches as if they were
+Scheme symbols! (We put a comma in front of variable names
+like <code>,output-png-file-name</code> because we want them to be
+interpreted as a Scheme expression: otherwise they would be
+put as they are in the arguments to the process call.)</p>
+</td>
+<td class="code">
+<pre class="highlight">		
+      <span class="paren1">(<span class="default">call-with-values
+	  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default"></span>)</span>
+	    <span class="paren3">(<span class="default">run* <span class="paren4">(<span class="default">convert ,output-png-file-name
+			   -transparent white
+			   ,output-gif-file-name</span>)</span></span>)</span></span>)</span>
+	<span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">convert-return-code</span>)</span>
+	  <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren4">(<span class="default">&gt; convert-return-code 0</span>)</span>
+	      <span class="paren4">(<span class="default">abort <span class="string">&quot;Error when executing </span><span class="string">\&quot;</span><span class="string">convert</span><span class="string">\&quot;</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren1">(<span class="default">delete-file output-png-file-name</span>)</span>))
+
+</pre></td></tr>
+<tr id="section-12">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>This function is used with maps that contain 3 components (I, Q,
+U). It uses the <code>map-&gt;gif</code> function defined below and the
+<code>montage</code> program from the ImageMagick suite to create one GIF
+file containing the three maps.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">create-3-gifs-and-combine-them input-fits-file-name
+					  output-gif-file-name
+					  title
+					  width
+					  fixed-extrema?</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">temp-dir <span class="paren5">(<span class="default">create-temporary-directory</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">printf <span class="string">&quot;Creating 3 temporary GIF files in ~a...</span><span class="string">\n</span><span class="string">&quot;</span>
+	      temp-dir</span>)</span>
+      <span class="paren3">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren4">(<span class="default"><span class="paren5">(<span class="default">I-file-name <span class="paren6">(<span class="default">filepath:join-path <span class="paren1">(<span class="default">list temp-dir <span class="string">&quot;I.gif&quot;</span></span>)</span></span>)</span></span>)</span>
+	    <span class="paren5">(<span class="default">Q-file-name <span class="paren6">(<span class="default">filepath:join-path <span class="paren1">(<span class="default">list temp-dir <span class="string">&quot;Q.gif&quot;</span></span>)</span></span>)</span></span>)</span>
+	    <span class="paren5">(<span class="default">U-file-name <span class="paren6">(<span class="default">filepath:join-path <span class="paren1">(<span class="default">list temp-dir <span class="string">&quot;U.gif&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+	<span class="paren4">(<span class="default">for-each <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">file-name component-number component-name</span>)</span>
+		    <span class="paren6">(<span class="default">create-1-gif input-fits-file-name
+				  file-name
+				  <span class="paren1">(<span class="default">sprintf <span class="string">&quot;~a (~a component)&quot;</span>
+					   title component-name</span>)</span>
+				  width
+				  component-number
+				  fixed-extrema?</span>)</span></span>)</span>
+		  <span class="paren5">(<span class="default">list I-file-name Q-file-name U-file-name</span>)</span>
+		  <span class="paren5">(<span class="default">list 1           2           3</span>)</span>
+		  <span class="paren5">(<span class="default">list <span class="string">&quot;I&quot;</span>         <span class="string">&quot;Q&quot;</span>         <span class="string">&quot;U&quot;</span></span>)</span></span>)</span>
+	<span class="paren4">(<span class="default">display <span class="string">&quot;Running &#x27;montage&#x27; on the three GIF images...</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span>
+	<span class="paren4">(<span class="default">run <span class="paren5">(<span class="default">montage -tile <span class="string">&quot;1x3&quot;</span>
+		      -geometry ,width
+		      ,I-file-name
+		      ,Q-file-name
+		      ,U-file-name
+		      ,output-gif-file-name</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-13">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>This function is simply a nice wrapper for <code>create-1-gif</code> and
+<code>create-3-gif-and-combine-them</code>.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">map-&gt;gif input-fits-file-name
+		    output-gif-file-name
+		    title
+		    #!key <span class="paren3">(<span class="default">width 512</span>)</span> <span class="paren3">(<span class="default">overwrite? #f</span>)</span> <span class="paren3">(<span class="default">fixed-extrema? #t</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
+</span>     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
+</span></span></span></span></span></span></pre></td></tr>
+<tr id="section-14">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>Note that, since <code>map2tga</code> does not overwrite existing GIF files,
+if the file already exists and the flag <code>overwrite?</code> is true we
+first need to delete the file.</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">file-exists? output-gif-file-name</span>)</span>
+	   <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> overwrite?
+	       <span class="paren3">(<span class="default">delete-file output-gif-file-name</span>)</span>
+	       <span class="paren3">(<span class="default">return &#x27;<span class="paren4">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-15">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><p>Create the directory that will contain the output file,
+if it does not exist</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default">create-pathname-directory output-gif-file-name</span>)</span>
+
+</pre></td></tr>
+<tr id="section-16">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-16">&para;</a></div><p>If the map contains three components (I, Q, U) we need to
+create three GIF files and then combine them into one.</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">eq? <span class="paren3">(<span class="default">healpix:num-of-components-in-map input-fits-file-name</span>)</span>
+		1</span>)</span>
+	   <span class="paren2">(<span class="default">create-1-gif input-fits-file-name
+			 output-gif-file-name
+			 title
+			 width
+			 1
+			 fixed-extrema?</span>)</span>
+	   <span class="paren2">(<span class="default">create-3-gifs-and-combine-them input-fits-file-name
+					   output-gif-file-name
+					   title
+					   width
+					   fixed-extrema?</span>)</span></span>)</span>)))
+
+</pre></td></tr>
+<tr id="section-17">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-17">&para;</a></div><p>This function reads the spectrum/spectra in a FITS file and save
+all the data into a CSV file.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">spectrum-&gt;csv input-fits-file-name
+			 output-csv-file-name</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">columns <span class="paren5">(<span class="default">healpix:read-spectrum input-fits-file-name</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">num-of-rows <span class="paren5">(<span class="default">f64vector-length <span class="paren6">(<span class="default">car columns</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">printf <span class="string">&quot;Writing CSV file &#x27;~a&#x27;...</span><span class="string">\n</span><span class="string">&quot;</span>
+	      output-csv-file-name</span>)</span>
+      <span class="paren3">(<span class="default"><i><span class="symbol">with-output-to-file</span></i> output-csv-file-name
+	<span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default"></span>)</span>
+	  <span class="paren5">(<span class="default">do <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">row-num 0 <span class="paren2">(<span class="default">+ 1 row-num</span>)</span></span>)</span></span>)</span>
+	      <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">&gt;= row-num num-of-rows</span>)</span></span>)</span>
+	    <span class="paren6">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">row-elements <span class="paren3">(<span class="default">map <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">column-vector</span>)</span>
+				       <span class="paren5">(<span class="default">f64vector-ref column-vector
+						      row-num</span>)</span></span>)</span>
+				     columns</span>)</span></span>)</span></span>)</span>
+	      <span class="paren1">(<span class="default">printf <span class="string">&quot;~a &quot;</span> <span class="paren2">(<span class="default">+ 1 row-num</span>)</span></span>)</span> <span class="comment">; this is ell
+</span>	      <span class="paren1">(<span class="default">print <span class="paren2">(<span class="default">string-intersperse <span class="paren3">(<span class="default">map -&gt;string row-elements</span>)</span>
+					 <span class="string">&quot; &quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-18">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>Produce a GIF image containing the spectrum/spectra in a FITS
+file. The function invokes <code>gnuplot</code>, which must therefore be in
+the <code>PATH</code>.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">spectrum-&gt;gif input-fits-file-name
+			 output-gif-file-name
+			 title
+			 #!key <span class="paren3">(<span class="default">width 512</span>)</span> <span class="paren3">(<span class="default">overwrite? #f</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
+</span>     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
+</span></span></span></span></span></span></pre></td></tr>
+<tr id="section-19">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-19">&para;</a></div><p>Note that, since <code>map2tga</code> does not overwrite existing GIF files,
+if the file already exists and the flag <code>overwrite?</code> is true we
+first need to delete the file.</p>
+</td>
+<td class="code">
+<pre class="highlight">       <span class="paren1">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren2">(<span class="default">file-exists? output-gif-file-name</span>)</span>
+	   <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> overwrite?
+	       <span class="paren3">(<span class="default">delete-file output-gif-file-name</span>)</span>
+	       <span class="paren3">(<span class="default">return &#x27;<span class="paren4">(<span class="default"></span>)</span></span>)</span></span>)</span></span>)</span>
+       <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">csv-file-name
+	      <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.csv&quot;</span></span>)</span></span>)</span></span>)</span>
+</span></span></pre></td></tr>
+<tr id="section-20">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><p>First step: convert the FITS file into a CSV file (placed
+alongside the GIF image under the destination directory)</p>
+</td>
+<td class="code">
+<pre class="highlight">	 <span class="paren1">(<span class="default">spectrum-&gt;csv input-fits-file-name csv-file-name</span>)</span>
+</pre></td></tr>
+<tr id="section-21">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><p>Now open a output pipe to <code>gnuplot</code> and send the appropriate
+commands to plot the spectrum/spectra.</p>
+</td>
+<td class="code">
+<pre class="highlight">	 <span class="paren1">(<span class="default"><i><span class="symbol">with-output-to-pipe</span></i>
+	  <span class="string">&quot;gnuplot&quot;</span>
+	  <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default"></span>)</span>
+	    <span class="paren3">(<span class="default">printf #&lt;&lt;EOF
+set terminal gif transparent enhanced size ~a, ~a
+set output &#x27;~a&#x27;
+set logscale y
+set xlabel &#x27;l&#x27;
+set ylabel &#x27;C_l&#x27;
+set title &#x27;~a&#x27;
+
+EOF
+                    width
+		    <span class="paren4">(<span class="default">inexact-&gt;exact <span class="paren5">(<span class="default">round <span class="paren6">(<span class="default">/ width 1.4</span>)</span></span>)</span></span>)</span>
+		    output-gif-file-name
+		    title</span>)</span>
+	    <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren4">(<span class="default">eq? <span class="paren5">(<span class="default">healpix:num-of-components-in-spectrum input-fits-file-name</span>)</span>
+		     1</span>)</span>
+</span></span></span></span></span></span></pre></td></tr>
+<tr id="section-22">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p><code>then</code> part</p>
+</td>
+<td class="code">
+<pre class="highlight">		<span class="paren1">(<span class="default">printf <span class="string">&quot;plot &#x27;~a&#x27; using 1:2 with lines title &#x27;&#x27;&quot;</span>
+			csv-file-name</span>)</span>
+</pre></td></tr>
+<tr id="section-23">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p><code>else</code> part</p>
+</td>
+<td class="code">
+<pre class="highlight">		<span class="paren1">(<span class="default">begin
+		  <span class="paren2">(<span class="default">printf #&lt;&lt;EOF
+plot &#x27;~a&#x27; using 1:2 with lines title &#x27;TT&#x27;, \
+     &#x27;~a&#x27; using 1:3 with lines title &#x27;EE&#x27;, \
+     &#x27;~a&#x27; using 1:4 with lines title &#x27;BB&#x27;, \
+     &#x27;~a&#x27; using 1:3 with lines title &#x27;TE&#x27;, \
+     &#x27;~a&#x27; using 1:3 with lines title &#x27;TB&#x27;, \
+     &#x27;~a&#x27; using 1:3 with lines title &#x27;EB&#x27; \
+
+EOF
+                          csv-file-name
+			  csv-file-name
+			  csv-file-name
+			  csv-file-name
+			  csv-file-name
+			  csv-file-name</span>)</span></span>)</span>)))))))
+
+</pre></td></tr>
+<tr id="section-24">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p>This function converts the name of a FITS file containing a map
+into the name of the <code>.gif</code> file that will contain the
+representation of the map shown in the report. It strips the
+directory and extension parts and substitutes them using
+functions from the <code>filepath</code> eggs. Note that we want the GIF
+file to be in a subdirectory of the output directory instead of
+being in the same directory as the input FITS file: in this was
+the user can run <code>tar</code> or <code>zip</code> on it to obtain a self-contained
+report. The <code>tail</code> parameter specifies an optional string to be
+put just in front of the extension (this is useful when you
+create many GIFs from the same FITS file).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">fits-name-&gt;gif-name fits-name #!optional <span class="paren3">(<span class="default">name-tail <span class="string">&quot;&quot;</span></span>)</span></span>)</span>
+    <span class="paren2">(<span class="default">filepath:replace-directory
+     <span class="paren3">(<span class="default">filepath:replace-extension fits-name
+				 <span class="paren4">(<span class="default">string-concatenate <span class="paren5">(<span class="default">list name-tail <span class="string">&quot;.gif&quot;</span></span>)</span></span>)</span></span>)</span>
+     <span class="string">&quot;images&quot;</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-25">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p>A small set of files (CSS styles, JavaScript files) need to be
 copied to the output directory, in order to make the report
 self-contained. These files should be taken from the directory
 where the executable has been launched.</p>
@@ -139,9 +466,9 @@ where the executable has been launched.</p>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-9">
+<tr id="section-26">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>Chicken Scheme does not provide a function to copy whole
+<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><p>Chicken Scheme does not provide a function to copy whole
 directories. So we implement one using a nice function implemented
 in <code>directory-utils</code>: <code>directory-fold</code>. It takes a function to be
 applied to each file, a user-defined value that is passed to this
@@ -155,16 +482,16 @@ function (we do not use it, so we call it <code>unused</code> and set it to
        <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">output-file <span class="paren1">(<span class="default">filepath:join-path <span class="paren2">(<span class="default">list dest filename</span>)</span></span>)</span></span>)</span></span>)</span>
 	 <span class="paren5">(<span class="default">format #t <span class="string">&quot;Copying file ~a to ~a...</span><span class="string">\n</span><span class="string">&quot;</span> filename dest</span>)</span>
 </span></span></span></span></span></span></span></span></pre></td></tr>
-<tr id="section-10">
+<tr id="section-27">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>Create the destination directory if it does not exist</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>Create the destination directory if it does not exist</p>
 </td>
 <td class="code">
 <pre class="highlight">	 <span class="paren1">(<span class="default">create-pathname-directory output-file</span>)</span>
 </pre></td></tr>
-<tr id="section-11">
+<tr id="section-28">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>Copy the file. <code>file_copy</code> is part of Chicken Scheme</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>Copy the file. <code>file_copy</code> is part of Chicken Scheme</p>
 </td>
 <td class="code">
 <pre class="highlight">	 <span class="paren1">(<span class="default">file-copy <span class="paren2">(<span class="default">filepath:join-path <span class="paren3">(<span class="default">list source filename</span>)</span></span>)</span>
@@ -172,6 +499,4 @@ function (we do not use it, so we call it <code>unused</code> and set it to
 		    &#x27;overwrite</span>)</span>))
      #f <span class="comment">; This is our value for `unused`
 </span>     source)))
-
-
 </pre></td></tr></table></div></body></html>
