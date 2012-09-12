@@ -19,14 +19,19 @@
   <body>
     <div id="clplot" style="width:640px;height:480px"></div>
 
-    <p>Moving the mouse on a point will show a tooltip with the
-    coordinates of the point. Selecting an area with the mouse will
-    zoom the plot.</p>
-
-    <script type="text/javascript">setupFlotPlot();</script>
+    <script type="text/javascript">plot = setupPlot();</script>
 
     <form> 
-      <input type="button" value="Close Window" onClick="window.close()"> 
+      <!-- "plot" is initialized by "setupPlot" -->
+      <input type="button" value="Reset zoom" onClick="plot.resetZoom()"> 
+    </form>
+
+    <p>Moving the mouse on a point shows a tooltip with the
+    coordinates of the point. Selecting an area with the mouse zooms
+    the plot.</p>
+
+    <form> 
+      <input type="button" value="Close window" onClick="window.close()"> 
     </form>
   </body>
 </html>

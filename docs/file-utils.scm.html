@@ -321,33 +321,57 @@ create three GIF files and then combine them into one.</p>
 </pre></td></tr>
 <tr id="section-17">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-17">&para;</a></div><p>This function reads the spectrum/spectra in a FITS file and save
-all the data into a CSV file.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-17">&para;</a></div><p>For null tests, we're usually interested in TT, EE and BB spectra
+only (also, they are much easier to visualize since they're
+always positive and can therefore be plotted using a log-log
+scale). These spectra are the first three to appear in the FITS
+file. But we must be sure the spectrum is not only in temperature
+(as <code>take</code> will complain if you request more elements than
+available): this is the reason of <code>min</code>.</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">spectrum-&gt;csv input-fits-file-name
-			 output-csv-file-name</span>)</span>
-    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">columns <span class="paren5">(<span class="default">healpix:read-spectrum input-fits-file-name</span>)</span></span>)</span>
-	   <span class="paren4">(<span class="default">num-of-rows <span class="paren5">(<span class="default">f64vector-length <span class="paren6">(<span class="default">car columns</span>)</span></span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">printf <span class="string">&quot;Writing CSV file &#x27;~a&#x27;...</span><span class="string">\n</span><span class="string">&quot;</span>
-	      output-csv-file-name</span>)</span>
-      <span class="paren3">(<span class="default"><i><span class="symbol">with-output-to-file</span></i> output-csv-file-name
-	<span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default"></span>)</span>
-	  <span class="paren5">(<span class="default">do <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">row-num 0 <span class="paren2">(<span class="default">+ 1 row-num</span>)</span></span>)</span></span>)</span>
-	      <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">&gt;= row-num num-of-rows</span>)</span></span>)</span>
-	    <span class="paren6">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">row-elements <span class="paren3">(<span class="default">map <span class="paren4">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren5">(<span class="default">column-vector</span>)</span>
-				       <span class="paren5">(<span class="default">* 1.0e+12 <span class="comment">; K^2 -&gt; muK^2
-</span>					  <span class="paren6">(<span class="default">f64vector-ref column-vector
-							 row-num</span>)</span></span>)</span></span>)</span>
-				     columns</span>)</span></span>)</span></span>)</span>
-	      <span class="paren1">(<span class="default">printf <span class="string">&quot;~a &quot;</span> <span class="paren2">(<span class="default">+ 1 row-num</span>)</span></span>)</span> <span class="comment">; this is ell
-</span>	      <span class="paren1">(<span class="default">print <span class="paren2">(<span class="default">string-intersperse <span class="paren3">(<span class="default">map -&gt;string row-elements</span>)</span>
-					 <span class="string">&quot; &quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">read-TT-EE-BB file-name</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">n <span class="paren5">(<span class="default">healpix:num-of-components-in-spectrum file-name</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">take <span class="paren4">(<span class="default">healpix:read-spectrum file-name</span>)</span>
+	    <span class="paren4">(<span class="default">min n 3</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-18">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-18">&para;</a></div><p>This function reads the spectrum/spectra in a FITS file and save
+all the data into a CSV file.</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">spectrum-&gt;csv input-fits-file-name
+			 output-csv-file-name</span>)</span>
+
+</span></span></pre></td></tr>
+<tr id="section-19">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-19">&para;</a></div><p>We are interested in the first three power spectra (TT, EE, BB) only.</p>
+</td>
+<td class="code">
+<pre class="highlight">    <span class="paren1">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">columns <span class="paren4">(<span class="default">read-TT-EE-BB input-fits-file-name</span>)</span></span>)</span>
+	   <span class="paren3">(<span class="default">num-of-rows <span class="paren4">(<span class="default">f64vector-length <span class="paren5">(<span class="default">car columns</span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren2">(<span class="default">printf <span class="string">&quot;Writing CSV file &#x27;~a&#x27;...</span><span class="string">\n</span><span class="string">&quot;</span>
+	      output-csv-file-name</span>)</span>
+      <span class="paren2">(<span class="default"><i><span class="symbol">with-output-to-file</span></i> output-csv-file-name
+	<span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default"></span>)</span>
+	  <span class="paren4">(<span class="default">do <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">row-num 0 <span class="paren1">(<span class="default">+ 1 row-num</span>)</span></span>)</span></span>)</span>
+	      <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">&gt;= row-num num-of-rows</span>)</span></span>)</span>
+	    <span class="paren5">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren6">(<span class="default"><span class="paren1">(<span class="default">row-elements <span class="paren2">(<span class="default">map <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">column-vector</span>)</span>
+				       <span class="paren4">(<span class="default">* 1.0e+12 <span class="comment">; K^2 -&gt; muK^2
+</span>					  <span class="paren5">(<span class="default">f64vector-ref column-vector
+							 row-num</span>)</span></span>)</span></span>)</span>
+				     columns</span>)</span></span>)</span></span>)</span>
+	      <span class="paren6">(<span class="default">printf <span class="string">&quot;~a &quot;</span> <span class="paren1">(<span class="default">+ 1 row-num</span>)</span></span>)</span> <span class="comment">; this is ell
+</span>	      <span class="paren6">(<span class="default">print <span class="paren1">(<span class="default">string-intersperse <span class="paren2">(<span class="default">map -&gt;string row-elements</span>)</span>
+					 <span class="string">&quot; &quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>)
+
+</pre></td></tr>
+<tr id="section-20">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><p>This function reads the spectrum/spectra in a FITS file and save
 all the data into a JavaScript file. This file contains the
 definition of two variables: <code>cl_data</code> (an array formatted for
 being used with Flot) and <code>cl_title</code> (a string containing the
@@ -357,7 +381,7 @@ title of the power spectrum).</p>
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">spectrum-&gt;js input-fits-file-name
 			output-js-file-name
 			title</span>)</span>
-    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">columns <span class="paren5">(<span class="default">healpix:read-spectrum input-fits-file-name</span>)</span></span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">columns <span class="paren5">(<span class="default">read-TT-EE-BB input-fits-file-name</span>)</span></span>)</span>
 	   <span class="paren4">(<span class="default">num-of-rows <span class="paren5">(<span class="default">f64vector-length <span class="paren6">(<span class="default">car columns</span>)</span></span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">printf <span class="string">&quot;Writing JavaScript file &#x27;~a&#x27;...</span><span class="string">\n</span><span class="string">&quot;</span>
 	      output-js-file-name</span>)</span>
@@ -369,19 +393,21 @@ title of the power spectrum).</p>
 		      <span class="paren1">(<span class="default">display <span class="string">&quot;    [ &quot;</span></span>)</span>
 		      <span class="paren1">(<span class="default">do <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">row-num 0 <span class="paren4">(<span class="default">+ 1 row-num</span>)</span></span>)</span></span>)</span>
 			  <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">&gt;= row-num num-of-rows</span>)</span></span>)</span>
-			<span class="paren2">(<span class="default">printf <span class="string">&quot;      [~a, ~a],</span><span class="string">\n</span><span class="string">&quot;</span>
-				<span class="paren3">(<span class="default">+ 1 row-num</span>)</span>
-				<span class="paren3">(<span class="default">* 1.0e+12 <span class="comment">; Convert K^2 to muK^2
-</span>				   <span class="paren4">(<span class="default">f64vector-ref column-vector
-						  row-num</span>)</span></span>)</span></span>)</span></span>)</span>
-		      <span class="paren1">(<span class="default">print <span class="string">&quot;    ],&quot;</span></span>)</span></span>)</span>
+			<span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">v <span class="paren5">(<span class="default">* 1.0e+12 <span class="comment">; Convert K^2 to muK^2
+</span>				    <span class="paren6">(<span class="default">f64vector-ref column-vector
+						   row-num</span>)</span></span>)</span></span>)</span></span>)</span>
+			  <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren4">(<span class="default">&gt; v 0.0</span>)</span>
+			      <span class="paren4">(<span class="default">printf <span class="string">&quot;      [~a, ~a],</span><span class="string">\n</span><span class="string">&quot;</span>
+				      <span class="paren5">(<span class="default">+ 1 row-num</span>)</span>
+				      v</span>)</span></span>)</span></span>)</span></span>)</span>
+			  <span class="paren1">(<span class="default">print <span class="string">&quot;    ],&quot;</span></span>)</span></span>)</span>
 		    columns</span>)</span>
 	  <span class="paren5">(<span class="default">print <span class="string">&quot;];&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-19">
+<tr id="section-21">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-19">&para;</a></div><p>Produce a GIF image containing the spectrum/spectra in a FITS
+<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><p>Produce a GIF image containing the spectrum/spectra in a FITS
 file. The function invokes <code>gnuplot</code>, which must therefore be in
 the <code>PATH</code>.</p>
 </td>
@@ -393,9 +419,9 @@ the <code>PATH</code>.</p>
     <span class="paren2">(<span class="default">call/cc <span class="comment">; Chicken&#x27;s shortcut for call-with-current-continuation
 </span>     <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">return</span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
-<tr id="section-20">
+<tr id="section-22">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-20">&para;</a></div><p>Note that, since <code>map2tga</code> does not overwrite existing GIF files,
+<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p>Note that, since <code>map2tga</code> does not overwrite existing GIF files,
 if the file already exists and the flag <code>overwrite?</code> is true we
 first need to delete the file.</p>
 </td>
@@ -407,17 +433,17 @@ first need to delete the file.</p>
        <span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">csv-file-name
 	      <span class="paren4">(<span class="default">filepath:replace-extension output-gif-file-name <span class="string">&quot;.csv&quot;</span></span>)</span></span>)</span></span>)</span>
 </span></span></pre></td></tr>
-<tr id="section-21">
+<tr id="section-23">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-21">&para;</a></div><p>First step: convert the FITS file into a CSV file (placed
+<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p>First step: convert the FITS file into a CSV file (placed
 alongside the GIF image under the destination directory)</p>
 </td>
 <td class="code">
 <pre class="highlight">	 <span class="paren1">(<span class="default">spectrum-&gt;csv input-fits-file-name csv-file-name</span>)</span>
 </pre></td></tr>
-<tr id="section-22">
+<tr id="section-24">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-22">&para;</a></div><p>Now open a output pipe to <code>gnuplot</code> and send the appropriate
+<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p>Now open a output pipe to <code>gnuplot</code> and send the appropriate
 commands to plot the spectrum/spectra.</p>
 </td>
 <td class="code">
@@ -440,40 +466,34 @@ EOF
 	    <span class="paren3">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren4">(<span class="default">eq? <span class="paren5">(<span class="default">healpix:num-of-components-in-spectrum input-fits-file-name</span>)</span>
 		     1</span>)</span>
 </span></span></span></span></span></span></pre></td></tr>
-<tr id="section-23">
+<tr id="section-25">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-23">&para;</a></div><p><code>then</code> part</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p><code>then</code> part</p>
 </td>
 <td class="code">
 <pre class="highlight">		<span class="paren1">(<span class="default">printf <span class="string">&quot;plot &#x27;~a&#x27; using 1:2 with lines title &#x27;&#x27;&quot;</span>
 			csv-file-name</span>)</span>
 </pre></td></tr>
-<tr id="section-24">
+<tr id="section-26">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-24">&para;</a></div><p><code>else</code> part</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><p><code>else</code> part</p>
 </td>
 <td class="code">
 <pre class="highlight">		<span class="paren1">(<span class="default">begin
 		  <span class="paren2">(<span class="default">printf #&lt;&lt;EOF
 plot &#x27;~a&#x27; using 1:2 with lines title &#x27;TT&#x27;, \
      &#x27;~a&#x27; using 1:3 with lines title &#x27;EE&#x27;, \
-     &#x27;~a&#x27; using 1:4 with lines title &#x27;BB&#x27;, \
-     &#x27;~a&#x27; using 1:3 with lines title &#x27;TE&#x27;, \
-     &#x27;~a&#x27; using 1:3 with lines title &#x27;TB&#x27;, \
-     &#x27;~a&#x27; using 1:3 with lines title &#x27;EB&#x27; \
+     &#x27;~a&#x27; using 1:4 with lines title &#x27;BB&#x27;
 
 EOF
-                          csv-file-name
-			  csv-file-name
-			  csv-file-name
 			  csv-file-name
 			  csv-file-name
 			  csv-file-name</span>)</span></span>)</span>)))))))
 
 </pre></td></tr>
-<tr id="section-25">
+<tr id="section-27">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-25">&para;</a></div><p>This function converts the name of a FITS file containing a map
+<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>This function converts the name of a FITS file containing a map
 into the name of the <code>.gif</code> file that will contain the
 representation of the map shown in the report. It strips the
 directory and extension parts and substitutes them using
@@ -493,9 +513,9 @@ create many GIFs from the same FITS file).</p>
      <span class="string">&quot;images&quot;</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-26">
+<tr id="section-28">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-26">&para;</a></div><p>This function converts the name of a FITS file containing a
+<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>This function converts the name of a FITS file containing a
 spectrum into the name of the <code>.js</code> file that will contain the
 JavaScript array containing the values of C_ell. It works pretty
 much the same as `fits-name->gif-name.</p>
@@ -507,9 +527,9 @@ much the same as `fits-name->gif-name.</p>
      <span class="string">&quot;js&quot;</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-27">
+<tr id="section-29">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-27">&para;</a></div><p>A small set of files (CSS styles, JavaScript files) need to be
+<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>A small set of files (CSS styles, JavaScript files) need to be
 copied to the output directory, in order to make the report
 self-contained. These files should be taken from the directory
 where the executable has been launched.</p>
@@ -517,9 +537,9 @@ where the executable has been launched.</p>
 <td class="code">
 <pre class="highlight">
 </pre></td></tr>
-<tr id="section-28">
+<tr id="section-30">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-28">&para;</a></div><p>Chicken Scheme does not provide a function to copy whole
+<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>Chicken Scheme does not provide a function to copy whole
 directories. So we implement one using a nice function implemented
 in <code>directory-utils</code>: <code>directory-fold</code>. It takes a function to be
 applied to each file, a user-defined value that is passed to this
@@ -533,16 +553,16 @@ function (we do not use it, so we call it <code>unused</code> and set it to
        <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">output-file <span class="paren1">(<span class="default">filepath:join-path <span class="paren2">(<span class="default">list dest filename</span>)</span></span>)</span></span>)</span></span>)</span>
 	 <span class="paren5">(<span class="default">format #t <span class="string">&quot;Copying file ~a to ~a...</span><span class="string">\n</span><span class="string">&quot;</span> filename dest</span>)</span>
 </span></span></span></span></span></span></span></span></pre></td></tr>
-<tr id="section-29">
+<tr id="section-31">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-29">&para;</a></div><p>Create the destination directory if it does not exist</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-31">&para;</a></div><p>Create the destination directory if it does not exist</p>
 </td>
 <td class="code">
 <pre class="highlight">	 <span class="paren1">(<span class="default">create-pathname-directory output-file</span>)</span>
 </pre></td></tr>
-<tr id="section-30">
+<tr id="section-32">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-30">&para;</a></div><p>Copy the file. <code>file_copy</code> is part of Chicken Scheme</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-32">&para;</a></div><p>Copy the file. <code>file_copy</code> is part of Chicken Scheme</p>
 </td>
 <td class="code">
 <pre class="highlight">	 <span class="paren1">(<span class="default">file-copy <span class="paren2">(<span class="default">filepath:join-path <span class="paren3">(<span class="default">list source filename</span>)</span></span>)</span>

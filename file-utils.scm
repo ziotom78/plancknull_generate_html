@@ -228,11 +228,25 @@
 					   width
 					   fixed-extrema?)))))
 
+  ;; For null tests, we're usually interested in TT, EE and BB spectra
+  ;; only (also, they are much easier to visualize since they're
+  ;; always positive and can therefore be plotted using a log-log
+  ;; scale). These spectra are the first three to appear in the FITS
+  ;; file. But we must be sure the spectrum is not only in temperature
+  ;; (as `take` will complain if you request more elements than
+  ;; available): this is the reason of `min`.
+  (define (read-TT-EE-BB file-name)
+    (let ((n (healpix:num-of-components-in-spectrum file-name)))
+      (take (healpix:read-spectrum file-name)
+	    (min n 3))))
+
   ;; This function reads the spectrum/spectra in a FITS file and save
   ;; all the data into a CSV file.
   (define (spectrum->csv input-fits-file-name
 			 output-csv-file-name)
-    (let* ((columns (healpix:read-spectrum input-fits-file-name))
+
+    ;; We are interested in the first three power spectra (TT, EE, BB) only.
+    (let* ((columns (read-TT-EE-BB input-fits-file-name))
 	   (num-of-rows (f64vector-length (car columns))))
       (printf "Writing CSV file '~a'...\n"
 	      output-csv-file-name)
@@ -257,7 +271,7 @@
   (define (spectrum->js input-fits-file-name
 			output-js-file-name
 			title)
-    (let* ((columns (healpix:read-spectrum input-fits-file-name))
+    (let* ((columns (read-TT-EE-BB input-fits-file-name))
 	   (num-of-rows (f64vector-length (car columns))))
       (printf "Writing JavaScript file '~a'...\n"
 	      output-js-file-name)
@@ -269,12 +283,14 @@
 		      (display "    [ ")
 		      (do ((row-num 0 (+ 1 row-num)))
 			  ((>= row-num num-of-rows))
-			(printf "      [~a, ~a],\n"
-				(+ 1 row-num)
-				(* 1.0e+12 ; Convert K^2 to muK^2
-				   (f64vector-ref column-vector
-						  row-num))))
-		      (print "    ],"))
+			(let ((v (* 1.0e+12 ; Convert K^2 to muK^2
+				    (f64vector-ref column-vector
+						   row-num))))
+			  (if (> v 0.0)
+			      (printf "      [~a, ~a],\n"
+				      (+ 1 row-num)
+				      v))))
+			  (print "    ],"))
 		    columns)
 	  (print "];")))))
 
@@ -327,15 +343,9 @@ EOF
 		  (printf #<<EOF
 plot '~a' using 1:2 with lines title 'TT', \
      '~a' using 1:3 with lines title 'EE', \
-     '~a' using 1:4 with lines title 'BB', \
-     '~a' using 1:3 with lines title 'TE', \
-     '~a' using 1:3 with lines title 'TB', \
-     '~a' using 1:3 with lines title 'EB' \
+     '~a' using 1:4 with lines title 'BB'
 
 EOF
-                          csv-file-name
-			  csv-file-name
-			  csv-file-name
 			  csv-file-name
 			  csv-file-name
 			  csv-file-name)))))))))

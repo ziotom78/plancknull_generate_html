@@ -1,3 +1,6 @@
+/* This will point to the jqplot object */
+var plot = null;
+
 /* Return the parameters specified in the URL of the currently opened
  * window as a dictionary */
 function getURLParameters()
@@ -45,17 +48,14 @@ function plotSpectrum(placeholder, data, title)
 	    },
 	    yaxis: {
 		label: "Spectral power [muK^2]",
-		/*renderer: $.jqplot.LogAxisRenderer,
-		tickDistribution: 'power'*/
+		renderer: $.jqplot.LogAxisRenderer,
+		tickDistribution: 'power'
 	    }
 	},
 	series: [
 	    { label: "TT" },
 	    { label: "EE" },
-	    { label: "BB" },
-	    { label: "TE" },
-	    { label: "EB" },
-	    { label: "TB" }
+	    { label: "BB" }
 	],
 	legend: {
 	    show: true,
@@ -64,10 +64,10 @@ function plotSpectrum(placeholder, data, title)
     };
 
     // Call flot and plot the spectra
-    $.jqplot(placeholder, data, options);
+    plot = $.jqplot(placeholder, data, options);
 }
 
-function setupFlotPlot()
+function setupPlot()
 {
     // Retrieve information about the plot from the URL parameters
     urlParameters = getURLParameters();
