@@ -202,17 +202,7 @@ comprises the side menu. It returns a string.</p>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">wrap-html file-tag page-title body</span>)</span>
     <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;script&gt; <span class="keyword">type:</span> <span class="string">&quot;text/javascript&quot;</span>
-				  #&lt;&lt;EOF
-<i><span class="symbol">function</span></i> switchMapImages<span class="paren5">(<span class="default">img, filename1, filename2</span>)</span>
-{
-  <i><span class="symbol">if</span></i><span class="paren5">(<span class="default">img.src.indexOf<span class="paren6">(<span class="default">filename1</span>)</span> == -1</span>)</span>
-    img.src = filename1<span class="comment">;
-</span>  else
-    img.src = filename2<span class="comment">;
-</span>}
-
-EOF
-</span>)</span>
+				  <span class="keyword">src:</span> <span class="string">&quot;../js/switch-map-images.js&quot;</span></span>)</span>
 			<span class="paren4">(<span class="default">&lt;h1&gt; <span class="keyword">id:</span> <span class="string">&quot;main_title&quot;</span> <span class="paren5">(<span class="default">make-title-for-report</span>)</span></span>)</span>
 			<span class="paren4">(<span class="default">side-menu file-tag</span>)</span>
 			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;page_body&quot;</span>
@@ -309,6 +299,7 @@ HTML code to be put straight into the page.</p>
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-for-spectrum-object obj</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let*</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span>
 	   <span class="paren4">(<span class="default">fits-file-name <span class="paren5">(<span class="default">abspath-from-json obj</span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default">js-file-name <span class="paren5">(<span class="default">fits-name-&gt;js-name fits-file-name</span>)</span></span>)</span>
 	   <span class="paren4">(<span class="default">gif-file-name <span class="paren5">(<span class="default">fits-name-&gt;gif-name fits-file-name</span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">format #t <span class="string">&quot;Writing GIF file ~a</span><span class="string">\n</span><span class="string">&quot;</span> gif-file-name</span>)</span>
       <span class="paren3">(<span class="default">spectrum-&gt;gif fits-file-name
@@ -316,7 +307,18 @@ HTML code to be put straight into the page.</p>
 		      <span class="paren5">(<span class="default">list <span class="paren6">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
 			    gif-file-name</span>)</span></span>)</span>
 		     title</span>)</span>
-      <span class="paren3">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-file-name <span class="keyword">alt:</span> title</span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">spectrum-&gt;js fits-file-name
+		    <span class="paren4">(<span class="default">filepath:join-path
+		     <span class="paren5">(<span class="default">list <span class="paren6">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
+			   js-file-name</span>)</span></span>)</span>
+		    title</span>)</span>
+      <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;script&gt; <span class="keyword">type:</span> <span class="string">&quot;text/javascript&quot;</span>
+			 <span class="keyword">src:</span> js-file-name</span>)</span>
+	       <span class="paren4">(<span class="default">&lt;img&gt; <span class="keyword">src:</span> gif-file-name
+		      <span class="keyword">alt:</span> title
+		      <span class="keyword">onClick:</span> <span class="paren5">(<span class="default">sprintf <span class="string">&quot;window.open(</span><span class="string">\&quot;</span><span class="string">html/cl_spectrum.html?data_file=~a</span><span class="string">\&quot;</span><span class="string">)&quot;</span>
+					js-file-name</span>)</span>
+		      <span class="keyword">title:</span> <span class="paren5">(<span class="default">assq-ref &#x27;file_name obj</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-12">
@@ -410,6 +412,9 @@ of objects, and wrap the output into some nice HTML tags
 				    <span class="string">&quot;taylored for the map under question &quot;</span>
 				    <span class="string">&quot;(good for checking the P-P level and for &quot;</span>
 				    <span class="string">&quot;reveal finer details).&quot;</span></span>)</span>
+			       <span class="paren5">(<span class="default">&lt;p&gt; <span class="string">&quot;Clicking on any of the spectral plots &quot;</span>
+				    <span class="string">&quot;opens a new window containing a larger, &quot;</span>
+				    <span class="string">&quot;interactive plot.&quot;</span></span>)</span>
 			       <span class="paren5">(<span class="default">string-intersperse
 				<span class="paren6">(<span class="default">map emit-HTML-for-object map-objs cl-objs</span>)</span>
 				<span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>

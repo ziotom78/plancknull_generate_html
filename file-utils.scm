@@ -7,8 +7,10 @@
 
 (module file-utils
   (map->gif
+   spectrum->js
    spectrum->gif
    fits-name->gif-name
+   fits-name->js-name
    dir-copy)
 
   (import chicken
@@ -239,12 +241,42 @@
 	  (do ((row-num 0 (+ 1 row-num)))
 	      ((>= row-num num-of-rows))
 	    (let ((row-elements (map (lambda (column-vector)
-				       (f64vector-ref column-vector
-						      row-num))
+				       (* 1.0e+12 ; K^2 -> muK^2
+					  (f64vector-ref column-vector
+							 row-num)))
 				     columns)))
 	      (printf "~a " (+ 1 row-num)) ; this is ell
 	      (print (string-intersperse (map ->string row-elements)
 					 " "))))))))
+
+  ;; This function reads the spectrum/spectra in a FITS file and save
+  ;; all the data into a JavaScript file. This file contains the
+  ;; definition of two variables: `cl_data` (an array formatted for
+  ;; being used with Flot) and `cl_title` (a string containing the
+  ;; title of the power spectrum).
+  (define (spectrum->js input-fits-file-name
+			output-js-file-name
+			title)
+    (let* ((columns (healpix:read-spectrum input-fits-file-name))
+	   (num-of-rows (f64vector-length (car columns))))
+      (printf "Writing JavaScript file '~a'...\n"
+	      output-js-file-name)
+      (with-output-to-file output-js-file-name
+	(lambda ()
+	  (printf "var cl_title = \"~a\";\n" title)
+	  (print "var cl_data = [")
+	  (for-each (lambda (column-vector)
+		      (display "    [ ")
+		      (do ((row-num 0 (+ 1 row-num)))
+			  ((>= row-num num-of-rows))
+			(printf "      [~a, ~a],\n"
+				(+ 1 row-num)
+				(* 1.0e+12 ; Convert K^2 to muK^2
+				   (f64vector-ref column-vector
+						  row-num))))
+		      (print "    ],"))
+		    columns)
+	  (print "];")))))
 
   ;; Produce a GIF image containing the spectrum/spectra in a FITS
   ;; file. The function invokes `gnuplot`, which must therefore be in
@@ -275,7 +307,7 @@
 	    (printf #<<EOF
 set terminal gif transparent enhanced size ~a, ~a
 set output '~a'
-set logscale y
+set logscale xy
 set xlabel 'l'
 set ylabel 'C_l'
 set title '~a'
@@ -324,6 +356,15 @@ EOF
      (filepath:replace-extension fits-name
 				 (string-concatenate (list name-tail ".gif")))
      "images"))
+
+  ;; This function converts the name of a FITS file containing a
+  ;; spectrum into the name of the `.js` file that will contain the
+  ;; JavaScript array containing the values of C_ell. It works pretty
+  ;; much the same as `fits-name->gif-name.
+  (define (fits-name->js-name fits-name)
+    (filepath:replace-directory
+     (filepath:replace-extension fits-name ".js")
+     "js"))
 
   ;; A small set of files (CSS styles, JavaScript files) need to be
   ;; copied to the output directory, in order to make the report

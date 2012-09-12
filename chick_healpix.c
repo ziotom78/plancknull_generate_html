@@ -175,7 +175,6 @@ long ang2pix_ring(unsigned int nside,
     {								\
 	unsigned int cur_x;					\
 	unsigned int cur_y;					\
-	const size_t num_of_screen_points = width * height;	\
 	const float center_x = width * 0.5;			\
 	const float center_y = height * 0.5;			\
 	c_type * cur_screen_point = screen_points;		\

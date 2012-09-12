@@ -155,17 +155,7 @@
   ;; comprises the side menu. It returns a string.
   (define (wrap-html file-tag page-title body)
     (html-page (html:++ (<script> type: "text/javascript"
-				  #<<EOF
-function switchMapImages(img, filename1, filename2)
-{
-  if(img.src.indexOf(filename1) == -1)
-    img.src = filename1;
-  else
-    img.src = filename2;
-}
-
-EOF
-)
+				  src: "../js/switch-map-images.js")
 			(<h1> id: "main_title" (make-title-for-report))
 			(side-menu file-tag)
 			(<div> id: "page_body"
@@ -240,6 +230,7 @@ EOF
   (define (emit-HTML-for-spectrum-object obj)
     (let* ((title (assq-ref 'title obj))
 	   (fits-file-name (abspath-from-json obj))
+	   (js-file-name (fits-name->js-name fits-file-name))
 	   (gif-file-name (fits-name->gif-name fits-file-name)))
       (format #t "Writing GIF file ~a\n" gif-file-name)
       (spectrum->gif fits-file-name
@@ -247,7 +238,18 @@ EOF
 		      (list (assq-ref 'output-dir user-args)
 			    gif-file-name))
 		     title)
-      (<img> src: gif-file-name alt: title)))
+      (spectrum->js fits-file-name
+		    (filepath:join-path
+		     (list (assq-ref 'output-dir user-args)
+			   js-file-name))
+		    title)
+      (html:++ (<script> type: "text/javascript"
+			 src: js-file-name)
+	       (<img> src: gif-file-name
+		      alt: title
+		      onClick: (sprintf "window.open(\"html/cl_spectrum.html?data_file=~a\")"
+					js-file-name)
+		      title: (assq-ref 'file_name obj)))))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
@@ -316,6 +318,9 @@ EOF
 				    "taylored for the map under question "
 				    "(good for checking the P-P level and for "
 				    "reveal finer details).")
+			       (<p> "Clicking on any of the spectral plots "
+				    "opens a new window containing a larger, "
+				    "interactive plot.")
 			       (string-intersperse
 				(map emit-HTML-for-object map-objs cl-objs)
 				"\n"))))

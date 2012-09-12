@@ -81,9 +81,7 @@ timestamps in the report.</p>
 <tr id="section-5">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>We copy the content of a number of directories into the destination
-path using <code>dir-copy</code> (defined in <code>file-utils.scm</code>). Currently only
-<code>css</code> is copied, but a separate directory <code>js</code> for JavaScript files
-might be needed in the future).</p>
+path using <code>dir-copy</code> (defined in <code>file-utils.scm</code>).</p>
 </td>
 <td class="code">
 <pre class="highlight"><span class="paren1">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren2">(<span class="default"><span class="paren3">(<span class="default">source-dir <span class="paren4">(<span class="default">filepath:take-directory <span class="paren5">(<span class="default">car <span class="paren6">(<span class="default">argv</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
@@ -92,7 +90,7 @@ might be needed in the future).</p>
      <span class="paren4">(<span class="default">dir-copy <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list source-dir dir-name</span>)</span></span>)</span>
                <span class="paren5">(<span class="default">filepath:join-path <span class="paren6">(<span class="default">list <span class="paren1">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span>
                                          dir-name</span>)</span></span>)</span></span>)</span></span>)</span>
-   <span class="paren3">(<span class="default">list <span class="string">&quot;css&quot;</span></span>)</span></span>)</span></span>)</span>
+   <span class="paren3">(<span class="default">list <span class="string">&quot;css&quot;</span> <span class="string">&quot;js&quot;</span> <span class="string">&quot;html&quot;</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-6">
