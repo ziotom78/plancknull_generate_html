@@ -7,10 +7,12 @@
 (module json-utils
   ;; List of exported symbols
   (json->alist
+   alist->json
    assq-ref
    assoc-ref
    extract-alists-from-json-file
    read-json-dictionary
+   write-json-dictionary
    abspath-from-json
    filter-on-filetype
    json-obj->HTML-anchor)
@@ -38,6 +40,19 @@
 	   (cons (string->symbol (car x))
 		 (cdr x)))
 	 (vector->list dictionary)))
+
+  ;; This function is the inverse of `json->alist`, in the sense that
+  ;; `(alist->json (json->alist x))` will return `x` whenever `x` is a
+  ;; valid JSON object (i.e. returned by the `json-read` function).
+  (define (alist->json alist)
+    (if alist
+	(list->vector (map (lambda (x)
+			     (cons (symbol->string (car x))
+				   (cdr x)))
+			   alist))
+	(begin
+	  (display "Something smells fishy here!")
+	  #f)))
 
   ;; Since JSON entries are going to be handled as _a-lists_
   ;; ([association
@@ -83,6 +98,15 @@
     (apply append (map extract-alists-from-json-file
 		       (find-files input-dir ".+\\.json$"))))
 
+  ;; This function writes a JSON representation of `list-of-alists`, a
+  ;; list of a-lists, into `file` (a port already opened for output).
+  (define (write-json-dictionary file list-of-alists)
+    (display "[\n" file)
+    (for-each (lambda (x)
+		(json-write (alist->json x) file)
+		(display ",\n" file))
+	      list-of-alists)
+    (display "]" file))
 
   ;; Given a JSON object, returns the full path associated with it. To
   ;; understand this code, keep in mind that the path specified in each

@@ -70,6 +70,13 @@
 		   (else (abort "Unknown pair in get-html-file-name")))))
 	  (else (abort "Unknown label in get-html-file-name"))))
 
+  ;; This function is similar to `get-html-file-name`, but it returns
+  ;; the name of the JSON file containing the data associated with the
+  ;; maps/spectra shown in the HTML page
+  (define (get-json-file-name label)
+    (filepath:replace-extension (get-html-file-name label)
+				".js"))
+
   ;; This is the name of the data release. *TODO*: make the release name
   ;; specifiable from the command line/configuration file
   (define test-release-name "DX9")
@@ -155,7 +162,9 @@
   ;; comprises the side menu. It returns a string.
   (define (wrap-html file-tag page-title body)
     (html-page (html:++ (<script> type: "text/javascript"
-				  src: "../js/switch-map-images.js")
+				  src: "js/switch-map-images.js")
+			(<script> type: "text/javascript"
+				  src: (get-json-file-name file-tag))
 			(<h1> id: "main_title" (make-title-for-report))
 			(side-menu file-tag)
 			(<div> id: "page_body"
@@ -218,7 +227,8 @@
 			    fixed-extrema?: fixed-extrema?))
 		gif-file-names
 		(list #t #f))
-      (<img> src: (car gif-file-names)
+      (<img> class: "map_image"
+	     src: (car gif-file-names)
 	     alt: title
 	     onclick: (sprintf "switchMapImages(this, \"~a\", \"~a\")"
 			       (car gif-file-names)
@@ -245,10 +255,12 @@
 		    title)
       (html:++ (<script> type: "text/javascript"
 			 src: js-file-name)
-	       (<img> src: gif-file-name
+	       (<img> class: "cl_image"
+		      src: gif-file-name
 		      alt: title
-		      onClick: (sprintf "window.open(\"html/cl_spectrum.html?data_file=~a\")"
-					js-file-name)
+		      onClick: (sprintf "window.open(\"html/cl_spectrum.html?data_file=~a\",\"~a\")"
+					js-file-name
+					title)
 		      title: (assq-ref 'file_name obj)))))
 
   ;; This function accepts a JSON object and will produce
@@ -293,6 +305,21 @@
 								cl-tag))
 				      'channel
 				      fallback-comparison: fallback-comparison)))
+
+      ;; Write the objects we're going to use in this page into a JSON
+      ;; file. The latter will be included in the HTML file, so that
+      ;; Javascript codes can use it.
+      (let ((json-file-name (filepath:join-path
+			     (list (assq-ref 'output-dir user-args)
+				   (get-json-file-name file-tag)))))
+	(printf "Writing JSON file ~a\n" json-file-name)
+	(call-with-output-file json-file-name
+	  (lambda (file)
+	    (display "json_object_list = " file)
+	    (write-json-dictionary file sorted-list)
+	    (display ";\n" file))))
+
+      ;; Now emit the HTML codes for the page
       (write-html
        file-tag
        (lambda (file)
