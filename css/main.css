@@ -40,6 +40,14 @@ h1#main_title {
     font-size: 100%;
 }
 
+.map_image {
+    cursor: pointer;
+}
+
+.cl_image {
+    cursor: pointer;
+}
+
 p, table {
     font-size: 14px;
 }
