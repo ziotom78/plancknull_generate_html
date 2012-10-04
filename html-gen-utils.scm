@@ -349,7 +349,28 @@
 			(<div> id: "results"
 			       (<div> id: "page_index"
 				      (itemize (map emit-HTML-index-entry-for-object
-						    map-objs)))
+						    map-objs))
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "map_std_I"
+					       onclick: "plotBars(json_object_list);"
+					       checked: #t
+					       "RMS of the I map")
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "map_p2p_I"
+					       onclick: "plotBars(json_object_list);"
+					       "Peak-to-peak in the I map")
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "removed_monopole_I"
+					       onclick: "plotBars(json_object_list);"
+					       "Removed monopole")
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "dipole_I"
+					       onclick: "plotBars(json_object_list);"
+					       "Residual dipole"))
 			       (<p> "Clicking on the image of a map switches "
 				    "between a fixed color-scale range (good "
 				    "for comparisons/animations) and a range "
