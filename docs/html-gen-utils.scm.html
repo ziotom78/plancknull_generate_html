@@ -117,7 +117,7 @@ maps/spectra shown in the HTML page</p>
 specifiable from the command line/configuration file</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> test-release-name <span class="string">&quot;DX9&quot;</span></span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> test-release-name <span class="string">&quot;Delta-DX9&quot;</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-6">
@@ -273,7 +273,7 @@ the entry. It is meant to be used e.g. with <code>itemize</code> (from the
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-index-entry-for-object obj</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span></span>)</span>
       <span class="paren3">(<span class="default">&lt;ul&gt; <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
-	    <span class="paren4">(<span class="default">&lt;canvas&gt; <span class="keyword">id:</span> <span class="paren5">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span>
+	    <span class="paren4">(<span class="default">&lt;canvas&gt; <span class="keyword">id:</span> <span class="paren5">(<span class="default">json-obj-&gt;div-index-id obj</span>)</span>
 		      <span class="keyword">style:</span> <span class="string">&quot;border:1px solid #000000;&quot;</span>
 		      <span class="keyword">width:</span> 120
 		      <span class="keyword">height:</span> 8</span>)</span>

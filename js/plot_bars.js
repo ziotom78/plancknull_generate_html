@@ -52,7 +52,7 @@ function plotBars(list_of_objects)
 	 * `json-utils.scm`. It takes into account the fact that a
 	 * HTML ID must not contain the '/' character (which we
 	 * replace with an underscore). */
-	var object_id = base_file_name.replace(/[-\/]/g, "_");
+	var object_id = "div_" + base_file_name.replace(/[-\/]/g, "_");
 
 	var canvas = document.getElementById(object_id);
 	if(!canvas)

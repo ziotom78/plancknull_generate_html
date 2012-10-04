@@ -79,7 +79,7 @@
 
   ;; This is the name of the data release. *TODO*: make the release name
   ;; specifiable from the command line/configuration file
-  (define test-release-name "DX9")
+  (define test-release-name "Delta-DX9")
 
   ;; The function `make-title-for-report` makes up the title for the
   ;; overall report, which is going to be repeated at the beginning of
@@ -209,7 +209,7 @@
   (define (emit-HTML-index-entry-for-object obj)
     (let ((title (assq-ref 'title obj)))
       (<ul> "\n"
-	    (<canvas> id: (json-obj->HTML-anchor obj)
+	    (<canvas> id: (json-obj->div-index-id obj)
 		      style: "border:1px solid #000000;"
 		      width: 120
 		      height: 8)

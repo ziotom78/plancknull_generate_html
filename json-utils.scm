@@ -15,7 +15,8 @@
    write-json-dictionary
    abspath-from-json
    filter-on-filetype
-   json-obj->HTML-anchor)
+   json-obj->HTML-anchor
+   json-obj->div-index-id)
 
   (import chicken
 	  scheme
@@ -139,9 +140,18 @@
 		dict)))
 
   ;; Given a JSON object, this produces a valid HTML anchor for the
-  ;; object. Note that this algorithm must match with the one in
-  ;; "plotBars" (file `js/plot_bars.js`).
+  ;; object.
   (define (json-obj->HTML-anchor obj)
     (string-substitute "[-/]" "_"
 		       (assq-ref 'base_file_name obj)
-		       'every-match)))
+		       'every-match))
+
+  ;; Given a JSON object, this produces a valid ID to be used for the
+  ;; <div> element which contains the small bar plot for this element.
+  ;; Note that this algorithm must match with the one in "plotBars"
+  ;; (file `js/plot_bars.js`).
+  (define (json-obj->div-index-id obj)
+    (string-append "div_"
+		   (string-substitute "[-/]" "_"
+				      (assq-ref 'base_file_name obj)
+				      'every-match))))

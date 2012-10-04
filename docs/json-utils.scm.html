@@ -36,7 +36,8 @@ loading/interpreting JSON data.</p>
    write-json-dictionary
    abspath-from-json
    filter-on-filetype
-   json-obj-&gt;HTML-anchor</span>)</span>
+   json-obj-&gt;HTML-anchor
+   json-obj-&gt;div-index-id</span>)</span>
 
   <span class="paren1">(<span class="default">import chicken
 	  scheme
@@ -218,12 +219,26 @@ exactly the same as in Python.</p>
 <tr id="section-14">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>Given a JSON object, this produces a valid HTML anchor for the
-object. Note that this algorithm must match with the one in
-"plotBars" (file <code>js/plot_bars.js</code>).</p>
+object.</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span>
     <span class="paren2">(<span class="default">string-substitute <span class="string">&quot;[-/]&quot;</span> <span class="string">&quot;_&quot;</span>
 		       <span class="paren3">(<span class="default">assq-ref &#x27;base_file_name obj</span>)</span>
-		       &#x27;every-match</span>)</span></span>)</span>)
+		       &#x27;every-match</span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-15">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><p>Given a JSON object, this produces a valid ID to be used for the
+<div> element which contains the small bar plot for this element.
+Note that this algorithm must match with the one in "plotBars"
+(file <code>js/plot_bars.js</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-obj-&gt;div-index-id obj</span>)</span>
+    <span class="paren2">(<span class="default">string-append <span class="string">&quot;div_&quot;</span>
+		   <span class="paren3">(<span class="default">string-substitute <span class="string">&quot;[-/]&quot;</span> <span class="string">&quot;_&quot;</span>
+				      <span class="paren4">(<span class="default">assq-ref &#x27;base_file_name obj</span>)</span>
+				      &#x27;every-match</span>)</span></span>)</span></span>)</span>)
 </pre></td></tr></table></div></body></html>
