@@ -164,12 +164,16 @@
     (html-page (html:++ (<script> type: "text/javascript"
 				  src: "js/switch-map-images.js")
 			(<script> type: "text/javascript"
+				  src: "js/plot_bars.js")
+			(<script> type: "text/javascript"
 				  src: (get-json-file-name file-tag))
 			(<h1> id: "main_title" (make-title-for-report))
 			(side-menu file-tag)
 			(<div> id: "page_body"
 			       (<h2> page-title)
-			       body))
+			       body)
+			(<script> type: "text/javascript"
+				  "window.onload = plotBars(json_object_list);\n"))
 	       title: page-title
 	       css: '("css/main.css" "css/menu.css")))
 
@@ -204,8 +208,15 @@
   ;;
   (define (emit-HTML-index-entry-for-object obj)
     (let ((title (assq-ref 'title obj)))
-      (<ul> (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
-		 title "\n"))))
+      (<ul> "\n"
+	    (<canvas> id: (json-obj->HTML-anchor obj)
+		      style: "border:1px solid #000000;"
+		      width: 120
+		      height: 8)
+	    "\n"
+	    (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
+		 title "\n")
+	    "\n")))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.

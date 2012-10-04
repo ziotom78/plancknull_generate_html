@@ -63,8 +63,12 @@ function <code>assq</code> we need to have lists, not vectors. The function
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-&gt;alist dictionary</span>)</span>
     <span class="paren2">(<span class="default">map <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x</span>)</span>
-	   <span class="paren4">(<span class="default">cons <span class="paren5">(<span class="default">string-&gt;symbol <span class="paren6">(<span class="default">car x</span>)</span></span>)</span>
-		 <span class="paren5">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">key <span class="paren1">(<span class="default">string-&gt;symbol <span class="paren2">(<span class="default">car x</span>)</span></span>)</span></span>)</span></span>)</span>
+	     <span class="paren5">(<span class="default">cons <span class="paren6">(<span class="default"><i><span class="symbol">cond</span></i>
+		    <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">eq? key &#x27;map_std</span>)</span> &#x27;map_std_I</span>)</span>
+		    <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">eq? key &#x27;map_p2p</span>)</span> &#x27;map_p2p_I</span>)</span>
+		    <span class="paren1">(<span class="default">else key</span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span></span>)</span>
 	 <span class="paren3">(<span class="default">vector-&gt;list dictionary</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
@@ -214,11 +218,12 @@ exactly the same as in Python.</p>
 <tr id="section-14">
 <td class="docs">
 <div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>Given a JSON object, this produces a valid HTML anchor for the
-object.</p>
+object. Note that this algorithm must match with the one in
+"plotBars" (file <code>js/plot_bars.js</code>).</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span>
-    <span class="paren2">(<span class="default">string-substitute <span class="string">&quot;/&quot;</span> <span class="string">&quot;_&quot;</span>
+    <span class="paren2">(<span class="default">string-substitute <span class="string">&quot;[-/]&quot;</span> <span class="string">&quot;_&quot;</span>
 		       <span class="paren3">(<span class="default">assq-ref &#x27;base_file_name obj</span>)</span>
 		       &#x27;every-match</span>)</span></span>)</span>)
 </pre></td></tr></table></div></body></html>

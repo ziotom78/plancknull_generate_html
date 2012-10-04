@@ -37,8 +37,12 @@
   ;; `string->symbol` and `vector->list` (two Scheme built-ins).
   (define (json->alist dictionary)
     (map (lambda (x)
-	   (cons (string->symbol (car x))
-		 (cdr x)))
+	   (let ((key (string->symbol (car x))))
+	     (cons (cond
+		    ((eq? key 'map_std) 'map_std_I)
+		    ((eq? key 'map_p2p) 'map_p2p_I)
+		    (else key))
+		   (cdr x))))
 	 (vector->list dictionary)))
 
   ;; This function is the inverse of `json->alist`, in the sense that
@@ -135,8 +139,9 @@
 		dict)))
 
   ;; Given a JSON object, this produces a valid HTML anchor for the
-  ;; object.
+  ;; object. Note that this algorithm must match with the one in
+  ;; "plotBars" (file `js/plot_bars.js`).
   (define (json-obj->HTML-anchor obj)
-    (string-substitute "/" "_"
+    (string-substitute "[-/]" "_"
 		       (assq-ref 'base_file_name obj)
 		       'every-match)))

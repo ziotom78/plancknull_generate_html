@@ -216,12 +216,16 @@ comprises the side menu. It returns a string.</p>
     <span class="paren2">(<span class="default">html-page <span class="paren3">(<span class="default">html:++ <span class="paren4">(<span class="default">&lt;script&gt; <span class="keyword">type:</span> <span class="string">&quot;text/javascript&quot;</span>
 				  <span class="keyword">src:</span> <span class="string">&quot;js/switch-map-images.js&quot;</span></span>)</span>
 			<span class="paren4">(<span class="default">&lt;script&gt; <span class="keyword">type:</span> <span class="string">&quot;text/javascript&quot;</span>
+				  <span class="keyword">src:</span> <span class="string">&quot;js/plot_bars.js&quot;</span></span>)</span>
+			<span class="paren4">(<span class="default">&lt;script&gt; <span class="keyword">type:</span> <span class="string">&quot;text/javascript&quot;</span>
 				  <span class="keyword">src:</span> <span class="paren5">(<span class="default">get-json-file-name file-tag</span>)</span></span>)</span>
 			<span class="paren4">(<span class="default">&lt;h1&gt; <span class="keyword">id:</span> <span class="string">&quot;main_title&quot;</span> <span class="paren5">(<span class="default">make-title-for-report</span>)</span></span>)</span>
 			<span class="paren4">(<span class="default">side-menu file-tag</span>)</span>
 			<span class="paren4">(<span class="default">&lt;div&gt; <span class="keyword">id:</span> <span class="string">&quot;page_body&quot;</span>
 			       <span class="paren5">(<span class="default">&lt;h2&gt; page-title</span>)</span>
-			       body</span>)</span></span>)</span>
+			       body</span>)</span>
+			<span class="paren4">(<span class="default">&lt;script&gt; <span class="keyword">type:</span> <span class="string">&quot;text/javascript&quot;</span>
+				  <span class="string">&quot;window.onload = plotBars(json_object_list);</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span>
 	       <span class="keyword">title:</span> page-title
 	       <span class="keyword">css:</span> &#x27;<span class="paren3">(<span class="default"><span class="string">&quot;css/main.css&quot;</span> <span class="string">&quot;css/menu.css&quot;</span></span>)</span></span>)</span></span>)</span>
 
@@ -268,8 +272,15 @@ the entry. It is meant to be used e.g. with <code>itemize</code> (from the
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">emit-HTML-index-entry-for-object obj</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren3">(<span class="default"><span class="paren4">(<span class="default">title <span class="paren5">(<span class="default">assq-ref &#x27;title obj</span>)</span></span>)</span></span>)</span>
-      <span class="paren3">(<span class="default">&lt;ul&gt; <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren5">(<span class="default">html:++ <span class="string">&quot;#&quot;</span> <span class="paren6">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span></span>)</span>
-		 title <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+      <span class="paren3">(<span class="default">&lt;ul&gt; <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
+	    <span class="paren4">(<span class="default">&lt;canvas&gt; <span class="keyword">id:</span> <span class="paren5">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span>
+		      <span class="keyword">style:</span> <span class="string">&quot;border:1px solid #000000;&quot;</span>
+		      <span class="keyword">width:</span> 120
+		      <span class="keyword">height:</span> 8</span>)</span>
+	    <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
+	    <span class="paren4">(<span class="default">&lt;a&gt; <span class="keyword">href:</span> <span class="paren5">(<span class="default">html:++ <span class="string">&quot;#&quot;</span> <span class="paren6">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span></span>)</span>
+		 title <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span>
+	    <span class="string">&quot;</span><span class="string">\n</span><span class="string">&quot;</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-11">
