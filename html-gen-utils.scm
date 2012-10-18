@@ -72,7 +72,7 @@
 
   ;; This is the name of the data release. *TODO*: make the release name
   ;; specifiable from the command line/configuration file
-  (define test-release-name "DX9")
+  (define test-release-name (assq-ref 'data-release-name user-args))
 
   ;; The function `make-title-for-report` makes up the title for the
   ;; overall report, which is going to be repeated at the beginning of

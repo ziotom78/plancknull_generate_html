@@ -44,6 +44,8 @@
         (assq-ref 'output-dir user-args))
 (format #t "Directory where to look for JSON files: ~a\n"
         (assq-ref 'input-dir user-args))
+(format #t "The name of the data release is \"~a\"\n"
+	(assq-ref 'data-release-name user-args))
 
 (define json-dictionary (read-json-dictionary (assq-ref 'input-dir user-args)))
 
