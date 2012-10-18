@@ -81,7 +81,8 @@
   ;; N>0 characters which ends with `.json`).
   (define (read-json-dictionary input-dir)
     (apply append (map extract-alists-from-json-file
-		       (find-files input-dir ".+\\.json$"))))
+		       (find-files input-dir
+				   test: ".+\\.json$"))))
 
 
   ;; Given a JSON object, returns the full path associated with it. To
