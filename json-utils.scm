@@ -7,13 +7,16 @@
 (module json-utils
   ;; List of exported symbols
   (json->alist
+   alist->json
    assq-ref
    assoc-ref
    extract-alists-from-json-file
    read-json-dictionary
+   write-json-dictionary
    abspath-from-json
    filter-on-filetype
-   json-obj->HTML-anchor)
+   json-obj->HTML-anchor
+   json-obj->div-index-id)
 
   (import chicken
 	  scheme
@@ -35,9 +38,26 @@
   ;; `string->symbol` and `vector->list` (two Scheme built-ins).
   (define (json->alist dictionary)
     (map (lambda (x)
-	   (cons (string->symbol (car x))
-		 (cdr x)))
+	   (let ((key (string->symbol (car x))))
+	     (cons (cond
+		    ((eq? key 'map_std) 'map_std_I)
+		    ((eq? key 'map_p2p) 'map_p2p_I)
+		    (else key))
+		   (cdr x))))
 	 (vector->list dictionary)))
+
+  ;; This function is the inverse of `json->alist`, in the sense that
+  ;; `(alist->json (json->alist x))` will return `x` whenever `x` is a
+  ;; valid JSON object (i.e. returned by the `json-read` function).
+  (define (alist->json alist)
+    (if alist
+	(list->vector (map (lambda (x)
+			     (cons (symbol->string (car x))
+				   (cdr x)))
+			   alist))
+	(begin
+	  (display "Something smells fishy here!")
+	  #f)))
 
   ;; Since JSON entries are going to be handled as _a-lists_
   ;; ([association
@@ -84,6 +104,15 @@
 		       (find-files input-dir
 				   test: ".+\\.json$"))))
 
+  ;; This function writes a JSON representation of `list-of-alists`, a
+  ;; list of a-lists, into `file` (a port already opened for output).
+  (define (write-json-dictionary file list-of-alists)
+    (display "[\n" file)
+    (for-each (lambda (x)
+		(json-write (alist->json x) file)
+		(display ",\n" file))
+	      list-of-alists)
+    (display "]" file))
 
   ;; Given a JSON object, returns the full path associated with it. To
   ;; understand this code, keep in mind that the path specified in each
@@ -114,6 +143,16 @@
   ;; Given a JSON object, this produces a valid HTML anchor for the
   ;; object.
   (define (json-obj->HTML-anchor obj)
-    (string-substitute "/" "_"
+    (string-substitute "[-/]" "_"
 		       (assq-ref 'base_file_name obj)
-		       'every-match)))
+		       'every-match))
+
+  ;; Given a JSON object, this produces a valid ID to be used for the
+  ;; <div> element which contains the small bar plot for this element.
+  ;; Note that this algorithm must match with the one in "plotBars"
+  ;; (file `js/plot_bars.js`).
+  (define (json-obj->div-index-id obj)
+    (string-append "div_"
+		   (string-substitute "[-/]" "_"
+				      (assq-ref 'base_file_name obj)
+				      'every-match))))

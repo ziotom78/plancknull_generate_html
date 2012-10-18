@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <script type="text/javascript" src="../js/jquery.js"></script>
+    <script type="text/javascript" src="../js/jquery.jqplot.js"></script>
+    <script type="text/javascript" src="../js/jqplot.cursor.js"></script>
+    <script type="text/javascript" src="../js/jqplot.highlighter.js"></script>
+    <script type="text/javascript" src="../js/jqplot.logAxisRenderer.js"></script>
+    <script type="text/javascript" src="../js/jqplot.canvasTextRenderer.js"></script>
+    <script type="text/javascript" src="../js/jqplot.canvasAxisLabelRenderer.js"></script>
+    <script type="text/javascript" src="../js/cl_plotting.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="../css/jquery.jqplot.css" />
+
+    <title>CL plot</title>
+  </head>
+  <body>
+    <div id="clplot" style="width:640px;height:480px"></div>
+
+    <script type="text/javascript">plot = setupPlot();</script>
+
+    <form> 
+      <!-- "plot" is initialized by "setupPlot" -->
+      <input type="button" value="Reset zoom" onClick="plot.resetZoom()"> 
+    </form>
+
+    <p>Moving the mouse on a point shows a tooltip with the
+    coordinates of the point. Selecting an area with the mouse zooms
+    the plot.</p>
+
+    <form> 
+      <input type="button" value="Close window" onClick="window.close()"> 
+    </form>
+  </body>
+</html>

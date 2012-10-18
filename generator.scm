@@ -53,16 +53,14 @@
 ;; ===============
 
 ;; We copy the content of a number of directories into the destination
-;; path using `dir-copy` (defined in `file-utils.scm`). Currently only
-;; `css` is copied, but a separate directory `js` for JavaScript files
-;; might be needed in the future).
+;; path using `dir-copy` (defined in `file-utils.scm`).
 (let ((source-dir (filepath:take-directory (car (argv)))))
   (for-each
    (lambda (dir-name)
      (dir-copy (filepath:join-path (list source-dir dir-name))
                (filepath:join-path (list (assq-ref 'output-dir user-args)
                                          dir-name))))
-   (list "css")))
+   (list "css" "js" "html")))
 
 ;; The "information" page
 ;; ----------------------

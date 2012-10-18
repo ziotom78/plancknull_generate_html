@@ -46,7 +46,7 @@ $(DEPLOY_DIR)/generator: $(INPUT_FILES)
 	@for chicken_module in $(CHICKEN_EGGS_TO_DEPLOY); do \
 		$(CHICKEN_INSTALL) -deploy -p $(DEPLOY_DIR) $$chicken_module; \
 	done
-	cp -rf css $(DEPLOY_DIR) # Copy this directory as well
+	cp -rf css js html $(DEPLOY_DIR) # Copy these directories as well
 	zip -r $(DEPLOY_FILE) $(DEPLOY_DIR)
 
 documentation: \

@@ -70,6 +70,13 @@
 		   (else (abort "Unknown pair in get-html-file-name")))))
 	  (else (abort "Unknown label in get-html-file-name"))))
 
+  ;; This function is similar to `get-html-file-name`, but it returns
+  ;; the name of the JSON file containing the data associated with the
+  ;; maps/spectra shown in the HTML page
+  (define (get-json-file-name label)
+    (filepath:replace-extension (get-html-file-name label)
+				".js"))
+
   ;; This is the name of the data release. *TODO*: make the release name
   ;; specifiable from the command line/configuration file
   (define test-release-name (assq-ref 'data-release-name user-args))
@@ -155,22 +162,18 @@
   ;; comprises the side menu. It returns a string.
   (define (wrap-html file-tag page-title body)
     (html-page (html:++ (<script> type: "text/javascript"
-				  #<<EOF
-function switchMapImages(img, filename1, filename2)
-{
-  if(img.src.indexOf(filename1) == -1)
-    img.src = filename1;
-  else
-    img.src = filename2;
-}
-
-EOF
-)
+				  src: "js/switch-map-images.js")
+			(<script> type: "text/javascript"
+				  src: "js/plot_bars.js")
+			(<script> type: "text/javascript"
+				  src: (get-json-file-name file-tag))
 			(<h1> id: "main_title" (make-title-for-report))
 			(side-menu file-tag)
 			(<div> id: "page_body"
 			       (<h2> page-title)
-			       body))
+			       body)
+			(<script> type: "text/javascript"
+				  "window.onload = plotBars(json_object_list);\n"))
 	       title: page-title
 	       css: '("css/main.css" "css/menu.css")))
 
@@ -205,8 +208,15 @@ EOF
   ;;
   (define (emit-HTML-index-entry-for-object obj)
     (let ((title (assq-ref 'title obj)))
-      (<ul> (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
-		 title "\n"))))
+      (<ul> "\n"
+	    (<canvas> id: (json-obj->div-index-id obj)
+		      style: "border:1px solid #000000;"
+		      width: 120
+		      height: 8)
+	    "\n"
+	    (<a> href: (html:++ "#" (json-obj->HTML-anchor obj))
+		 title "\n")
+	    "\n")))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
@@ -228,7 +238,8 @@ EOF
 			    fixed-extrema?: fixed-extrema?))
 		gif-file-names
 		(list #t #f))
-      (<img> src: (car gif-file-names)
+      (<img> class: "map_image"
+	     src: (car gif-file-names)
 	     alt: title
 	     onclick: (sprintf "switchMapImages(this, \"~a\", \"~a\")"
 			       (car gif-file-names)
@@ -240,6 +251,7 @@ EOF
   (define (emit-HTML-for-spectrum-object obj)
     (let* ((title (assq-ref 'title obj))
 	   (fits-file-name (abspath-from-json obj))
+	   (js-file-name (fits-name->js-name fits-file-name))
 	   (gif-file-name (fits-name->gif-name fits-file-name)))
       (format #t "Writing GIF file ~a\n" gif-file-name)
       (spectrum->gif fits-file-name
@@ -247,7 +259,20 @@ EOF
 		      (list (assq-ref 'output-dir user-args)
 			    gif-file-name))
 		     title)
-      (<img> src: gif-file-name alt: title)))
+      (spectrum->js fits-file-name
+		    (filepath:join-path
+		     (list (assq-ref 'output-dir user-args)
+			   js-file-name))
+		    title)
+      (html:++ (<script> type: "text/javascript"
+			 src: js-file-name)
+	       (<img> class: "cl_image"
+		      src: gif-file-name
+		      alt: title
+		      onClick: (sprintf "window.open(\"html/cl_spectrum.html?data_file=~a\",\"~a\")"
+					js-file-name
+					title)
+		      title: (assq-ref 'file_name obj)))))
 
   ;; This function accepts a JSON object and will produce
   ;; HTML code to be put straight into the page.
@@ -291,6 +316,21 @@ EOF
 								cl-tag))
 				      'channel
 				      fallback-comparison: fallback-comparison)))
+
+      ;; Write the objects we're going to use in this page into a JSON
+      ;; file. The latter will be included in the HTML file, so that
+      ;; Javascript codes can use it.
+      (let ((json-file-name (filepath:join-path
+			     (list (assq-ref 'output-dir user-args)
+				   (get-json-file-name file-tag)))))
+	(printf "Writing JSON file ~a\n" json-file-name)
+	(call-with-output-file json-file-name
+	  (lambda (file)
+	    (display "json_object_list = " file)
+	    (write-json-dictionary file sorted-list)
+	    (display ";\n" file))))
+
+      ;; Now emit the HTML codes for the page
       (write-html
        file-tag
        (lambda (file)
@@ -309,13 +349,37 @@ EOF
 			(<div> id: "results"
 			       (<div> id: "page_index"
 				      (itemize (map emit-HTML-index-entry-for-object
-						    map-objs)))
+						    map-objs))
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "map_std_I"
+					       onclick: "plotBars(json_object_list);"
+					       checked: #t
+					       "RMS of the I map")
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "map_p2p_I"
+					       onclick: "plotBars(json_object_list);"
+					       "Peak-to-peak in the I map")
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "removed_monopole_I"
+					       onclick: "plotBars(json_object_list);"
+					       "Removed monopole")
+				      (<input> type: "radio"
+					       name: "barchartradio"
+					       id: "dipole_I"
+					       onclick: "plotBars(json_object_list);"
+					       "Residual dipole"))
 			       (<p> "Clicking on the image of a map switches "
 				    "between a fixed color-scale range (good "
 				    "for comparisons/animations) and a range "
 				    "taylored for the map under question "
 				    "(good for checking the P-P level and for "
 				    "reveal finer details).")
+			       (<p> "Clicking on any of the spectral plots "
+				    "opens a new window containing a larger, "
+				    "interactive plot.")
 			       (string-intersperse
 				(map emit-HTML-for-object map-objs cl-objs)
 				"\n"))))
