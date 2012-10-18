@@ -152,10 +152,12 @@ EOF
 				    (equal? (assq-ref 'channel obj)
 					    rad-string))
 				  json-dictionary)))
+     (format #t "Number of single-radiometer JSON objects: ~a"
+	     (length sub-dictionary))
      (write-results-page sub-dictionary
 			 (cons 'surv-rad rad-symbol)
-			 "surveydiff_single_ch_map"
-			 "surveydiff_single_ch_cl"
+			 "surveydiff_channel_map"
+			 "surveydiff_channel_cl"
 			 (sprintf "~a, survey differences"
 				  (symbol->string rad-symbol))
 			 fallback-comparison: compare-surveys)))
