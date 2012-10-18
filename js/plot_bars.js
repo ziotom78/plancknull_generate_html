@@ -112,18 +112,24 @@ function plotBars(list_of_objects)
 	context.clearRect(0, 0, canvas.width, canvas.height);
 
 	context.fillStyle = "#8080FF";
-	context.fillRect(0, 0,
-			 (value - min) / (max - min) * canvas.width,
-			 canvas.height);
 
 	if(max > 0.0 && min < 0.0) {
+	    var zero_x = (-min) / (max - min) * canvas.width;
+
+	    context.fillRect(zero_x, 0,
+			     value / (max - min) * canvas.width,
+			     canvas.height);
+
 	    /* Draw the "zero" line */
 	    context.strokeStyle = "#000000";
 
-	    var zero_x = (-min) / (max - min) * canvas.width;
 	    context.moveTo(zero_x, 0);
 	    context.lineTo(zero_x, canvas.height);
 	    context.stroke();
+	} else {
+	    context.fillRect(0, 0,
+			     (value - min) / (max - min) * canvas.width,
+			     canvas.height);
 	}
     }
 }
