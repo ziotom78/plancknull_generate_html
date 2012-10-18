@@ -105,7 +105,7 @@ depends on the <code>car</code>. The pair must be unique, but neither its
 specifiable from the command line/configuration file</p>
 </td>
 <td class="code">
-<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> test-release-name <span class="string">&quot;DX9&quot;</span></span>)</span>
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> test-release-name <span class="paren2">(<span class="default">assq-ref &#x27;data-release-name user-args</span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-5">

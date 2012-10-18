@@ -127,7 +127,8 @@ N>0 characters which ends with <code>.json</code>).</p>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">read-json-dictionary input-dir</span>)</span>
     <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
-		       <span class="paren4">(<span class="default">find-files input-dir <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
+		       <span class="paren4">(<span class="default">find-files input-dir
+				   <span class="keyword">test:</span> <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 
 </pre></td></tr>

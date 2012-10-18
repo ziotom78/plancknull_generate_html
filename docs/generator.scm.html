@@ -67,6 +67,8 @@ timestamps in the report.</p>
         <span class="paren2">(<span class="default">assq-ref &#x27;output-dir user-args</span>)</span></span>)</span>
 <span class="paren1">(<span class="default">format #t <span class="string">&quot;Directory where to look for JSON files: ~a</span><span class="string">\n</span><span class="string">&quot;</span>
         <span class="paren2">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span>
+<span class="paren1">(<span class="default">format #t <span class="string">&quot;The name of the data release is </span><span class="string">\&quot;</span><span class="string">~a</span><span class="string">\&quot;</span><span class="string">\n</span><span class="string">&quot;</span>
+	<span class="paren2">(<span class="default">assq-ref &#x27;data-release-name user-args</span>)</span></span>)</span>
 
 <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> json-dictionary <span class="paren2">(<span class="default">read-json-dictionary <span class="paren3">(<span class="default">assq-ref &#x27;input-dir user-args</span>)</span></span>)</span></span>)</span>
 
