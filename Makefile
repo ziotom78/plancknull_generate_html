@@ -3,7 +3,9 @@ CUR_DATE := $(shell date +"%Y_%m_%d")
 DEPLOY_DIR=$(PWD)/plancknull_generate_html_$(CUR_DATE)
 DEPLOY_FILE=$(PWD)/plancknull_generate_html_$(CUR_DATE).zip
 CFITSIO ?= -lcfitsio
-ADDITIONAL_LIBRARIES=-lz -lpthread
+MY_CFLAGS := `pkg-config --cflags cairo` $(CFLAGS)
+CFLAGS = $(MY_CFLAGS)
+ADDITIONAL_LIBRARIES=`pkg-config --cflags --libs cairo` -lz -lpthread
 
 INPUT_FILES=generator.scm \
 	user-settings.scm \
@@ -21,7 +23,7 @@ CHICKEN_EGGS_TO_DEPLOY=json packrat html-tags html-utils matchable \
 	list-utils check-errors stack shell filepath \
 	directory-utils numbers record-variants srfi-29 locale \
 	regex lookup-table posix-utils condition-utils \
-	variable-item srfi-19 silex coops bind blas
+	variable-item srfi-19 silex coops bind blas cairo
 CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 
 .phony: all deploy install_eggs help documentation
@@ -29,7 +31,7 @@ CHICKEN_EGGS_TO_INSTALL=$(CHICKEN_EGGS_TO_DEPLOY) schematic
 all: generator documentation
 
 generator: $(INPUT_FILES) $(C_FILES)
-	$(CHICKEN_CSC) $< -o $@ $(CFITSIO) $(ADDITIONAL_LIBRARIES) `pkg-config --cflags --libs cairo`
+	$(CHICKEN_CSC) $< -o $@ $(CFLAGS) $(CFITSIO) $(ADDITIONAL_LIBRARIES)
 
 deploy: $(DEPLOY_DIR)/generator
 
@@ -40,7 +42,7 @@ install_eggs:
 
 $(DEPLOY_DIR)/generator: $(INPUT_FILES)
 	mkdir -p $(DEPLOY_DIR)
-	csc -deploy -o $(DEPLOY_DIR) $< $(CFITSIO) $(ADDITIONAL_LIBRARIES)
+	csc -deploy -o $(DEPLOY_DIR) $< $(CFLAGS) $(CFITSIO) $(ADDITIONAL_LIBRARIES)
 	@for chicken_module in $(CHICKEN_EGGS_TO_DEPLOY); do \
 		$(CHICKEN_INSTALL) -deploy -p $(DEPLOY_DIR) $$chicken_module; \
 	done
