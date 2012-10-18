@@ -72,7 +72,7 @@ function plotBars(list_of_objects)
 		module += value[component] * value[component];
 	    }
 
-	    value = module;
+	    value = Math.sqrt(module);
 	}
 
 	objects_to_plot.push({ "canvas": canvas,
@@ -95,8 +95,11 @@ function plotBars(list_of_objects)
 
     /* Modify the text over the bar charts to reflect the new extrema */
     document.getElementById("barchart_extrema_text").innerHTML =
-	"The extrema for the bar chart are " + String(min.toPrecision(3))
-	+ " and " + String(max.toPrecision(3));
+	"The extrema for the bar chart are " 
+	+ String((min * 1e6).toPrecision(3))
+	+ " &#x3BC;K and " 
+	+ String((max * 1e6).toPrecision(3))
+	+ " &#x3BC;K";
 
     /* Iterate over every object in `objects_to_plot` and paint the bar */
     for(var i = 0; i < objects_to_plot.length; ++i)
