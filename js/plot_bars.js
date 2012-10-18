@@ -90,7 +90,13 @@ function plotBars(list_of_objects)
 	}
     }
 
-    min = 0.0;
+    if(max > 0.0 && min > 0.0)
+	min = 0.0;
+
+    /* Modify the text over the bar charts to reflect the new extrema */
+    document.getElementById("barchart_extrema_text").innerHTML =
+	"The extrema for the bar chart are " + String(min.toPrecision(3))
+	+ " and " + String(max.toPrecision(3));
 
     /* Iterate over every object in `objects_to_plot` and paint the bar */
     for(var i = 0; i < objects_to_plot.length; ++i)
@@ -106,5 +112,15 @@ function plotBars(list_of_objects)
 	context.fillRect(0, 0,
 			 (value - min) / (max - min) * canvas.width,
 			 canvas.height);
+
+	if(max > 0.0 && min < 0.0) {
+	    /* Draw the "zero" line */
+	    context.strokeStyle = "#000000";
+
+	    var zero_x = (-min) / (max - min) * canvas.width;
+	    context.moveTo(zero_x, 0);
+	    context.lineTo(zero_x, canvas.height);
+	    context.stroke();
+	}
     }
 }

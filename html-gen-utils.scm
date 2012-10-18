@@ -348,6 +348,8 @@
 		       (html:++
 			(<div> id: "results"
 			       (<div> id: "page_index"
+				      (<p> id: "barchart_extrema_text"
+					   "Extrema for the bar chart")
 				      (itemize (map emit-HTML-index-entry-for-object
 						    map-objs))
 				      (<input> type: "radio"
