@@ -215,10 +215,12 @@ function to be used to sort the objects in the report.</p>
 				    <span class="paren2">(<span class="default">equal? <span class="paren3">(<span class="default">assq-ref &#x27;channel obj</span>)</span>
 					    rad-string</span>)</span></span>)</span>
 				  json-dictionary</span>)</span></span>)</span></span>)</span>
+     <span class="paren4">(<span class="default">format #t <span class="string">&quot;Number of single-radiometer JSON objects: ~a&quot;</span>
+	     <span class="paren5">(<span class="default">length sub-dictionary</span>)</span></span>)</span>
      <span class="paren4">(<span class="default">write-results-page sub-dictionary
 			 <span class="paren5">(<span class="default">cons &#x27;surv-rad rad-symbol</span>)</span>
-			 <span class="string">&quot;surveydiff_single_ch_map&quot;</span>
-			 <span class="string">&quot;surveydiff_single_ch_cl&quot;</span>
+			 <span class="string">&quot;surveydiff_channel_map&quot;</span>
+			 <span class="string">&quot;surveydiff_channel_cl&quot;</span>
 			 <span class="paren5">(<span class="default">sprintf <span class="string">&quot;~a, survey differences&quot;</span>
 				  <span class="paren6">(<span class="default">symbol-&gt;string rad-symbol</span>)</span></span>)</span>
 			 <span class="keyword">fallback-comparison:</span> compare-surveys</span>)</span></span>)</span></span>)</span>
