@@ -28,13 +28,16 @@ loading/interpreting JSON data.</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default">json-&gt;alist
+   alist-&gt;json
    assq-ref
    assoc-ref
    extract-alists-from-json-file
    read-json-dictionary
+   write-json-dictionary
    abspath-from-json
    filter-on-filetype
-   json-obj-&gt;HTML-anchor</span>)</span>
+   json-obj-&gt;HTML-anchor
+   json-obj-&gt;div-index-id</span>)</span>
 
   <span class="paren1">(<span class="default">import chicken
 	  scheme
@@ -61,14 +64,36 @@ function <code>assq</code> we need to have lists, not vectors. The function
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-&gt;alist dictionary</span>)</span>
     <span class="paren2">(<span class="default">map <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x</span>)</span>
-	   <span class="paren4">(<span class="default">cons <span class="paren5">(<span class="default">string-&gt;symbol <span class="paren6">(<span class="default">car x</span>)</span></span>)</span>
-		 <span class="paren5">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span>
+	   <span class="paren4">(<span class="default"><i><span class="symbol">let</span></i> <span class="paren5">(<span class="default"><span class="paren6">(<span class="default">key <span class="paren1">(<span class="default">string-&gt;symbol <span class="paren2">(<span class="default">car x</span>)</span></span>)</span></span>)</span></span>)</span>
+	     <span class="paren5">(<span class="default">cons <span class="paren6">(<span class="default"><i><span class="symbol">cond</span></i>
+		    <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">eq? key &#x27;map_std</span>)</span> &#x27;map_std_I</span>)</span>
+		    <span class="paren1">(<span class="default"><span class="paren2">(<span class="default">eq? key &#x27;map_p2p</span>)</span> &#x27;map_p2p_I</span>)</span>
+		    <span class="paren1">(<span class="default">else key</span>)</span></span>)</span>
+		   <span class="paren6">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span></span>)</span>
 	 <span class="paren3">(<span class="default">vector-&gt;list dictionary</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
 <tr id="section-4">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>Since JSON entries are going to be handled as <em>a-lists</em>
+<div class="pilwrap"><a class="pilcrow" href="#section-4">&para;</a></div><p>This function is the inverse of <code>json-&gt;alist</code>, in the sense that
+<code>(alist-&gt;json (json-&gt;alist x))</code> will return <code>x</code> whenever <code>x</code> is a
+valid JSON object (i.e. returned by the <code>json-read</code> function).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">alist-&gt;json alist</span>)</span>
+    <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> alist
+	<span class="paren3">(<span class="default">list-&gt;vector <span class="paren4">(<span class="default">map <span class="paren5">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren6">(<span class="default">x</span>)</span>
+			     <span class="paren6">(<span class="default">cons <span class="paren1">(<span class="default">symbol-&gt;string <span class="paren2">(<span class="default">car x</span>)</span></span>)</span>
+				   <span class="paren1">(<span class="default">cdr x</span>)</span></span>)</span></span>)</span>
+			   alist</span>)</span></span>)</span>
+	<span class="paren3">(<span class="default">begin
+	  <span class="paren4">(<span class="default">display <span class="string">&quot;Something smells fishy here!&quot;</span></span>)</span>
+	  #f</span>)</span></span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-5">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>Since JSON entries are going to be handled as <em>a-lists</em>
 (<a href="http://en.wikipedia.org/wiki/Association_list">association
 lists</a>), we'll
 often use a nice shorthand which is not provided by standard
@@ -84,9 +109,9 @@ in GNU Guile, but - alas! - not in Chicken Scheme).</p>
 	  #f</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-5">
+<tr id="section-6">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-5">&para;</a></div><p>The same applies for <code>assoc</code> (which uses <code>equal?</code> instead of
+<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>The same applies for <code>assoc</code> (which uses <code>equal?</code> instead of
 <code>eq?</code>).</p>
 </td>
 <td class="code">
@@ -97,9 +122,9 @@ in GNU Guile, but - alas! - not in Chicken Scheme).</p>
 	  #f</span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-6">
+<tr id="section-7">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-6">&para;</a></div><p>Parse a file and return a list of associative lists suitable for
+<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>Parse a file and return a list of associative lists suitable for
 being used with functions like <code>assq</code> and <code>assv</code>. Note that, unlike
 <code>json-read</code>, this function returns a list even if the JSON file
 contains just one object: this is done through the <code>(if (list?
@@ -112,9 +137,9 @@ contains just one object: this is done through the <code>(if (list?
       <span class="paren3">(<span class="default">map json-&gt;alist <span class="paren4">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren5">(<span class="default">list? entries</span>)</span> entries <span class="paren5">(<span class="default">list entries</span>)</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-7">
+<tr id="section-8">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-7">&para;</a></div><p>Find all the files in the null test directory and read their
+<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>Find all the files in the null test directory and read their
 contents, then assemble all the objects (a-lists) into a list
 (using <code>extract-alists-from-json-file</code>). Note that <code>append</code> is
 not a R5RS built-in (it is part of
@@ -127,13 +152,28 @@ N>0 characters which ends with <code>.json</code>).</p>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">read-json-dictionary input-dir</span>)</span>
     <span class="paren2">(<span class="default">apply append <span class="paren3">(<span class="default">map extract-alists-from-json-file
-		       <span class="paren4">(<span class="default">find-files input-dir <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
-
+		       <span class="paren4">(<span class="default">find-files input-dir
+				   <span class="keyword">test:</span> <span class="string">&quot;.+</span><span class="string">\\</span><span class="string">.json$&quot;</span></span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-8">
+<tr id="section-9">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-8">&para;</a></div><p>Given a JSON object, returns the full path associated with it. To
+<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>This function writes a JSON representation of <code>list-of-alists</code>, a
+list of a-lists, into <code>file</code> (a port already opened for output).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">write-json-dictionary file list-of-alists</span>)</span>
+    <span class="paren2">(<span class="default">display <span class="string">&quot;[</span><span class="string">\n</span><span class="string">&quot;</span> file</span>)</span>
+    <span class="paren2">(<span class="default">for-each <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">x</span>)</span>
+		<span class="paren4">(<span class="default">json-write <span class="paren5">(<span class="default">alist-&gt;json x</span>)</span> file</span>)</span>
+		<span class="paren4">(<span class="default">display <span class="string">&quot;,</span><span class="string">\n</span><span class="string">&quot;</span> file</span>)</span></span>)</span>
+	      list-of-alists</span>)</span>
+    <span class="paren2">(<span class="default">display <span class="string">&quot;]&quot;</span> file</span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-10">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>Given a JSON object, returns the full path associated with it. To
 understand this code, keep in mind that the path specified in each
 JSON object is relative to the root directory where the null tests
 were saved. The path to this root directory is passed to the
@@ -148,9 +188,9 @@ program through the command line (hence the reference to
       <span class="paren4">(<span class="default">assq-ref &#x27;file_name object</span>)</span></span>)</span></span>)</span></span>)</span>
 
 </pre></td></tr>
-<tr id="section-9">
+<tr id="section-11">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-9">&para;</a></div><p>The function <code>filter-on-filetype</code> filters the contents of a JSON
+<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>The function <code>filter-on-filetype</code> filters the contents of a JSON
 a-list ording to one or more file types. The use of <code>filter</code> is
 exactly the same as in Python.</p>
 </td>
@@ -158,17 +198,17 @@ exactly the same as in Python.</p>
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">filter-on-filetype dict file-types</span>)</span>
     <span class="paren2">(<span class="default"><i><span class="symbol">if</span></i> <span class="paren3">(<span class="default">list? file-types</span>)</span>
 </span></span></span></span></pre></td></tr>
-<tr id="section-10">
+<tr id="section-12">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-10">&para;</a></div><p>This is the <code>ten</code> part of the <code>if</code>. We're going recursive!</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>This is the <code>ten</code> part of the <code>if</code>. We're going recursive!</p>
 </td>
 <td class="code">
 <pre class="highlight">	<span class="paren1">(<span class="default">apply append <span class="paren2">(<span class="default">map <span class="paren3">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren4">(<span class="default">type</span>)</span> <span class="paren4">(<span class="default">filter-on-filetype dict type</span>)</span></span>)</span>
 			   file-types</span>)</span></span>)</span>
 </pre></td></tr>
-<tr id="section-11">
+<tr id="section-13">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-11">&para;</a></div><p>This is the <code>else</code> part of the <code>if</code>.</p>
+<div class="pilwrap"><a class="pilcrow" href="#section-13">&para;</a></div><p>This is the <code>else</code> part of the <code>if</code>.</p>
 </td>
 <td class="code">
 <pre class="highlight">	<span class="paren1">(<span class="default">filter <span class="paren2">(<span class="default"><i><span class="symbol">lambda</span></i> <span class="paren3">(<span class="default">object</span>)</span>
@@ -177,14 +217,29 @@ exactly the same as in Python.</p>
 		dict</span>)</span>))
 
 </pre></td></tr>
-<tr id="section-12">
+<tr id="section-14">
 <td class="docs">
-<div class="pilwrap"><a class="pilcrow" href="#section-12">&para;</a></div><p>Given a JSON object, this produces a valid HTML anchor for the
+<div class="pilwrap"><a class="pilcrow" href="#section-14">&para;</a></div><p>Given a JSON object, this produces a valid HTML anchor for the
 object.</p>
 </td>
 <td class="code">
 <pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-obj-&gt;HTML-anchor obj</span>)</span>
-    <span class="paren2">(<span class="default">string-substitute <span class="string">&quot;/&quot;</span> <span class="string">&quot;_&quot;</span>
+    <span class="paren2">(<span class="default">string-substitute <span class="string">&quot;[-/]&quot;</span> <span class="string">&quot;_&quot;</span>
 		       <span class="paren3">(<span class="default">assq-ref &#x27;base_file_name obj</span>)</span>
-		       &#x27;every-match</span>)</span></span>)</span>)
+		       &#x27;every-match</span>)</span></span>)</span>
+
+</pre></td></tr>
+<tr id="section-15">
+<td class="docs">
+<div class="pilwrap"><a class="pilcrow" href="#section-15">&para;</a></div><p>Given a JSON object, this produces a valid ID to be used for the
+<div> element which contains the small bar plot for this element.
+Note that this algorithm must match with the one in "plotBars"
+(file <code>js/plot_bars.js</code>).</p>
+</td>
+<td class="code">
+<pre class="highlight">  <span class="paren1">(<span class="default"><i><span class="symbol">define</span></i> <span class="paren2">(<span class="default">json-obj-&gt;div-index-id obj</span>)</span>
+    <span class="paren2">(<span class="default">string-append <span class="string">&quot;div_&quot;</span>
+		   <span class="paren3">(<span class="default">string-substitute <span class="string">&quot;[-/]&quot;</span> <span class="string">&quot;_&quot;</span>
+				      <span class="paren4">(<span class="default">assq-ref &#x27;base_file_name obj</span>)</span>
+				      &#x27;every-match</span>)</span></span>)</span></span>)</span>)
 </pre></td></tr></table></div></body></html>
